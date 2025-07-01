@@ -33,14 +33,14 @@
     <!-- Navigation -->
     <nav class="bg-gray-200 py-3 px-4 shadow-md">
         <div class="container mx-auto flex flex-wrap justify-center space-x-1 md:space-x-4">
-            <a href="{% url 'center_panel:dashboard' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium">Tableau de bord</a>
-            <a href="{% url 'center_panel:books' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium">Mes Livres</a>
-            <a href="{% url 'center_panel:members' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium">Membres</a>
-            <a href="{% url 'center_panel:loans' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium">Prêts</a>
-            <a href="{% url 'center_panel:staff' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium">Personnel</a>
-            <a href="{% url 'center_panel:archives' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium">Archives</a>
-            <a href="{% url 'center_panel:trainings' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium">Formations</a>
-            <a href="{% url 'center_panel:notifications' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium">Notifications</a>
+            <a href="{% url 'center_panel:dashboard' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium {% if request.resolver_match.url_name == 'dashboard' %}bg-gray-400{% endif %}">Tableau de bord</a>
+            <a href="{% url 'center_panel:books' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium {% if request.resolver_match.url_name == 'books' %}bg-gray-400{% endif %}">Mes Livres</a>
+            <a href="{% url 'center_panel:members' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium {% if request.resolver_match.url_name == 'members' %}bg-gray-400{% endif %}">Membres</a>
+            <a href="{% url 'center_panel:loans' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium {% if request.resolver_match.url_name == 'loans' %}bg-gray-400{% endif %}">Prêts</a>
+            <a href="{% url 'center_panel:staff' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium {% if request.resolver_match.url_name == 'staff' %}bg-gray-400{% endif %}">Personnel</a>
+            <a href="{% url 'center_panel:archives' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium {% if request.resolver_match.url_name == 'archives' %}bg-gray-400{% endif %}">Archives</a>
+            <a href="{% url 'center_panel:trainings' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium {% if request.resolver_match.url_name == 'trainings' %}bg-gray-400{% endif %}">Formations</a>
+            <a href="{% url 'center_panel:notifications' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium {% if request.resolver_match.url_name == 'notifications' %}bg-gray-400{% endif %}">Notifications</a>
             <a href="{% url 'logout' %}" class="px-3 py-2 rounded hover:bg-red-300 transition-colors duration-200 text-gray-800 font-medium">Déconnexion</a>
         </div>
     </nav>
