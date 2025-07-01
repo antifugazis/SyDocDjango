@@ -1,0 +1,8 @@
+{
+    "files.exclude": {
+        "sydoc_project/sydoc_env": true,
+        "sydoc_project/sydoc_project/__pycache__": false,
+        ".vscode": true,
+        ".history": true
+    }
+}

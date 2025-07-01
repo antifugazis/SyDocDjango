@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Panneau Central SYDOC{% endblock %}</title>
+    <!-- Tailwind CSS from CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- AOS (Animate on Scroll) CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Custom styles -->
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main {
+            flex: 1;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-100">
+    <!-- Header -->
+    <header class="bg-gray-800 text-white py-4 px-6 text-center">
+        <div data-aos="fade-down" data-aos-duration="800">
+            <h1 class="text-2xl font-bold">SYDOC Center Panel</h1>
+            <p class="text-lg">{{ current_center.name|default:"Centre de Documentation" }}</p>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="bg-gray-200 py-3 px-4 shadow-md">
+        <div class="container mx-auto flex flex-wrap justify-center space-x-1 md:space-x-4">
+            <a href="{% url 'center_panel:dashboard' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium">Tableau de bord</a>
+            <a href="{% url 'center_panel:books' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium">Mes Livres</a>
+            <a href="{% url 'center_panel:members' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium">Membres</a>
+            <a href="{% url 'center_panel:loans' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium">Prêts</a>
+            <a href="{% url 'center_panel:staff' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium">Personnel</a>
+            <a href="{% url 'center_panel:archives' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium">Archives</a>
+            <a href="{% url 'center_panel:trainings' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium">Formations</a>
+            <a href="{% url 'center_panel:notifications' %}" class="px-3 py-2 rounded hover:bg-gray-300 transition-colors duration-200 text-gray-800 font-medium">Notifications</a>
+            <a href="{% url 'logout' %}" class="px-3 py-2 rounded hover:bg-red-300 transition-colors duration-200 text-gray-800 font-medium">Déconnexion</a>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    <div class="container mx-auto mt-4 px-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div data-aos="fade-in" class="mb-4 p-4 rounded-md shadow-md 
+                    {% if message.tags == 'success' %}bg-green-100 border border-green-400 text-green-700{% endif %}
+                    {% if message.tags == 'error' %}bg-red-100 border border-red-400 text-red-700{% endif %}
+                    {% if message.tags == 'warning' %}bg-yellow-100 border border-yellow-400 text-yellow-700{% endif %}
+                    {% if message.tags == 'info' %}bg-blue-100 border border-blue-400 text-blue-700{% endif %}
+                    {% if message.tags == 'debug' %}bg-gray-100 border border-gray-400 text-gray-700{% endif %}"
+                >
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            {% if message.tags == 'success' %}<svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>{% endif %}
+                            {% if message.tags == 'error' %}<svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>{% endif %}
+                            {% if message.tags == 'warning' %}<svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>{% endif %}
+                            {% if message.tags == 'info' %}<svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>{% endif %}
+                            {% if message.tags == 'debug' %}<svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>{% endif %}
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm">{{ message }}</p>
+                        </div>
+                        <div class="ml-auto pl-3">
+                            <div class="-mx-1.5 -my-1.5">
+                                <button class="inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 
+                                    {% if message.tags == 'success' %}text-green-500 hover:bg-green-200 focus:ring-green-600{% endif %}
+                                    {% if message.tags == 'error' %}text-red-500 hover:bg-red-200 focus:ring-red-600{% endif %}
+                                    {% if message.tags == 'warning' %}text-yellow-500 hover:bg-yellow-200 focus:ring-yellow-600{% endif %}
+                                    {% if message.tags == 'info' %}text-blue-500 hover:bg-blue-200 focus:ring-blue-600{% endif %}
+                                    {% if message.tags == 'debug' %}text-gray-500 hover:bg-gray-200 focus:ring-gray-600{% endif %}"
+                                    onclick="this.parentElement.parentElement.parentElement.parentElement.remove()">
+                                    <span class="sr-only">Fermer</span>
+                                    <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto py-6 px-4">
+        <div data-aos="fade-up" data-aos-duration="600">
+            {% block content %}
+            <!-- Content will be inserted here -->
+            {% endblock content %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-4 px-6 text-center">
+        <p>&copy; 2025 SyDoc. Tous droits réservés.</p>
+    </footer>
+
+    <!-- AOS (Animate on Scroll) JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS
+        AOS.init({
+            once: true, // animations only happen once
+            duration: 800, // values from 0 to 3000, with step 50ms
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

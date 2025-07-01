@@ -1,0 +1,165 @@
+{% extends 'center_panel/base.html' %}
+
+{% block title %}Tableau de bord - {{ current_center.name }}{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.cdnfonts.com/css/sf-pro-display" rel="stylesheet">
+<style>
+    body, h1, h2, h3, h4, h5, h6, p, span, a, div {
+        font-family: 'SF Pro Display', sans-serif;
+    }
+    .stat-card {
+        transition: transform 0.2s ease-in-out;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-2">Tableau de bord pour {{ current_center.name }}</h1>
+    <p class="text-gray-600">{{ current_date|date:"l, F j, Y" }}</p>
+</div>
+
+<!-- Statistics Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+    <!-- Total Books -->
+    <div class="stat-card bg-white rounded-lg shadow-md p-6 text-center" data-aos="fade-up" data-aos-delay="100">
+        <h3 class="text-lg font-medium text-gray-500 mb-2">Total des livres</h3>
+        <p class="text-4xl font-bold text-indigo-600">{{ stats.total_books|default:"0" }}</p>
+    </div>
+    
+    <!-- Physical Books -->
+    <div class="stat-card bg-white rounded-lg shadow-md p-6 text-center" data-aos="fade-up" data-aos-delay="150">
+        <h3 class="text-lg font-medium text-gray-500 mb-2">Livres physiques</h3>
+        <p class="text-4xl font-bold text-blue-600">{{ stats.physical_books|default:"0" }}</p>
+    </div>
+    
+    <!-- E-Books -->
+    <div class="stat-card bg-white rounded-lg shadow-md p-6 text-center" data-aos="fade-up" data-aos-delay="200">
+        <h3 class="text-lg font-medium text-gray-500 mb-2">Livres électroniques</h3>
+        <p class="text-4xl font-bold text-green-600">{{ stats.ebooks|default:"0" }}</p>
+    </div>
+    
+    <!-- Total Members -->
+    <div class="stat-card bg-white rounded-lg shadow-md p-6 text-center" data-aos="fade-up" data-aos-delay="250">
+        <h3 class="text-lg font-medium text-gray-500 mb-2">Total des membres</h3>
+        <p class="text-4xl font-bold text-purple-600">{{ stats.total_members|default:"0" }}</p>
+    </div>
+    
+    <!-- Active Loans -->
+    <div class="stat-card bg-white rounded-lg shadow-md p-6 text-center" data-aos="fade-up" data-aos-delay="300">
+        <h3 class="text-lg font-medium text-gray-500 mb-2">Prêts actifs</h3>
+        <p class="text-4xl font-bold text-yellow-600">{{ stats.active_loans|default:"0" }}</p>
+    </div>
+    
+    <!-- Overdue Loans -->
+    <div class="stat-card bg-white rounded-lg shadow-md p-6 text-center" data-aos="fade-up" data-aos-delay="350">
+        <h3 class="text-lg font-medium text-gray-500 mb-2">Prêts en retard</h3>
+        <p class="text-4xl font-bold text-red-600">{{ stats.overdue_loans|default:"0" }}</p>
+    </div>
+    
+    <!-- Total Staff -->
+    <div class="stat-card bg-white rounded-lg shadow-md p-6 text-center" data-aos="fade-up" data-aos-delay="400">
+        <h3 class="text-lg font-medium text-gray-500 mb-2">Total du personnel</h3>
+        <p class="text-4xl font-bold text-teal-600">{{ stats.total_staff|default:"0" }}</p>
+    </div>
+    
+    <!-- Total Archives -->
+    <div class="stat-card bg-white rounded-lg shadow-md p-6 text-center" data-aos="fade-up" data-aos-delay="450">
+        <h3 class="text-lg font-medium text-gray-500 mb-2">Total des archives</h3>
+        <p class="text-4xl font-bold text-gray-600">{{ stats.total_archives|default:"0" }}</p>
+    </div>
+    
+    <!-- Total Training Modules -->
+    <div class="stat-card bg-white rounded-lg shadow-md p-6 text-center" data-aos="fade-up" data-aos-delay="500">
+        <h3 class="text-lg font-medium text-gray-500 mb-2">Total des modules de formation</h3>
+        <p class="text-4xl font-bold text-orange-600">{{ stats.total_training_modules|default:"0" }}</p>
+    </div>
+</div>
+
+<!-- Recent Loans and Upcoming Returns -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+    <!-- Recent Loans -->
+    <div class="bg-white p-6 rounded-lg shadow" data-aos="fade-right" data-aos-delay="100">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Prêts récents</h2>
+        {% if recent_loans %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Titre du livre</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom du membre</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date de prêt</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date d'échéance</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for loan in recent_loans %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ loan.book.title }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ loan.member.full_name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ loan.loan_date|date:"d/m/Y" }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ loan.due_date|date:"d/m/Y" }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {% if loan.is_overdue %}bg-red-100 text-red-800{% else %}bg-green-100 text-green-800{% endif %}">
+                                {% if loan.is_overdue %}En retard{% else %}À temps{% endif %}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="bg-white p-6 rounded-lg shadow text-center">
+            <p class="text-gray-500">Aucun prêt récent trouvé.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Upcoming Returns -->
+    <div class="bg-white p-6 rounded-lg shadow" data-aos="fade-left" data-aos-delay="100">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Retours à venir</h2>
+        {% if upcoming_returns %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Titre du livre</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom du membre</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date de prêt</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date d'échéance</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jours restants</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for loan in upcoming_returns %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ loan.book.title }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ loan.member.full_name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ loan.loan_date|date:"d/m/Y" }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ loan.due_date|date:"d/m/Y" }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            {% if loan.days_left <= 1 %}bg-red-100 text-red-800{% endif %}
+                            {% if loan.days_left > 1 and loan.days_left <= 3 %}bg-yellow-100 text-yellow-800{% endif %}
+                            {% if loan.days_left > 3 %}bg-green-100 text-green-800{% endif %}">
+                            {{ loan.days_left }} jour{{ loan.days_left|pluralize }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="bg-white p-6 rounded-lg shadow text-center">
+        <p class="text-gray-500">Aucun retour à venir trouvé.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
