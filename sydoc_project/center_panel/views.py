@@ -185,8 +185,8 @@ def loan_list(request):
         messages.error(request, "Aucun centre de documentation trouvé.")
         return redirect('admin:index')
         
-    # Get loans for this center
-    loans = Loan.objects.filter(documentation_center=current_center)
+    # Get loans for this center through the Book relationship
+    loans = Loan.objects.filter(book__documentation_center=current_center)
     
     context = {
         'current_center': current_center,

@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "core",
-    "superadmin_panel",
+    "superadmin_panel",  # Changed from supe_admin_panel to match directory name
     "center_panel",
 ]
 
@@ -125,3 +125,8 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Authentication settings
+LOGIN_REDIRECT_URL = '/center/dashboard/'  # Redirect to dashboard after login
+LOGIN_URL = 'login'  # URL to redirect to for login
+LOGOUT_REDIRECT_URL = 'login'  # Redirect to login page after logout
