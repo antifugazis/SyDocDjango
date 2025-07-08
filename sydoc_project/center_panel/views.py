@@ -135,7 +135,7 @@ def add_book(request):
         'form': form,
         'current_center': current_center
     }
-    return render(request, 'center_panel/add_edit_book.html', context)
+    return render(request, 'center_panel/admin/add_edit_book.html', context)
 
 @login_required
 def edit_book(request, pk):
@@ -157,7 +157,7 @@ def edit_book(request, pk):
         'current_center': current_center
     }
     # We can reuse the same template for both adding and editing
-    return render(request, 'center_panel/add_edit_book.html', context)
+    return render(request, 'center_panel/admin/add_edit_book.html', context)
 
 
 @login_required
@@ -175,7 +175,7 @@ def delete_book(request, pk):
         'book': book,
         'current_center': current_center
     }
-    return render(request, 'center_panel/delete_book_confirm.html', context)
+    return render(request, 'center_panel/admin/delete_book_confirm.html', context)
 
 @login_required
 def member_list(request):
@@ -228,7 +228,7 @@ def add_member(request):
         'current_center': current_center,
         'title': 'Ajouter un nouveau membre',
     }
-    return render(request, 'center_panel/add_edit_member.html', context)
+    return render(request, 'center_panel/admin/add_edit_member.html', context)
 
 @login_required
 def edit_member(request, pk):
@@ -253,7 +253,7 @@ def edit_member(request, pk):
         'current_center': current_center,
         'title': f"Modifier {member.first_name} {member.last_name}",
     }
-    return render(request, 'center_panel/add_edit_member.html', context)
+    return render(request, 'center_panel/admin/add_edit_member.html', context)
 
 @login_required
 def delete_member(request, pk):
@@ -270,7 +270,7 @@ def delete_member(request, pk):
         'member': member,
         'current_center': current_center,
     }
-    return render(request, 'center_panel/delete_member_confirm.html', context)
+    return render(request, 'center_panel/admin/delete_member_confirm.html', context)
 
 @login_required
 def loan_list(request):
@@ -371,7 +371,7 @@ def add_loan(request):
         'form': form,
         'current_center': current_center,
     }
-    return render(request, 'center_panel/add_loan.html', context)
+    return render(request, 'center_panel/admin/add_loan.html', context)
 
 @login_required
 def return_loan(request, loan_id):
@@ -434,7 +434,7 @@ def add_staff(request):
         'form': form,
         'current_center': current_center,
     }
-    return render(request, 'center_panel/add_edit_staff.html', context)
+    return render(request, 'center_panel/admin/add_edit_staff.html', context)
 
 @login_required
 def edit_staff(request, pk):
@@ -455,7 +455,7 @@ def edit_staff(request, pk):
         'staff': staff,
         'current_center': current_center,
     }
-    return render(request, 'center_panel/add_edit_staff.html', context)
+    return render(request, 'center_panel/admin/add_edit_staff.html', context)
 
 @login_required
 def delete_staff(request, pk):
@@ -472,7 +472,7 @@ def delete_staff(request, pk):
         'staff': staff,
         'current_center': current_center,
     }
-    return render(request, 'center_panel/delete_staff_confirm.html', context)
+    return render(request, 'center_panel/admin/delete_staff_confirm.html', context)
 
 @login_required
 def archive_list(request):
