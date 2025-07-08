@@ -1,8 +1,239 @@
 {% extends 'center_panel/base.html' %}
 
-{% block title %}Prêts{% endblock %}
+{% block title %}Gestion des Prêts - SYDOC Center Panel{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Custom styles for DataTables */
+    .dataTables_wrapper .dataTables_length select {
+        @apply border border-gray-300 rounded-md shadow-sm py-1 pl-2 pr-8 text-sm focus:ring-blue-500 focus:border-blue-500;
+    }
+    
+    .dataTables_wrapper .dataTables_filter input {
+        @apply ml-2 border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm focus:ring-blue-500 focus:border-blue-500;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        @apply px-3 py-1 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 mx-1;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        @apply bg-blue-600 text-white hover:bg-blue-700;
+    }
+    
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_filter label {
+        @apply text-sm text-gray-700;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">Liste des prêts</h1>
-    <p>Ceci est la page d'espace réservé pour les prêts.</p>
+<div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-4 md:mb-0">Gestion des Prêts</h1>
+        <div class="flex flex-col sm:flex-row gap-4">
+            <div class="flex space-x-2">
+                <a href="{% url 'center_panel:loans' %}" class="px-3 py-2 rounded-md text-sm font-medium {% if not request.GET.status %}bg-blue-100 text-blue-800{% else %}bg-white text-gray-700 hover:bg-gray-50{% endif %}">
+                    Tous ({{ total_loans }})
+                </a>
+                <a href="?status=active" class="px-3 py-2 rounded-md text-sm font-medium {% if request.GET.status == 'active' %}bg-blue-100 text-blue-800{% else %}bg-white text-gray-700 hover:bg-gray-50{% endif %}">
+                    Actifs ({{ active_loans }})
+                </a>
+                <a href="?status=overdue" class="px-3 py-2 rounded-md text-sm font-medium {% if request.GET.status == 'overdue' %}bg-blue-100 text-blue-800{% else %}bg-white text-gray-700 hover:bg-gray-50{% endif %}">
+                    En retard ({{ overdue_loans }})
+                </a>
+                <a href="?status=returned" class="px-3 py-2 rounded-md text-sm font-medium {% if request.GET.status == 'returned' %}bg-blue-100 text-blue-800{% else %}bg-white text-gray-700 hover:bg-gray-50{% endif %}">
+                    Retournés ({{ returned_loans }})
+                </a>
+            </div>
+            <a href="{% url 'center_panel:add_loan' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center justify-center whitespace-nowrap">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Nouveau prêt
+            </a>
+        </div>
+    </div>
+
+    <!-- Search Box -->
+    <div class="mb-4">
+        <form method="get" class="flex">
+            <input type="text" name="search" value="{{ search_query|default:'' }}" 
+                   class="flex-1 rounded-l-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" 
+                   placeholder="Rechercher par titre, auteur, membre...">
+            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-r-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                Rechercher
+            </button>
+            {% if search_query %}
+            <a href="{% url 'center_panel:loans' %}" class="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                Réinitialiser
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Loans Table -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="overflow-x-auto">
+            <table id="loans-table" class="min-w-full divide-y divide-gray-200" data-datatable>
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Livre</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Membre</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date d'emprunt</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date de retour prévue</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date de retour</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for loan in loans %}
+                    <tr class="hover:bg-gray-50">
+                        <!-- Book Info with Cover -->
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                {% if loan.book.cover_image %}
+                                <div class="flex-shrink-0 h-16 w-12">
+                                    <img class="h-16 w-12 object-cover rounded" src="{{ loan.book.cover_image.url }}" alt="{{ loan.book.title }}">
+                                </div>
+                                {% else %}
+                                <div class="flex-shrink-0 h-16 w-12 bg-gray-200 flex items-center justify-center rounded">
+                                    <svg class="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                    </svg>
+                                </div>
+                                {% endif %}
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">{{ loan.book.title }}</div>
+                                    <div class="text-sm text-gray-500">{{ loan.book.author|default:"Auteur inconnu" }}</div>
+                                    <div class="text-xs text-gray-400">ISBN: {{ loan.book.isbn|default:"N/A" }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <!-- Member Info -->
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-gray-900">{{ loan.member.first_name }} {{ loan.member.last_name }}</div>
+                            <div class="text-sm text-gray-500">{{ loan.member.email|default:"" }}</div>
+                            <div class="text-xs text-gray-400">ID: {{ loan.member.member_id }}</div>
+                        </td>
+                        
+                        <!-- Loan Date -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ loan.loan_date|date:"d/m/Y" }}</div>
+                        </td>
+                        
+                        <!-- Due Date -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium {% if loan.is_overdue and not loan.return_date %}text-red-600{% else %}text-gray-900{% endif %}">
+                                {{ loan.due_date|date:"d/m/Y" }}
+                            </div>
+                        </td>
+                        
+                        <!-- Return Date -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">
+                                {% if loan.return_date %}
+                                    {{ loan.return_date|date:"d/m/Y" }}
+                                {% else %}
+                                    <span class="text-gray-400">-</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        
+                        <!-- Status -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if loan.return_date %}
+                                <span class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    Retourné
+                                </span>
+                            {% elif loan.is_overdue %}
+                                <span class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    En retard
+                                </span>
+                            {% else %}
+                                <span class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    En cours
+                                </span>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Actions -->
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            {% if not loan.return_date %}
+                                <form action="{% url 'center_panel:return_loan' loan.id %}" method="post" class="inline" onsubmit="return confirm('Marquer ce prêt comme retourné ?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-blue-600 hover:text-blue-900 text-sm font-medium">
+                                        <span class="sr-only">Marquer comme retourné</span>
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                            Aucun prêt trouvé.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if DataTable is already initialized
+        let table;
+        if ($.fn.DataTable.isDataTable('#loans-table')) {
+            // Table is already initialized, get the instance
+            table = $('#loans-table').DataTable();
+        } else {
+            // Initialize DataTable with French language and custom options
+            table = new DataTable('#loans-table', {
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/2.3.2/i18n/fr-FR.json'
+                },
+                responsive: true,
+                pageLength: 25,
+                order: [[2, 'desc']], // Default sort by loan date (column index 2)
+                columnDefs: [
+                    { responsivePriority: 1, targets: 0 }, // Book info
+                    { responsivePriority: 2, targets: 6 }, // Actions
+                    { orderable: false, targets: [6] } // Make actions column not sortable
+                ],
+                dom: '<"flex flex-col md:flex-row md:items-center md:justify-between"<"mb-4"l><"mb-4 md:mb-0"f>>rt<"flex flex-col md:flex-row md:items-center md:justify-between"<"mb-2"i><"mb-2 md:mb-0"p>>',
+                initComplete: function() {
+                    // Add custom class to search input
+                    $('.dataTables_filter input').addClass('form-input w-full md:w-auto');
+                    // Add custom class to length select
+                    $('.dataTables_length select').addClass('form-select');
+                }
+            });
+            
+            // Add custom styling to pagination buttons
+            $('.dataTables_paginate .paginate_button').on('mouseover', function() {
+                $(this).addClass('hover:bg-gray-100');
+            }).on('mouseout', function() {
+                if (!$(this).hasClass('current')) {
+                    $(this).removeClass('hover:bg-gray-100');
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

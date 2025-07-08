@@ -1,0 +1,62 @@
+{% extends 'center_panel/base.html' %}
+
+{% block title %}Supprimer le livre - {{ book.title }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <!-- Warning Icon -->
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            
+            <!-- Title -->
+            <h2 class="mt-3 text-center text-2xl font-extrabold text-red-600">
+                Confirmer la suppression
+            </h2>
+            
+            <!-- Message -->
+            <div class="mt-4 text-center text-gray-600">
+                <p>Êtes-vous sûr de vouloir supprimer le livre : <span class="font-semibold">"{{ book.title }}"</span> ?</p>
+                <p class="mt-2">Cette action est irréversible.</p>
+            </div>
+            
+            <!-- Buttons -->
+            <div class="mt-8 flex justify-center space-x-4">
+                <a href="{% url 'center_panel:books' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    Annuler
+                </a>
+                <form method="post" class="inline-block">
+                    {% csrf_token %}
+                    <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                        Oui, supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Smooth transition for hover effects */
+    button, a {
+        transition: all 0.2s ease-in-out;
+    }
+    
+    /* Focus styles for better accessibility */
+    button:focus, a:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+    }
+    
+    /* Ensure the warning icon is properly centered */
+    .flex-center {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+{% endblock %}

@@ -57,7 +57,7 @@ ROOT_URLCONF = "sydoc_project.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / 'center_panel' / 'templates'],
+        "DIRS": [BASE_DIR / 'templates'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -106,13 +106,22 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = 'fr-fr'
 
-TIME_ZONE = "UTC"
+TIME_ZONE = 'Europe/Paris'
 
 USE_I18N = True
-
+USE_L10N = True
 USE_TZ = True
+
+# French date and time formats
+DATE_FORMAT = 'j F Y'     # 1 juillet 2025
+DATETIME_FORMAT = 'j F Y H:i'  # 1 juillet 2025 14:30
+SHORT_DATE_FORMAT = 'd/m/Y'  # 01/07/2025
+SHORT_DATETIME_FORMAT = 'd/m/Y H:i'  # 01/07/2025 14:30
+
+# First day of the week (0=Sunday, 1=Monday)
+FIRST_DAY_OF_WEEK = 1
 
 
 # Static files (CSS, JavaScript, Images)
@@ -127,6 +136,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Authentication settings
-LOGIN_REDIRECT_URL = '/center/dashboard/'  # Redirect to dashboard after login
-LOGIN_URL = 'login'  # URL to redirect to for login
-LOGOUT_REDIRECT_URL = 'login'  # Redirect to login page after logout
+LOGIN_REDIRECT_URL = 'center_panel:dashboard'
+LOGIN_URL = 'login'
+LOGOUT_REDIRECT_URL = 'login'
+

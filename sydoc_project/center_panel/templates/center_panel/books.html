@@ -1,58 +1,80 @@
 {% extends 'center_panel/base.html' %}
 
-{% block title %}Livres - {{ current_center.name }}{% endblock %}
+{% block title %}Mes Livres - {{ current_center.name }}{% endblock %}
 
 {% block content %}
-<div class="mb-6">
-    <h1 class="text-3xl font-bold text-gray-800 mb-4">Livres à {{ current_center.name }}</h1>
-    
-    <div class="flex justify-between items-center mb-6">
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Mes Livres</h1>
         <a href="{% url 'center_panel:add_book' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors duration-200 flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
             </svg>
             Ajouter un nouveau livre
         </a>
-        
-        <div class="relative">
-            <input type="text" id="search" placeholder="Rechercher des livres..." class="border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-            <button class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                </svg>
-            </button>
-        </div>
     </div>
     
     {% if books %}
     <div class="overflow-x-auto bg-white rounded-lg shadow">
-        <table class="min-w-full divide-y divide-gray-200">
+        <table id="books-table" class="min-w-full divide-y divide-gray-200" data-datatable>
             <thead class="bg-gray-50">
                 <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Couverture</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Titre</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ISBN</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Auteur</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Auteurs</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catégorie</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantité</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 {% for book in books %}
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ book.title }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ book.isbn }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ book.author }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ book.category }}</td>
+                <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {% if book.status == 'Available' %}bg-green-100 text-green-800{% elif book.status == 'On Loan' %}bg-yellow-100 text-yellow-800{% elif book.status == 'Lost' %}bg-red-100 text-red-800{% else %}bg-gray-100 text-gray-800{% endif %}">
-                            {% if book.status == 'Available' %}Disponible{% elif book.status == 'On Loan' %}En prêt{% elif book.status == 'Lost' %}Perdu{% elif book.status == 'Reserved' %}Réservé{% else %}{{ book.status }}{% endif %}
-                        </span>
+                        {% if book.cover_image %}
+                            <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" class="h-16 w-12 object-cover rounded shadow">
+                        {% else %}
+                            <div class="h-16 w-12 bg-gray-200 flex items-center justify-center rounded">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                </svg>
+                            </div>
+                        {% endif %}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <a href="{% url 'center_panel:book_detail' book.id %}" class="text-indigo-600 hover:text-indigo-900 mr-4">Voir</a>
-                        <a href="{% url 'center_panel:edit_book' book.id %}" class="text-blue-600 hover:text-blue-900 mr-4">Modifier</a>
-                        <a href="{% url 'center_panel:delete_book' book.id %}" class="text-red-600 hover:text-red-900">Supprimer</a>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-medium text-gray-900">{{ book.title }}</div>
+                        <div class="text-sm text-gray-500">{{ book.isbn|default:"N/A" }}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-gray-900">{{ book.author|default:"Auteur inconnu" }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-500">{{ book.category|default:"Non catégorisé" }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-500">{{ book.quantity|default:"1" }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if book.is_archived %}
+                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                Archivé
+                            </span>
+                        {% else %}
+                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                Disponible
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <a href="{% url 'center_panel:edit_book' book.id %}" class="text-yellow-600 hover:text-yellow-900 bg-yellow-50 hover:bg-yellow-100 px-3 py-1 rounded-md text-sm font-medium">
+                                Modifier
+                            </a>
+                            <a href="{% url 'center_panel:delete_book' book.id %}" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-md text-sm font-medium">
+                                Supprimer
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}

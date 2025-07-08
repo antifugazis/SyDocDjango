@@ -1,0 +1,227 @@
+{% extends 'center_panel/base.html' %}
+
+{% block title %}{% if form.instance.pk %}Modifier {{ form.instance.full_name }}{% else %}Ajouter un nouveau membre{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header with title and back button -->
+        <div class="flex items-center mb-6">
+            <a href="{% url 'center_panel:members' %}" class="mr-4 text-gray-600 hover:text-gray-900">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            <h1 class="text-2xl font-bold text-gray-800">
+                {% if form.instance.pk %}
+                    Modifier les informations de {{ form.instance.full_name }}
+                {% else %}
+                    Ajouter un nouveau membre
+                {% endif %}
+            </h1>
+        </div>
+
+        <!-- Form Card -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <form method="post" class="p-6">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Left Column -->
+                    <div class="space-y-4">
+                        <!-- First Name -->
+                        <div>
+                            <label for="id_first_name" class="block text-sm font-medium text-gray-700">
+                                Prénom *
+                            </label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.first_name.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Last Name -->
+                        <div>
+                            <label for="id_last_name" class="block text-sm font-medium text-gray-700">
+                                Nom *
+                            </label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.last_name.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Email -->
+                        <div>
+                            <label for="id_email" class="block text-sm font-medium text-gray-700">
+                                Email
+                            </label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.email.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Phone Number -->
+                        <div>
+                            <label for="id_phone_number" class="block text-sm font-medium text-gray-700">
+                                Téléphone
+                            </label>
+                            {{ form.phone_number }}
+                            {% if form.phone_number.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.phone_number.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Membership Type -->
+                        <div>
+                            <label for="id_membership_type" class="block text-sm font-medium text-gray-700">
+                                Type d'adhésion *
+                            </label>
+                            {{ form.membership_type }}
+                            {% if form.membership_type.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.membership_type.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Is Active -->
+                        <div class="flex items-center">
+                            {{ form.is_active }}
+                            <label for="id_is_active" class="ml-2 block text-sm font-medium text-gray-700">
+                                Membre actif
+                            </label>
+                            {% if form.is_active.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.is_active.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="space-y-4">
+                        <!-- Empty column to balance the layout -->
+                        <div class="md:col-span-2">
+                            <!-- This empty div helps maintain the grid layout -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Address (Full Width) -->
+                <div class="mt-6">
+                    <label for="id_address" class="block text-sm font-medium text-gray-700">
+                        Adresse
+                    </label>
+                    {{ form.address }}
+                    {% if form.address.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.address.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Form Actions -->
+                <div class="mt-8 pt-5 border-t border-gray-200">
+                    <div class="flex justify-end space-x-3">
+                        <a href="{% url 'center_panel:members' %}" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Annuler
+                        </a>
+                        <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Enregistrer
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Form input styling */
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="date"],
+    select,
+    textarea {
+        display: block;
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: #374151;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="tel"]:focus,
+    input[type="date"]:focus,
+    select:focus,
+    textarea:focus {
+        border-color: #3b82f6;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    /* Select dropdown arrow */
+    select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* Textarea specific */
+    textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    /* Error state */
+    .error input,
+    .error select,
+    .error textarea {
+        border-color: #ef4444;
+    }
+
+    .error:focus-within input,
+    .error:focus-within select,
+    .error:focus-within textarea {
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+        border-color: #ef4444;
+    }
+</style>
+
+<script>
+    // Initialize date pickers with French localization
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add error class to fields with errors
+        const errorInputs = document.querySelectorAll('input:invalid, select:invalid, textarea:invalid');
+        errorInputs.forEach(input => {
+            input.closest('div').classList.add('error');
+        });
+
+        // Update error state on input
+        document.querySelectorAll('input, select, textarea').forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.checkValidity()) {
+                    this.closest('div').classList.remove('error');
+                } else {
+                    this.closest('div').classList.add('error');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

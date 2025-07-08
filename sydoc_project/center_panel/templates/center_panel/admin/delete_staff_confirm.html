@@ -1,0 +1,151 @@
+{% extends 'center_panel/base.html' %}
+
+{% block title %}Supprimer un employé{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <div class="text-center">
+                <!-- Warning Icon -->
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                    <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                
+                <!-- Title -->
+                <h2 class="mt-3 text-2xl font-extrabold text-gray-900">
+                    Confirmer la suppression
+                </h2>
+                
+                <!-- Confirmation Message -->
+                <div class="mt-4">
+                    <p class="text-base text-gray-500">
+                        Êtes-vous sûr de vouloir supprimer l'employé : <span class="font-medium text-gray-900">"{{ staff.full_name }}"</span> ?
+                    </p>
+                    <p class="mt-2 text-sm text-red-600">
+                        Cette action est irréversible.
+                    </p>
+                </div>
+                
+                <!-- Buttons -->
+                <div class="mt-8 flex justify-center space-x-4">
+                    <a href="{% url 'center_panel:staff' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Annuler
+                    </a>
+                    <form method="post" action="{% url 'center_panel:delete_staff' staff.pk %}" class="inline-block">
+                        {% csrf_token %}
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            Oui, supprimer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Version (for JavaScript-triggered modals) -->
+<template id="deleteModalTemplate">
+    <div class="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+            <!-- Modal panel -->
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Confirmer la suppression
+                            </h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500">
+                                    Êtes-vous sûr de vouloir supprimer l'employé : <span class="font-medium text-gray-900" id="staffName"></span> ?
+                                </p>
+                                <p class="mt-2 text-sm text-red-600">
+                                    Cette action est irréversible.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <form method="post" id="deleteForm" class="sm:ml-3">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Oui, supprimer
+                        </button>
+                    </form>
+                    <button type="button" onclick="closeModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Annuler
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+{% block extra_js %}
+<script>
+    // Function to open the modal (for JavaScript-triggered modals)
+    function openDeleteModal(staffId, staffName) {
+        const modal = document.createElement('div');
+        modal.id = 'deleteModal';
+        modal.innerHTML = document.getElementById('deleteModalTemplate').innerHTML;
+        
+        // Set the staff name in the modal
+        if (staffName) {
+            const nameElement = modal.querySelector('#staffName');
+            if (nameElement) nameElement.textContent = '"' + staffName + '"';
+        }
+        
+        // Set the form action
+        const form = modal.querySelector('#deleteForm');
+        if (form) {
+            form.action = `/center/staff/${staffId}/delete/`;
+        }
+        
+        // Add close modal handler
+        const closeButton = modal.querySelector('button[onclick="closeModal()"]');
+        if (closeButton) {
+            closeButton.onclick = () => document.body.removeChild(modal);
+        }
+        
+        // Add click outside to close
+        modal.querySelector('.fixed.inset-0').onclick = () => document.body.removeChild(modal);
+        
+        // Add to body and show
+        document.body.appendChild(modal);
+        return false;
+    }
+    
+    // Function to close the modal (for JavaScript-triggered modals)
+    function closeModal() {
+        const modal = document.getElementById('deleteModal');
+        if (modal) {
+            document.body.removeChild(modal);
+        }
+    }
+    
+    // Add click handlers to all delete buttons on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('a[data-delete-staff]').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const staffId = this.getAttribute('data-staff-id');
+                const staffName = this.getAttribute('data-staff-name');
+                openDeleteModal(staffId, staffName);
+            });
+        });
+    });
+</script>
+{% endblock %}

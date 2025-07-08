@@ -437,23 +437,37 @@ class Loan(models.Model):
         elif self.status in ['borrowed', 'overdue'] and self.return_date:
             raise ValidationError({'return_date': 'Return date must be null for borrowed or overdue loans.'})
 
+    @property
+    def is_overdue(self):
+        """
+        Returns True if the loan is overdue (not returned and past due date).
+        """
+        if self.return_date:
+            return False
+        return timezone.now().date() > self.due_date
+
     def save(self, *args, **kwargs):
-        is_new = self.pk is None
-        old_status = None
-        if not is_new:
-            old_status = Loan.objects.get(pk=self.pk).status
-
-        # Handle physical book loan/return
-        if not self.book.is_digital:
-            if is_new and self.book.is_available_for_loan():
-                self.book.loan_book()
-            elif self.status == 'returned' and old_status != 'returned':
-                self.book.return_book()
-
-        # Handle overdue status
-        if self.status == 'borrowed' and timezone.now().date() > self.due_date:
+        # If return_date is set, update the status to 'returned'
+        if self.return_date:
+            self.status = 'returned'
+            # Update the book's available quantity when returned
+            self.book.quantity_available += 1
+            self.book.save()
+        # Update status based on due date if not returned
+        elif self.due_date and timezone.now().date() > self.due_date:
             self.status = 'overdue'
-
+        
+        # Ensure the due date is after the loan date
+        if self.due_date and self.loan_date and self.due_date < self.loan_date:
+            raise ValidationError({
+                'due_date': "La date d'échéance doit être postérieure à la date d'emprunt."
+            })
+            
+        # If the loan is being created, decrease the book's available quantity
+        if not self.pk and self.book.quantity_available > 0:
+            self.book.quantity_available -= 1
+            self.book.save()
+            
         super().save(*args, **kwargs)
 
 
