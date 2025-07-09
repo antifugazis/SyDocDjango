@@ -1,0 +1,221 @@
+{% extends 'center_panel/base.html' %}
+
+{% block title %}Gestion des Activités{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Modal styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 50;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .modal-content {
+        background-color: #fff;
+        margin: 15% auto;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        width: 90%;
+        max-width: 28rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+        gap: 0.75rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h3 class="text-lg font-medium text-gray-900">Confirmer la suppression</h3>
+        <p class="mt-2 text-sm text-gray-600">Êtes-vous sûr de vouloir supprimer cette activité ? Cette action est irréversible.</p>
+        
+        <div class="modal-actions">
+            <button type="button" id="cancelDelete" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Annuler
+            </button>
+            <button type="button" id="confirmDelete" class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                Supprimer
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Gestion des Activités</h1>
+        <a href="{% url 'center_panel:add_activity' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-150 ease-in-out">
+            Créer une activité
+        </a>
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="p-4">
+            <table id="activity-table" class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom de l'activité</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date de début</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date de fin</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for activity in activities %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {{ activity.name }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ activity.description|truncatechars:50 }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ activity.start_date|date:"d/m/Y" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ activity.end_date|date:"d/m/Y" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if activity.status == 'active' %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    Active
+                                </span>
+                            {% elif activity.status == 'inactive' %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                    Inactive
+                                </span>
+                            {% else %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    Planifiée
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <a href="{% url 'center_panel:edit_activity' activity.pk %}" class="text-yellow-600 hover:text-yellow-900 mr-3">Modifier</a>
+                            <button type="button" 
+                                    class="text-red-600 hover:text-red-900 focus:outline-none" 
+                                    onclick="showDeleteModal({{ activity.pk }}, '{{ activity.name|escapejs }}')">
+                                Supprimer
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                            Aucune activité n'a été trouvée.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentActivityId = null;
+    
+    function showDeleteModal(id, name) {
+        currentActivityId = id;
+        const modal = document.getElementById('deleteModal');
+        const modalTitle = modal.querySelector('h3');
+        modalTitle.textContent = `Supprimer l'activité "${name}"`;
+        modal.style.display = 'block';
+    }
+    
+    function hideDeleteModal() {
+        const modal = document.getElementById('deleteModal');
+        modal.style.display = 'none';
+        currentActivityId = null;
+    }
+    
+    // Close modal when clicking the cancel button or outside the modal
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('deleteModal');
+        const cancelBtn = document.getElementById('cancelDelete');
+        const confirmBtn = document.getElementById('confirmDelete');
+        
+        // Close modal when clicking the cancel button
+        cancelBtn.addEventListener('click', hideDeleteModal);
+        
+        // Close modal when clicking outside the modal content
+        window.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                hideDeleteModal();
+            }
+        });
+        
+        // Handle delete confirmation
+        confirmBtn.addEventListener('click', function() {
+            if (currentActivityId) {
+                // Show loading state
+                const originalText = confirmBtn.innerHTML;
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Suppression...';
+                
+                // Send delete request
+                fetch(`/center/activities/${currentActivityId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFTTOKEN': '{{ csrf_token }}',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `csrfmiddlewaretoken={{ csrf_token }}`
+                })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    } else {
+                        return response.json();
+                    }
+                })
+                .then(data => {
+                    if (data && data.success) {
+                        window.location.reload();
+                    } else {
+                        alert('Une erreur est survenue lors de la suppression.');
+                        hideDeleteModal();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Une erreur est survenue lors de la suppression.');
+                    hideDeleteModal();
+                })
+                .finally(() => {
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = originalText;
+                });
+            }
+        });
+        
+        // Initialize DataTable
+        $('#activity-table').DataTable({
+            responsive: true,
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/French.json'
+            },
+            columnDefs: [
+                { orderable: false, targets: [5] } // Disable sorting on Actions column
+            ],
+            order: [[2, 'asc']], // Default sort by start date
+            dom: "<'flex flex-col md:flex-row md:items-center md:justify-between'<'mb-4 md:mb-0'l>f>rt<'flex flex-col md:flex-row md:items-center md:justify-between'ip>>",
+            responsive: true
+        });
+    });
+</script>
+{% endblock %}

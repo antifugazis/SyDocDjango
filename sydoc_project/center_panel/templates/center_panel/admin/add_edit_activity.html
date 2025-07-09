@@ -1,0 +1,158 @@
+{% extends 'center_panel/base.html' %}
+
+{% block title %}{% if form.instance.pk %}Modifier l'activité: {{ form.instance.name }}{% else %}Créer une nouvelle activité{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-3xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">
+                {% if form.instance.pk %}
+                    Modifier l'activité: <span class="text-blue-600">{{ form.instance.name }}</span>
+                {% else %}
+                    Créer une nouvelle activité
+                {% endif %}
+            </h1>
+            <a href="{% url 'center_panel:activities' %}" class="text-sm text-gray-600 hover:text-gray-800">
+                <i class="fas fa-arrow-left mr-1"></i> Retour à la liste
+            </a>
+        </div>
+
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="p-6">
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-exclamation-circle text-red-400"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-red-700">
+                                        {% for error in form.non_field_errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Nom de l'activité -->
+                    <div>
+                        <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            Nom de l'activité <span class="text-red-500">*</span>
+                        </label>
+                        <div class="mt-1">
+                            {{ form.name }}
+                        </div>
+                        {% if form.name.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Description -->
+                    <div>
+                        <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            Description
+                        </label>
+                        <div class="mt-1">
+                            {{ form.description }}
+                        </div>
+                        {% if form.description.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ form.description.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Date de début -->
+                        <div>
+                            <label for="{{ form.start_date.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                                Date de début <span class="text-red-500">*</span>
+                            </label>
+                            <div class="mt-1">
+                                {{ form.start_date }}
+                            </div>
+                            {% if form.start_date.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.start_date.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Date de fin -->
+                        <div>
+                            <label for="{{ form.end_date.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                                Date de fin
+                            </label>
+                            <div class="mt-1">
+                                {{ form.end_date }}
+                            </div>
+                            {% if form.end_date.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.end_date.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Statut -->
+                    <div>
+                        <label for="{{ form.status.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            Statut <span class="text-red-500">*</span>
+                        </label>
+                        <div class="mt-1">
+                            {{ form.status }}
+                        </div>
+                        {% if form.status.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ form.status.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-200">
+                        <div class="flex justify-end space-x-3">
+                            <a href="{% url 'center_panel:activities' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                Annuler
+                            </a>
+                            <button type="submit" id="submit-button" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50">
+                                <i class="fas fa-save mr-2"></i> <span id="button-text">Enregistrer</span>
+                                <span id="button-spinner" class="hidden ml-2">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Prevent double form submission
+    const form = document.querySelector('form');
+    const submitButton = document.getElementById('submit-button');
+    const buttonText = document.getElementById('button-text');
+    const buttonSpinner = document.getElementById('button-spinner');
+    
+    if (form) {
+        form.addEventListener('submit', function() {
+            if (submitButton && !submitButton.disabled) {
+                submitButton.disabled = true;
+                buttonText.textContent = 'Traitement...';
+                buttonSpinner.classList.remove('hidden');
+                submitButton.classList.add('opacity-50');
+            }
+        });
+    }
+    
+    // Initialize date pickers
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    dateInputs.forEach(input => {
+        if (!input.value) {
+            const today = new Date().toISOString().split('T')[0];
+            input.value = today;
+        }
+    });
+});
+</script>
+{% endblock %}

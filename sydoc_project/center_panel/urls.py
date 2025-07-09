@@ -26,4 +26,12 @@ urlpatterns = [
     path('staff/add/', views.add_staff, name='add_staff'),
     path('staff/<int:pk>/edit/', views.edit_staff, name='edit_staff'),
     path('staff/<int:pk>/delete/', views.delete_staff, name='delete_staff'),
+    path('activities/', views.activity_list, name='activities'),
+    path('activities/add/', views.add_activity, name='add_activity'),
+    path('activities/<int:pk>/edit/', views.edit_activity, name='edit_activity'),
+    path('activities/<int:pk>/delete/', views.delete_activity, name='delete_activity'),
+    path('archives/add/', views.add_archive, name='add_archive'),
+    path('archives/<int:pk>/edit/', views.edit_archive, name='edit_archive'),
+    path('archives/<int:pk>/download/', views.download_archive, name='download_archive'),
+    path('archives/<int:pk>/delete/', views.delete_archive, name='delete_archive'),
 ]

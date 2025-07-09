@@ -1,7 +1,7 @@
 # sydoc_project/center_panel/forms.py
 
 from django import forms
-from core.models import Book, Author, Category, Member, Loan, Staff
+from core.models import Book, Author, Category, Member, Loan, Staff, Activity, ArchivalDocument
 
 class BookForm(forms.ModelForm):
     class Meta:
@@ -119,3 +119,53 @@ class StaffForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             if field_name != 'is_active':  # Skip for checkbox
                 field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+            
+class ActivityForm(forms.ModelForm):
+    class Meta:
+        model = Activity
+        fields = ['name', 'description', 'start_date', 'end_date', 'status']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+            'start_date': forms.DateInput(attrs={'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Apply consistent Tailwind CSS classes
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm' 
+
+class ArchiveForm(forms.ModelForm):
+    class Meta:
+        model = ArchivalDocument
+        fields = ['title', 'description', 'file_upload', 'status']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Entrez une description du document...'}),
+        }
+        labels = {
+            'title': 'Titre',
+            'description': 'Description',
+            'file_upload': 'Fichier',
+            'status': 'Statut',
+        }
+        help_texts = {
+            'title': 'Le titre du document',
+            'description': 'Une description détaillée du contenu du document',
+            'file_upload': 'Sélectionnez le fichier à archiver (PDF, DOCX, etc.)',
+            'status': 'Définir la confidentialité du document',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Apply consistent Tailwind CSS classes and update choices
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+            
+        # Update status choices to French
+        if 'status' in self.fields:
+            self.fields['status'].choices = [
+                ('public', 'Public'),
+                ('confidential', 'Confidentiel')
+            ]
+            field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'

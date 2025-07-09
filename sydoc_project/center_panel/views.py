@@ -1,12 +1,15 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from core.models import DocumentationCenter, Book, Member, Loan, Staff, ArchivalDocument, TrainingModule
+from django.conf import settings
+import os
+from core.models import DocumentationCenter, Book, Member, Loan, Staff, ArchivalDocument, TrainingModule, Activity
+from .forms import BookForm, MemberForm, CreateLoanForm, StaffForm, ActivityForm, ArchiveForm
 from django.db.models import Count
 from django.utils import timezone
 from datetime import timedelta
-from .forms import BookForm, MemberForm, CreateLoanForm, StaffForm
+from .forms import BookForm, MemberForm, CreateLoanForm, StaffForm, ActivityForm
 
 # Helper to check if a user is associated with a DocumentationCenter (placeholder for now)
 # In a real app, you'd link Django User to DocumentationCenter,
@@ -521,3 +524,182 @@ def notification_list(request):
         'notifications': [] # Placeholder for notifications
     }
     return render(request, 'center_panel/notifications.html', context)
+
+@login_required
+def activity_list(request):
+    current_center = DocumentationCenter.objects.first()
+    activities = Activity.objects.filter(documentation_center=current_center)
+    context = {
+        'current_center': current_center,
+        'activities': activities
+    }
+    return render(request, 'center_panel/activities.html', context)
+
+@login_required
+def add_activity(request):
+    current_center = DocumentationCenter.objects.first()
+    if request.method == 'POST':
+        form = ActivityForm(request.POST)
+        if form.is_valid():
+            # Check if this is a duplicate submission (e.g., from browser refresh)
+            if request.session.get('activity_form_submitted'):
+                # Clear the session flag and redirect to prevent duplicate
+                request.session['activity_form_submitted'] = False
+                return redirect('center_panel:activities')
+            
+            # Set session flag to prevent duplicate submissions
+            request.session['activity_form_submitted'] = True
+            
+            activity = form.save(commit=False)
+            activity.documentation_center = current_center
+            activity.save()
+            messages.success(request, "L'activité a été créée avec succès.")
+            return redirect('center_panel:activities')
+    else:
+        form = ActivityForm()
+
+    context = {
+        'form': form,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/admin/add_edit_activity.html', context)
+
+@login_required
+def edit_activity(request, pk):
+    current_center = DocumentationCenter.objects.first()
+    activity = get_object_or_404(Activity, pk=pk, documentation_center=current_center)
+    if request.method == 'POST':
+        form = ActivityForm(request.POST, instance=activity)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "L'activité a été mise à jour.")
+            return redirect('center_panel:activities')
+    else:
+        form = ActivityForm(instance=activity)
+
+    context = {
+        'form': form,
+        'activity': activity,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/admin/add_edit_activity.html', context)
+
+@login_required
+def delete_activity(request, pk):
+    current_center = DocumentationCenter.objects.first()
+    activity = get_object_or_404(Activity, pk=pk, documentation_center=current_center)
+
+    if request.method == 'POST':
+        # Check if this is a duplicate submission
+        if request.session.get('activity_delete_submitted'):
+            # Clear the session flag and redirect to prevent duplicate
+            request.session['activity_delete_submitted'] = False
+            return redirect('center_panel:activities')
+        
+        # Set session flag to prevent duplicate submissions
+        request.session['activity_delete_submitted'] = True
+        
+        activity_name = activity.name
+        activity.delete()
+        messages.success(request, f"L'activité '{activity_name}' a été supprimée.")
+        return redirect('center_panel:activities')
+
+    context = {
+        'activity': activity,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/admin/delete_activity_confirm.html', context)
+
+@login_required
+def archive_list(request):
+    current_center = DocumentationCenter.objects.first()
+    archives = ArchivalDocument.objects.filter(documentation_center=current_center)
+    context = {
+        'current_center': current_center,
+        'archives': archives
+    }
+    return render(request, 'center_panel/archives.html', context)
+
+@login_required
+def add_archive(request):
+    current_center = DocumentationCenter.objects.first()
+    if request.method == 'POST':
+        form = ArchiveForm(request.POST, request.FILES)
+        if form.is_valid():
+            archive = form.save(commit=False)
+            archive.documentation_center = current_center
+            archive.save()
+            messages.success(request, "Le document d'archive a été ajouté avec succès.")
+            return redirect('center_panel:archives')
+    else:
+        form = ArchiveForm()
+
+    context = {
+        'form': form,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/admin/add_edit_archive.html', context)
+
+@login_required
+def edit_archive(request, pk):
+    current_center = DocumentationCenter.objects.first()
+    archive = get_object_or_404(ArchivalDocument, pk=pk, documentation_center=current_center)
+    if request.method == 'POST':
+        form = ArchiveForm(request.POST, request.FILES, instance=archive)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Le document d'archive a été mis à jour.")
+            return redirect('center_panel:archives')
+    else:
+        form = ArchiveForm(instance=archive)
+
+    context = {
+        'form': form,
+        'archive': archive,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/admin/add_edit_archive.html', context)
+
+@login_required
+def download_archive(request, pk):
+    """
+    View to handle secure file downloads for archival documents.
+    """
+    current_center = DocumentationCenter.objects.first()
+    archive = get_object_or_404(ArchivalDocument, pk=pk, documentation_center=current_center)
+    
+    if not archive.file_upload:
+        messages.error(request, "Aucun fichier n'est associé à ce document d'archive.")
+        return redirect('center_panel:archives')
+    
+    file_path = archive.file_upload.path
+    
+    if not os.path.exists(file_path):
+        messages.error(request, "Le fichier demandé n'existe plus sur le serveur.")
+        return redirect('center_panel:archives')
+    
+    # Get the file name from the path
+    file_name = os.path.basename(file_path)
+    
+    # Open the file in binary mode for reading
+    with open(file_path, 'rb') as file:
+        response = HttpResponse(file.read(), content_type='application/octet-stream')
+        response['Content-Disposition'] = f'attachment; filename="{file_name}"'
+        return response
+
+@login_required
+def delete_archive(request, pk):
+    current_center = DocumentationCenter.objects.first()
+    archive = get_object_or_404(ArchivalDocument, pk=pk, documentation_center=current_center)
+
+    if request.method == 'POST':
+        archive_name = archive.title
+        archive.delete()
+        messages.success(request, f"Le document d'archive '{archive_name}' a été supprimé avec succès.")
+        return redirect('center_panel:archives')
+        
+    context = {
+        'archive': archive,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/admin/delete_archive_confirm.html', context)

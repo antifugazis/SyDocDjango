@@ -48,21 +48,19 @@ class ArchivalSeriesAdmin(admin.ModelAdmin):
 
 @admin.register(ArchivalDocument)
 class ArchivalDocumentAdmin(admin.ModelAdmin):
-    list_display = ('title', 'document_id', 'documentation_center', 'archival_series', 'is_digital', 'status', 'acquisition_date')
-    list_filter = ('documentation_center', 'archival_series', 'is_digital', 'status', 'acquisition_date')
-    search_fields = ('title', 'document_id', 'description', 'creator', 'physical_location')
-    raw_id_fields = ('documentation_center', 'archival_series')
-    fieldsets = (
-        (_('Informations Générales'), {
-            'fields': ('documentation_center', 'title', 'document_id', 'archival_series', 'description', ('creation_date', 'creator'))
-        }),
-        (_('Détails Physiques/Numériques'), {
-            'fields': ('physical_location', 'is_digital', 'digital_file')
-        }),
-        (_('Statut & Acquisition'), {
-            'fields': ('status', 'acquisition_date')
-        }),
+    """
+    Admin configuration for the ArchivalDocument model.
+    """
+    list_display = (
+        'title',
+        'documentation_center',
+        'get_file_type', # Use our helper method
+        'status',
+        'created_at'
     )
+    list_filter = ('status', 'documentation_center', 'created_at')
+    search_fields = ('title', 'description')
+    list_per_page = 25
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):

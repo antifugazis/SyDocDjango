@@ -542,3 +542,80 @@ class DigitalizationRequest(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+class Activity(models.Model):
+    """
+    Represents an activity, event, or project within a documentation center
+    that staff members can be assigned to.
+    """
+    class Status(models.TextChoices):
+        PLANNED = 'planned', 'Planifié'
+        ACTIVE = 'active', 'Actif'
+        INACTIVE = 'inactive', 'Inactif'
+        COMPLETED = 'completed', 'Terminé'
+        SUSPENDED = 'suspended', 'Suspendu'
+
+    documentation_center = models.ForeignKey(
+        DocumentationCenter,
+        on_delete=models.CASCADE,
+        related_name='activities'
+    )
+    name = models.CharField(max_length=255, verbose_name="Nom de l'activité", help_text="Le nom officiel de l'activité.")
+    description = models.TextField(blank=True, null=True, verbose_name="Description", help_text="Une description détaillée de l'activité.")
+    start_date = models.DateField(blank=True, null=True, verbose_name="Date de début")
+    end_date = models.DateField(blank=True, null=True, verbose_name="Date de fin")
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PLANNED,
+        verbose_name="Statut"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Activité"
+        verbose_name_plural = "Activités"
+        ordering = ['name']
+
+class ArchivalDocument(models.Model):
+    """
+    Represents a single document or file stored in the center's archives.
+    This can be any type of file (PDF, DOCX, MP3, MP4, etc.).
+    """
+    class Status(models.TextChoices):
+        PUBLIC = 'public', 'Public'
+        CONFIDENTIAL = 'confidential', 'Confidential'
+
+    documentation_center = models.ForeignKey(
+        DocumentationCenter,
+        on_delete=models.CASCADE,
+        related_name='archival_documents'
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    
+    # Use a generic FileField to handle any type of document
+    file_upload = models.FileField(upload_to='archives/')
+    
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.CONFIDENTIAL
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+        
+    def get_file_type(self):
+        # Helper to get the file extension
+        if self.file_upload and hasattr(self.file_upload, 'name'):
+            return self.file_upload.name.split('.')[-1].upper()
+        return "N/A"
+
+    class Meta:
+        verbose_name = "Archival Document"
+        verbose_name_plural = "Archival Documents"
+        ordering = ['-created_at']

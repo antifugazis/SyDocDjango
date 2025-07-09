@@ -1,0 +1,193 @@
+{% extends 'center_panel/base.html' %}
+
+{% block title %}{% if form.instance.pk %}Modifier le document: {{ form.instance.title }}{% else %}Ajouter un document à l'archive{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-3xl mx-auto">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-gray-800">
+                {% if form.instance.pk %}
+                    Modifier le document: <span class="text-indigo-600">{{ form.instance.title }}</span>
+                {% else %}
+                    Ajouter un document à l'archive
+                {% endif %}
+            </h1>
+            <p class="mt-1 text-sm text-gray-500">
+                Remplissez les champs ci-dessous pour {% if form.instance.pk %}modifier{% else %}ajouter{% endif %} un document d'archive.
+            </p>
+        </div>
+
+        <!-- Form Card -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <form method="post" enctype="multipart/form-data" class="p-6">
+                {% csrf_token %}
+                
+                <!-- Non-field Errors -->
+                {% if form.non_field_errors %}
+                <div class="mb-4 p-4 bg-red-50 border-l-4 border-red-400 rounded">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-red-700">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Title Field -->
+                <div class="mb-6">
+                    <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.title.label }}
+                        {% if form.title.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    <div class="mt-1">
+                        {{ form.title }}
+                    </div>
+                    {% if form.title.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.title.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Description Field -->
+                <div class="mb-6">
+                    <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.description.label }}
+                        {% if form.description.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    <div class="mt-1">
+                        {{ form.description }}
+                    </div>
+                    {% if form.description.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.description.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- File Upload Field -->
+                <div class="mb-6">
+                    <label for="{{ form.file_upload.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.file_upload.label }}
+                        {% if form.file_upload.field.required and not form.instance.pk %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    <div class="mt-1">
+                        {{ form.file_upload }}
+                    </div>
+                    {% if form.file_upload.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.file_upload.errors.0 }}</p>
+                    {% endif %}
+                    {% if form.instance.file_upload %}
+                    <p class="mt-2 text-sm text-gray-500">
+                        Fichier actuel: 
+                        <a href="{{ form.instance.file_upload.url }}" target="_blank" class="text-indigo-600 hover:text-indigo-800">
+                            {{ form.instance.file_upload.name|slice:"-30:" }}
+                        </a>
+                    </p>
+                    {% endif %}
+                </div>
+
+                <!-- Status Field -->
+                <div class="mb-8">
+                    <label for="{{ form.status.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.status.label }}
+                        {% if form.status.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    <div class="mt-1">
+                        {{ form.status }}
+                    </div>
+                    {% if form.status.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.status.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+                    <a href="{% url 'center_panel:archives' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Annuler
+                    </a>
+                    <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Custom CSS for file input -->
+<style>
+    /* Style the file input button */
+    .file-input-button {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+    }
+    
+    .file-input-button input[type=file] {
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+    
+    /* Style form inputs and selects */
+    input[type="text"],
+    textarea,
+    select {
+        width: 100%;
+        border-radius: 0.375rem;
+        border: 1px solid #d1d5db;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        color: #1f2937;
+    }
+    
+    input[type="text"]:focus,
+    textarea:focus,
+    select:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 1px #6366f1;
+    }
+    
+    /* Style the file input text */
+    .file-input-text {
+        display: block;
+        margin-top: 0.25rem;
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+</style>
+
+<!-- Custom JavaScript for file input -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update file input text when a file is selected
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            const fileName = this.files.length ? this.files[0].name : 'Aucun fichier sélectionné';
+            const fileText = this.nextElementSibling;
+            if (fileText && fileText.classList.contains('file-input-text')) {
+                fileText.textContent = fileName;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
