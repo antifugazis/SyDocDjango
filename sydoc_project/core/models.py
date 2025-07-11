@@ -210,6 +210,7 @@ class Staff(models.Model):
 
 
 class TrainingModule(models.Model):
+    subject = models.ForeignKey('TrainingSubject', on_delete=models.PROTECT, related_name='modules', verbose_name='Sujet de Formation', null=True, blank=True)
     documentation_center = models.ForeignKey(DocumentationCenter, on_delete=models.CASCADE, related_name='training_modules', verbose_name='Centre de Documentation')
     title = models.CharField(max_length=255, verbose_name='Titre du Module')
     description = models.TextField(blank=True, verbose_name='Description')
@@ -619,3 +620,19 @@ class ArchivalDocument(models.Model):
         verbose_name = "Archival Document"
         verbose_name_plural = "Archival Documents"
         ordering = ['-created_at']
+
+class TrainingSubject(models.Model):
+    """
+    A category or subject for grouping Training Modules.
+    """
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Training Subject"
+        verbose_name_plural = "Training Subjects"
+        ordering = ['name']
+

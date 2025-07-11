@@ -4,12 +4,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
 import os
-from core.models import DocumentationCenter, Book, Member, Loan, Staff, ArchivalDocument, TrainingModule, Activity
-from .forms import BookForm, MemberForm, CreateLoanForm, StaffForm, ActivityForm, ArchiveForm
+from core.models import DocumentationCenter, Book, Member, Loan, Staff, ArchivalDocument, TrainingModule, Activity, TrainingSubject
+from .forms import BookForm, MemberForm, CreateLoanForm, StaffForm, ActivityForm, ArchiveForm, TrainingSubjectForm
 from django.db.models import Count
 from django.utils import timezone
 from datetime import timedelta
-from .forms import BookForm, MemberForm, CreateLoanForm, StaffForm, ActivityForm
 
 # Helper to check if a user is associated with a DocumentationCenter (placeholder for now)
 # In a real app, you'd link Django User to DocumentationCenter,
@@ -703,3 +702,68 @@ def delete_archive(request, pk):
         'current_center': current_center,
     }
     return render(request, 'center_panel/admin/delete_archive_confirm.html', context)
+
+@login_required
+def training_subject_list(request):
+    subjects = TrainingSubject.objects.all()
+    context = {
+        'current_center': DocumentationCenter.objects.first(),
+        'subjects': subjects
+    }
+    return render(request, 'center_panel/training_subjects.html', context)
+
+@login_required
+def add_training_subject(request):
+    if request.method == 'POST':
+        form = TrainingSubjectForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Le sujet de formation a été créé avec succès.")
+            return redirect('center_panel:training_subjects')
+    else:
+        form = TrainingSubjectForm()
+
+    context = {
+        'form': form,
+        'current_center': DocumentationCenter.objects.first(),
+    }
+    return render(request, 'center_panel/admin/add_edit_training_subject.html', context)
+
+@login_required
+def edit_training_subject(request, pk):
+    subject = get_object_or_404(TrainingSubject, pk=pk)
+    if request.method == 'POST':
+        form = TrainingSubjectForm(request.POST, instance=subject)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Le sujet de formation a été mis à jour.")
+            return redirect('center_panel:training_subjects')
+    else:
+        form = TrainingSubjectForm(instance=subject)
+
+    context = {
+        'form': form,
+        'subject': subject,
+        'current_center': DocumentationCenter.objects.first(),
+    }
+    return render(request, 'center_panel/admin/add_edit_training_subject.html', context)
+
+@login_required
+def delete_training_subject(request, pk):
+    subject = get_object_or_404(TrainingSubject, pk=pk)
+    # Optional: Check if subject is in use before deleting
+    if subject.modules.exists():
+        messages.error(request, f"Impossible de supprimer le sujet '{subject.name}' car il est utilisé par une ou plusieurs formations.")
+        return redirect('center_panel:training_subjects')
+
+    if request.method == 'POST':
+        subject_name = subject.name
+        subject.delete()
+        messages.success(request, f"Le sujet '{subject_name}' a été supprimé.")
+        return redirect('center_panel:training_subjects')
+
+    context = {
+        'subject': subject,
+        'current_center': DocumentationCenter.objects.first(),
+    }
+    return render(request, 'center_panel/admin/delete_training_subject_confirm.html', context)

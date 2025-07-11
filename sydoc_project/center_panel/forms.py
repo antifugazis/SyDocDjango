@@ -1,7 +1,7 @@
 # sydoc_project/center_panel/forms.py
 
 from django import forms
-from core.models import Book, Author, Category, Member, Loan, Staff, Activity, ArchivalDocument
+from core.models import Book, Author, Category, Member, Loan, Staff, Activity, ArchivalDocument, TrainingSubject
 
 class BookForm(forms.ModelForm):
     class Meta:
@@ -168,4 +168,21 @@ class ArchiveForm(forms.ModelForm):
                 ('public', 'Public'),
                 ('confidential', 'Confidentiel')
             ]
+            field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+
+class TrainingSubjectForm(forms.ModelForm):
+    class Meta:
+        model = TrainingSubject
+        fields = ['name', 'description']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }
+        labels = {
+            'name': 'Nom du sujet',
+            'description': 'Description',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'

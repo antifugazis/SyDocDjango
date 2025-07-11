@@ -34,4 +34,10 @@ urlpatterns = [
     path('archives/<int:pk>/edit/', views.edit_archive, name='edit_archive'),
     path('archives/<int:pk>/download/', views.download_archive, name='download_archive'),
     path('archives/<int:pk>/delete/', views.delete_archive, name='delete_archive'),
+    path('training_subjects/', views.training_subject_list, name='training_subjects'),
+    path('training_subjects/add/', views.add_training_subject, name='add_training_subject'),
+    path('training_subjects/<int:pk>/edit/', views.edit_training_subject, name='edit_training_subject'),
+    path('training_subjects/<int:pk>/delete/', views.delete_training_subject, name='delete_training_subject'),
 ]
+
+
