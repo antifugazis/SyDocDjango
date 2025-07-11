@@ -1,0 +1,146 @@
+{% extends 'center_panel/base.html' %}
+{% load markdown_deux_tags %}
+
+{% block title %}{{ lesson.title }} | Leçon{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Breadcrumb Navigation -->
+        <div class="mb-6">
+            <a href="{% url 'center_panel:training_detail' lesson.training_module.id %}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800">
+                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                Retour à la formation: {{ lesson.training_module.title }}
+            </a>
+        </div>
+
+        <!-- Lesson Content Card -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <!-- Header -->
+            <div class="p-6 border-b border-gray-200">
+                <h1 class="text-2xl font-bold text-gray-800">{{ lesson.title }}</h1>
+                <p class="text-sm text-gray-500 mt-1">
+                    Leçon 
+                    {% for l in lesson.training_module.lesson_set.all %}
+                        {% if l.id == lesson.id %}
+                            {{ forloop.counter }}
+                        {% endif %}
+                    {% endfor %} 
+                    sur {{ lesson.training_module.lesson_set.count }}
+                </p>
+            </div>
+
+            <!-- Content Area -->
+            <div class="p-6">
+                <!-- Video Content -->
+                {% if lesson.lesson_type == 'video' %}
+                    <div class="aspect-w-16 aspect-h-9 mb-6">
+                        <iframe 
+                            src="{{ lesson.video_url }}" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen
+                            class="w-full h-full rounded-lg"
+                        ></iframe>
+                    </div>
+                    
+                    {% if lesson.text_content %}
+                        <div class="prose max-w-none mt-6">
+                            {{ lesson.text_content|markdown:"default" }}
+                        </div>
+                    {% endif %}
+                
+                <!-- Text Content -->
+                {% else %}
+                    <div class="prose max-w-none">
+                        {{ lesson.text_content|markdown:"default" }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Action Footer -->
+            <div class="p-6 bg-gray-50 border-t border-gray-200 flex justify-end">
+                <a href="{% url 'center_panel:lesson_quiz' lesson.id %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Commencer le Questionnaire
+                    <svg class="ml-2 -mr-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Tailwind aspect ratio classes if not already included -->
+<style>
+    .aspect-w-16 {
+        position: relative;
+        padding-bottom: 56.25%;
+    }
+    
+    .aspect-h-9 {
+        position: relative;
+    }
+    
+    .aspect-w-16 iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    
+    /* Ensure proper markdown styling */
+    .prose h1 {
+        font-size: 1.875rem;
+        font-weight: 700;
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .prose h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .prose h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .prose p {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .prose ul {
+        list-style-type: disc;
+        padding-left: 1.5rem;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .prose ol {
+        list-style-type: decimal;
+        padding-left: 1.5rem;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .prose li {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .prose a {
+        color: #4f46e5;
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}

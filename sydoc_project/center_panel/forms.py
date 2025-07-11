@@ -1,7 +1,8 @@
 # sydoc_project/center_panel/forms.py
 
 from django import forms
-from core.models import Book, Author, Category, Member, Loan, Staff, Activity, ArchivalDocument, TrainingSubject
+from django.forms.models import modelformset_factory
+from core.models import Book, Author, Category, Member, Loan, Staff, Activity, ArchivalDocument, TrainingSubject, TrainingModule, Lesson, Question, Answer, Communique, Activity
 
 class BookForm(forms.ModelForm):
     class Meta:
@@ -184,5 +185,106 @@ class TrainingSubjectForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+
+class TrainingModuleForm(forms.ModelForm):
+    class Meta:
+        model = TrainingModule
+        fields = [
+            'title', 'subject', 'description', 'thumbnail', 
+            'minimum_age_required', 'points_to_pass', 'status', 
+            'duration_minutes', 'is_active'
+        ]
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 4}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        # Store the documentation center for validation
+        self.documentation_center = kwargs.pop('documentation_center', None)
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+    
+    def clean_title(self):
+        title = self.cleaned_data.get('title')
+        if not title:
+            return title
+            
+        # If we have a documentation center and this is a new module (no instance.pk)
+        # or if we're changing the title of an existing module
+        if self.documentation_center:
+            # Check if a module with this title already exists in this center
+            existing_modules = TrainingModule.objects.filter(
+                documentation_center=self.documentation_center,
+                title__iexact=title  # Case-insensitive comparison
+            )
+            
+            # Exclude the current instance if we're editing
+            if self.instance and self.instance.pk:
+                existing_modules = existing_modules.exclude(pk=self.instance.pk)
+                
+            if existing_modules.exists():
+                raise forms.ValidationError(
+                    "Un module de formation avec ce titre existe déjà dans ce centre. "
+                    "Veuillez choisir un titre différent."
+                )
+        return title
+
+
+class LessonForm(forms.ModelForm):
+    class Meta:
+        model = Lesson
+        fields = ['title', 'lesson_type', 'video_url', 'text_content', 'order']
+        widgets = {
+            'text_content': forms.Textarea(attrs={'rows': 3, 'class': 'markdown-editor'}),
+        }
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            # Add a specific class to toggle visibility based on lesson_type
+            if field_name in ['video_url', 'text_content']:
+                 field.widget.attrs['class'] = f'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm lesson-content-field'
+            else:
+                field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+
+
+# A Formset is a collection of forms. This allows us to have multiple lesson forms on one page.
+LessonFormSet = modelformset_factory(
+    Lesson,
+    form=LessonForm,
+    extra=1, # Start with one empty lesson form
+    can_delete=True, # Allow deleting lessons from the form
+    fields=('title', 'lesson_type', 'video_url', 'text_content', 'order')
+)
+
+class CommuniqueForm(forms.ModelForm):
+    class Meta:
+        model = Communique
+        fields = ['title', 'objective', 'message_body', 'target_activities']
+        widgets = {
+            'objective': forms.Textarea(attrs={'rows': 2}),
+            'message_body': forms.Textarea(attrs={'rows': 8}),
+            'target_activities': forms.SelectMultiple(attrs={'class': 'form-multiselect'}),
+        }
+        labels = {
+            'title': 'Titre du Communiqué',
+            'objective': 'Objectif',
+            'message_body': 'Corps du Message',
+            'target_activities': 'Cibler des Activités Spécifiques (Optionnel)',
+        }
+        help_texts = {
+            'target_activities': "Laissez ce champ vide pour envoyer à tout le personnel.",
+        }
+
+    def __init__(self, center, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Filter the activities to show only those from the current center
+        self.fields['target_activities'].queryset = Activity.objects.filter(
+            documentation_center=center
+        )
+        # Apply Tailwind classes
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'

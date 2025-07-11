@@ -1,0 +1,462 @@
+{% extends 'center_panel/base.html' %}
+
+{% block title %}
+    {% if training %}
+        Modifier la formation : {{ training.title }}
+    {% else %}
+        Créer une nouvelle formation
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-gray-800">
+                {% if training %}
+                    Modifier la formation : <span class="text-indigo-600">{{ training.title }}</span>
+                {% else %}
+                    Créer une nouvelle formation
+                {% endif %}
+            </h1>
+            <p class="mt-1 text-sm text-gray-500">
+                Remplissez les champs ci-dessous pour {% if training %}modifier{% else %}créer{% endif %} une formation.
+            </p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" id="training-form">
+            {% csrf_token %}
+
+            <!-- Non-field Errors -->
+            {% if form.non_field_errors %}
+            <div class="mb-4 p-4 bg-red-50 border-l-4 border-red-400 rounded">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-red-700">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Main Training Module Card -->
+            <div class="bg-white shadow-md rounded-lg overflow-hidden mb-8">
+                <div class="p-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Informations générales</h2>
+                    
+                    <!-- Title Field -->
+                    <div class="mb-6">
+                        <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ form.title.label }} <span class="text-red-500">*</span>
+                        </label>
+                        <div class="mt-1">
+                            {{ form.title }}
+                        </div>
+                        {% if form.title.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.title.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Subject Field -->
+                    <div class="mb-6">
+                        <label for="{{ form.subject.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ form.subject.label }} <span class="text-red-500">*</span>
+                        </label>
+                        <div class="mt-1">
+                            {{ form.subject }}
+                        </div>
+                        {% if form.subject.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.subject.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Description Field -->
+                    <div class="mb-6">
+                        <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ form.description.label }} <span class="text-red-500">*</span>
+                        </label>
+                        <div class="mt-1">
+                            {{ form.description }}
+                        </div>
+                        {% if form.description.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.description.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Thumbnail Field -->
+                    <div class="mb-6">
+                        <label for="{{ form.thumbnail.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ form.thumbnail.label }}
+                        </label>
+                        <div class="mt-1 flex items-center">
+                            {% if training.thumbnail %}
+                            <div class="mr-4">
+                                <img src="{{ training.thumbnail.url }}" alt="Miniature actuelle" class="h-24 w-auto object-cover rounded border border-gray-200">
+                                <p class="text-xs text-gray-500 mt-1">Image actuelle</p>
+                            </div>
+                            {% endif %}
+                            <div class="flex-1">
+                                {{ form.thumbnail }}
+                                <p class="mt-1 text-xs text-gray-500">Formats acceptés: JPG, PNG, GIF. Taille max: 2 MB</p>
+                            </div>
+                        </div>
+                        {% if form.thumbnail.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.thumbnail.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Minimum Age Field -->
+                        <div class="mb-6">
+                            <label for="{{ form.minimum_age_required.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                                {{ form.minimum_age_required.label }}
+                            </label>
+                            <div class="mt-1">
+                                {{ form.minimum_age_required }}
+                            </div>
+                            {% if form.minimum_age_required.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.minimum_age_required.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Points to Pass Field -->
+                        <div class="mb-6">
+                            <label for="{{ form.points_to_pass.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                                {{ form.points_to_pass.label }} <span class="text-red-500">*</span>
+                            </label>
+                            <div class="mt-1">
+                                {{ form.points_to_pass }}
+                            </div>
+                            {% if form.points_to_pass.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.points_to_pass.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Duration Minutes Field -->
+                        <div class="mb-6">
+                            <label for="{{ form.duration_minutes.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                                {{ form.duration_minutes.label }} <span class="text-red-500">*</span>
+                            </label>
+                            <div class="mt-1">
+                                {{ form.duration_minutes }}
+                            </div>
+                            {% if form.duration_minutes.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.duration_minutes.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Status Field -->
+                        <div class="mb-6">
+                            <label for="{{ form.status.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                                {{ form.status.label }} <span class="text-red-500">*</span>
+                            </label>
+                            <div class="mt-1">
+                                {{ form.status }}
+                            </div>
+                            {% if form.status.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.status.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Is Active Field -->
+                        <div class="mb-6 flex items-center">
+                            <div class="flex items-center h-5">
+                                {{ form.is_active }}
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="{{ form.is_active.id_for_label }}" class="font-medium text-gray-700">{{ form.is_active.label }}</label>
+                                <p class="text-gray-500">Cochez pour rendre cette formation disponible</p>
+                            </div>
+                            {% if form.is_active.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.is_active.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lessons Formset Section -->
+            <div class="bg-white shadow-md rounded-lg overflow-hidden mb-8">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-semibold text-gray-800">Leçons de la Formation</h2>
+                        <button type="button" id="add-lesson-btn" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Ajouter une leçon
+                        </button>
+                    </div>
+
+                    {{ lesson_formset.management_form }}
+                    
+                    <div id="lessons-container">
+                        {% for lesson_form in lesson_formset.forms %}
+                        <div class="lesson-form bg-gray-50 rounded-lg p-4 mb-4 relative">
+                            {% if lesson_form.instance.pk %}{{ lesson_form.id }}{% endif %}
+                            
+                            <!-- Delete Checkbox -->
+                            <div class="absolute top-4 right-4 flex items-center">
+                                {{ lesson_form.DELETE }}
+                                <label for="{{ lesson_form.DELETE.id_for_label }}" class="ml-2 text-sm text-red-600 hover:text-red-800 cursor-pointer">
+                                    Supprimer cette leçon
+                                </label>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <!-- Title Field -->
+                                <div>
+                                    <label for="{{ lesson_form.title.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                                        {{ lesson_form.title.label }} <span class="text-red-500">*</span>
+                                    </label>
+                                    {{ lesson_form.title }}
+                                    {% if lesson_form.title.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ lesson_form.title.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Order Field -->
+                                <div>
+                                    <label for="{{ lesson_form.order.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                                        {{ lesson_form.order.label }} <span class="text-red-500">*</span>
+                                    </label>
+                                    {{ lesson_form.order }}
+                                    {% if lesson_form.order.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ lesson_form.order.errors.0 }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Lesson Type Field -->
+                            <div class="mb-4">
+                                <label for="{{ lesson_form.lesson_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                                    {{ lesson_form.lesson_type.label }} <span class="text-red-500">*</span>
+                                </label>
+                                {{ lesson_form.lesson_type }}
+                                {% if lesson_form.lesson_type.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ lesson_form.lesson_type.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+
+                            <!-- Video URL Field -->
+                            <div class="mb-4 video-field" {% if lesson_form.instance.lesson_type != 'video' and lesson_form.instance.pk %}style="display: none;"{% endif %}>
+                                <label for="{{ lesson_form.video_url.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                                    {{ lesson_form.video_url.label }}
+                                </label>
+                                {{ lesson_form.video_url }}
+                                {% if lesson_form.video_url.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ lesson_form.video_url.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+
+                            <!-- Text Content Field -->
+                            <div class="mb-4 text-field" {% if lesson_form.instance.lesson_type != 'text' and lesson_form.instance.pk %}style="display: none;"{% endif %}>
+                                <label for="{{ lesson_form.text_content.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                                    {{ lesson_form.text_content.label }}
+                                </label>
+                                {{ lesson_form.text_content }}
+                                {% if lesson_form.text_content.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ lesson_form.text_content.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex justify-end space-x-4">
+                <a href="{% url 'center_panel:trainings' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Annuler
+                </a>
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Enregistrer la Formation
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Empty Form Template for JavaScript -->
+<div id="empty-form-template" style="display: none;">
+    <div class="lesson-form bg-gray-50 rounded-lg p-4 mb-4 relative">
+        {{ lesson_formset.empty_form }}
+        
+        <!-- Delete Checkbox -->
+        <div class="absolute top-4 right-4 flex items-center">
+            {{ lesson_formset.empty_form.DELETE }}
+            <label for="{{ lesson_formset.empty_form.DELETE.id_for_label }}" class="ml-2 text-sm text-red-600 hover:text-red-800 cursor-pointer">
+                Supprimer cette leçon
+            </label>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <!-- Title Field -->
+            <div>
+                <label for="{{ lesson_formset.empty_form.title.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                    {{ lesson_formset.empty_form.title.label }} <span class="text-red-500">*</span>
+                </label>
+                {{ lesson_formset.empty_form.title }}
+            </div>
+
+            <!-- Order Field -->
+            <div>
+                <label for="{{ lesson_formset.empty_form.order.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                    {{ lesson_formset.empty_form.order.label }} <span class="text-red-500">*</span>
+                </label>
+                {{ lesson_formset.empty_form.order }}
+            </div>
+        </div>
+
+        <!-- Lesson Type Field -->
+        <div class="mb-4">
+            <label for="{{ lesson_formset.empty_form.lesson_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                {{ lesson_formset.empty_form.lesson_type.label }} <span class="text-red-500">*</span>
+            </label>
+            {{ lesson_formset.empty_form.lesson_type }}
+        </div>
+
+        <!-- Video URL Field -->
+        <div class="mb-4 video-field">
+            <label for="{{ lesson_formset.empty_form.video_url.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                {{ lesson_formset.empty_form.video_url.label }}
+            </label>
+            {{ lesson_formset.empty_form.video_url }}
+        </div>
+
+        <!-- Text Content Field -->
+        <div class="mb-4 text-field" style="display: none;">
+            <label for="{{ lesson_formset.empty_form.text_content.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                {{ lesson_formset.empty_form.text_content.label }}
+            </label>
+            {{ lesson_formset.empty_form.text_content }}
+        </div>
+    </div>
+</div>
+
+<!-- Tailwind-friendly form input styling -->
+<style>
+input[type="text"], input[type="number"], input[type="url"], textarea, select {
+    width: 100%;
+    border-radius: 0.375rem;
+    border: 1px solid #d1d5db;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: #1f2937;
+}
+
+input[type="text"]:focus, input[type="number"]:focus, input[type="url"]:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 1px #2563eb;
+}
+
+textarea {
+    resize: vertical;
+}
+
+input[type="file"] {
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+    width: 100%;
+}
+
+select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+</style>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to handle lesson type changes
+        function handleLessonTypeChange(select) {
+            const form = select.closest('.lesson-form');
+            const videoField = form.querySelector('.video-field');
+            const textField = form.querySelector('.text-field');
+            
+            if (select.value === 'video') {
+                videoField.style.display = 'block';
+                textField.style.display = 'none';
+            } else if (select.value === 'text') {
+                videoField.style.display = 'none';
+                textField.style.display = 'block';
+            }
+        }
+        
+        // Add event listeners to existing lesson type selects
+        document.querySelectorAll('.lesson-form select[id$="-lesson_type"]').forEach(function(select) {
+            select.addEventListener('change', function() {
+                handleLessonTypeChange(this);
+            });
+            
+            // Initialize display based on current value
+            handleLessonTypeChange(select);
+        });
+        
+        // Handle adding new lessons
+        const addLessonBtn = document.getElementById('add-lesson-btn');
+        const lessonsContainer = document.getElementById('lessons-container');
+        const emptyFormTemplate = document.getElementById('empty-form-template');
+        
+        addLessonBtn.addEventListener('click', function() {
+            // Get the total form count from the management form
+            const totalFormsInput = document.querySelector('#id_form-TOTAL_FORMS');
+            const formCount = parseInt(totalFormsInput.value);
+            
+            // Clone the empty form template
+            const newForm = emptyFormTemplate.querySelector('.lesson-form').cloneNode(true);
+            
+            // Update form index in the ID and name attributes
+            newForm.innerHTML = newForm.innerHTML.replace(/__prefix__/g, formCount);
+            
+            // Append the new form to the container
+            lessonsContainer.appendChild(newForm);
+            
+            // Update the total form count
+            totalFormsInput.value = formCount + 1;
+            
+            // Add event listener to the new lesson type select
+            const newSelect = newForm.querySelector(`select[id$="-lesson_type"]`);
+            if (newSelect) {
+                newSelect.addEventListener('change', function() {
+                    handleLessonTypeChange(this);
+                });
+                
+                // Initialize display based on current value
+                handleLessonTypeChange(newSelect);
+            }
+            
+            // Set a default order number (incremental)
+            const orderInput = newForm.querySelector(`input[id$="-order"]`);
+            if (orderInput) {
+                orderInput.value = formCount + 1;
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

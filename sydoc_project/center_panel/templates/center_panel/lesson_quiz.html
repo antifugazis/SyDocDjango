@@ -1,0 +1,90 @@
+{% extends 'center_panel/base.html' %}
+
+{% block title %}Quiz: {{ lesson.title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Breadcrumb Navigation -->
+        <div class="mb-6">
+            <div class="flex items-center space-x-2 text-sm">
+                <a href="{% url 'center_panel:training_detail' lesson.training_module.id %}" class="text-indigo-600 hover:text-indigo-800">
+                    {{ lesson.training_module.title }}
+                </a>
+                <span class="text-gray-500">/</span>
+                <a href="{% url 'center_panel:lesson_detail' lesson.id %}" class="text-indigo-600 hover:text-indigo-800">
+                    {{ lesson.title }}
+                </a>
+                <span class="text-gray-500">/</span>
+                <span class="text-gray-700">Quiz</span>
+            </div>
+        </div>
+
+        <!-- Quiz Card -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <!-- Header -->
+            <div class="p-6 border-b border-gray-200">
+                <h1 class="text-2xl font-bold text-gray-800">Quiz: {{ lesson.title }}</h1>
+                <p class="text-sm text-gray-500 mt-1">
+                    Testez vos connaissances sur cette leçon
+                </p>
+            </div>
+
+            <!-- Placeholder Content -->
+            <div class="p-6">
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-blue-700">
+                                Cette fonctionnalité est en cours de développement. Le quiz sera bientôt disponible.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Placeholder Quiz Questions -->
+                <div class="space-y-8">
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h3 class="font-medium text-gray-800 mb-2">Question 1</h3>
+                        <p class="text-gray-600 mb-4">Exemple de question à choix multiple</p>
+                        <div class="space-y-2">
+                            <div class="flex items-center">
+                                <input id="option1" name="question1" type="radio" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                                <label for="option1" class="ml-3 block text-sm font-medium text-gray-700">Option 1</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input id="option2" name="question1" type="radio" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                                <label for="option2" class="ml-3 block text-sm font-medium text-gray-700">Option 2</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input id="option3" name="question1" type="radio" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                                <label for="option3" class="ml-3 block text-sm font-medium text-gray-700">Option 3</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h3 class="font-medium text-gray-800 mb-2">Question 2</h3>
+                        <p class="text-gray-600 mb-4">Exemple de question à réponse courte</p>
+                        <div>
+                            <textarea rows="3" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="Votre réponse ici..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Footer -->
+            <div class="p-6 bg-gray-50 border-t border-gray-200 flex justify-end">
+                <button type="button" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Soumettre les réponses
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

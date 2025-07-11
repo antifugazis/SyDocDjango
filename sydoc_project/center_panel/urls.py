@@ -38,6 +38,17 @@ urlpatterns = [
     path('training_subjects/add/', views.add_training_subject, name='add_training_subject'),
     path('training_subjects/<int:pk>/edit/', views.edit_training_subject, name='edit_training_subject'),
     path('training_subjects/<int:pk>/delete/', views.delete_training_subject, name='delete_training_subject'),
+    path('trainings/add/', views.add_training_module, name='add_training'),
+    path('trainings/<int:pk>/', views.training_detail, name='training_detail'),
+    path('trainings/<int:pk>/edit/', views.edit_training_module, name='edit_training_module'),
+    path('trainings/<int:pk>/delete/', views.delete_training_module, name='delete_training_module'),
+    path('lessons/', views.lesson_list, name='lesson_list'),
+    path('lessons/<int:pk>/', views.lesson_detail, name='lesson_detail'),
+    path('lessons/<int:pk>/quiz/', views.lesson_quiz, name='lesson_quiz'),
+    path('communiques/', views.communique_list, name='communiques'),
+    path('communiques/add/', views.add_communique, name='add_communique'),
+    path('communiques/<int:pk>/', views.communique_detail, name='communique_detail'),
+    path('results/<int:pk>/', views.quiz_results, name='quiz_results'),
 ]
 
 

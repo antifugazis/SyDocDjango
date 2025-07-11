@@ -1,0 +1,114 @@
+{% extends 'center_panel/base.html' %}
+{% load static %}
+
+{% block title %}Leçons{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Toutes les Leçons</h1>
+        <p class="text-gray-600">Parcourez toutes les leçons disponibles dans notre catalogue de formations.</p>
+    </div>
+
+    {% if trainings %}
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <table class="w-full" data-datatable>
+                <thead>
+                    <tr>
+                        <th class="px-4 py-2 text-left">Titre</th>
+                        <th class="px-4 py-2 text-left">Formation</th>
+                        <th class="px-4 py-2 text-left">Ordre</th>
+                        <th class="px-4 py-2 text-left">Type</th>
+                        <th class="px-4 py-2 text-left">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for training in trainings %}
+                        {% for lesson in training.lessons.all %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 border-b border-gray-200">
+                                    <div class="font-medium text-gray-900">{{ lesson.title }}</div>
+                                </td>
+                                <td class="px-4 py-3 border-b border-gray-200">
+                                    <a href="{% url 'center_panel:training_detail' training.id %}" class="text-indigo-600 hover:text-indigo-800">
+                                        {{ training.title }}
+                                    </a>
+                                </td>
+                                <td class="px-4 py-3 border-b border-gray-200">
+                                    <span class="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full">{{ lesson.order }}</span>
+                                </td>
+                                <td class="px-4 py-3 border-b border-gray-200">
+                                    <div class="flex items-center">
+                                        {% if lesson.lesson_type == 'video' %}
+                                            <span class="flex items-center">
+                                                <svg class="w-4 h-4 mr-1 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                Vidéo
+                                            </span>
+                                        {% elif lesson.lesson_type == 'text' %}
+                                            <span class="flex items-center">
+                                                <svg class="w-4 h-4 mr-1 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                </svg>
+                                                Texte
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 border-b border-gray-200">
+                                    <div class="flex space-x-2">
+                                        <a href="{% url 'center_panel:lesson_detail' lesson.id %}" class="inline-flex items-center px-3 py-1 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150">
+                                            Voir
+                                        </a>
+                                        <a href="{% url 'center_panel:lesson_quiz' pk=lesson.id %}" class="inline-flex items-center px-3 py-1 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:ring ring-green-300 disabled:opacity-25 transition ease-in-out duration-150">
+                                            Quiz
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Formations disponibles</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for training in trainings %}
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300">
+                        <div class="p-5">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-2">{{ training.title }}</h3>
+                            <p class="text-gray-600 mb-4 line-clamp-2">{{ training.description }}</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-500">{{ training.lessons.count }} leçon(s)</span>
+                                <a href="{% url 'center_panel:training_detail' training.id %}" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                    Voir la formation →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="bg-white rounded-lg shadow-md p-8 text-center">
+            <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+            </svg>
+            <h3 class="text-xl font-medium text-gray-900 mb-2">Aucune formation disponible</h3>
+            <p class="text-gray-500">Il n'y a actuellement aucune formation ou leçon disponible.</p>
+        </div>
+    {% endif %}
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // DataTables is already initialized in base.html for tables with data-datatable attribute
+    });
+</script>
+{% endblock %}
+{% endblock %}

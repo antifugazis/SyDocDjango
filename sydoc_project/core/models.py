@@ -636,3 +636,205 @@ class TrainingSubject(models.Model):
         verbose_name_plural = "Training Subjects"
         ordering = ['name']
 
+class TrainingModule(models.Model):
+    """
+    Represents a full training course. This is the main container that holds everything.
+    """
+    class Status(models.TextChoices):
+        DRAFT = 'draft', 'Brouillon'
+        PUBLISHED = 'published', 'Publié'
+        ARCHIVED = 'archived', 'Archivé'
+
+    documentation_center = models.ForeignKey(
+        DocumentationCenter,
+        on_delete=models.CASCADE,
+        related_name='training_modules'
+    )
+    subject = models.ForeignKey(
+        TrainingSubject,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='training_modules'
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    thumbnail = models.ImageField(
+        upload_to='training_thumbnails/',
+        help_text="A thumbnail image for the training course, like on YouTube.",
+        blank=True,
+        null=True
+    )
+    minimum_age_required = models.PositiveIntegerField(default=10, help_text="Minimum age to access this training.")
+    points_to_pass = models.PositiveIntegerField(help_text="Minimum points required to pass the entire training.", default=70)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.DRAFT)
+    created_at = models.DateTimeField(auto_now_add=True)
+    duration_minutes = models.PositiveIntegerField(default=0, help_text="Estimated duration of the training in minutes.")
+    is_active = models.BooleanField(default=True, help_text="Is this training currently active and visible to users?")
+
+    def __str__(self):
+        return self.title
+
+class Lesson(models.Model):
+    """
+    Represents a single lesson within a TrainingModule.
+    It can be a video (by linking to a URL) or a text-based lesson (using Markdown).
+    """
+    class LessonType(models.TextChoices):
+        VIDEO = 'video', 'Vidéo'
+        TEXT = 'text', 'Texte'
+
+    training_module = models.ForeignKey(
+        TrainingModule,
+        on_delete=models.CASCADE,
+        related_name='lessons'
+    )
+    title = models.CharField(max_length=255, help_text="e.g., Level 1, Chapter 1")
+    lesson_type = models.CharField(max_length=10, choices=LessonType.choices, default=LessonType.VIDEO)
+
+    # Field for video links (e.g., YouTube, Vimeo)
+    video_url = models.URLField(blank=True, null=True, help_text="Link to the lesson video.")
+
+    # Field for rich text content using Markdown
+    text_content = models.TextField(blank=True, null=True, help_text="Content for text-based lessons (supports Markdown).")
+
+    order = models.PositiveIntegerField(default=0, help_text="The order of the lesson in the course (e.g., 1, 2, 3).")
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return f"{self.training_module.title} - {self.title}"
+
+class Question(models.Model):
+    """
+    Represents a single question in a quiz associated with a Lesson.
+    """
+    class QuestionType(models.TextChoices):
+        MULTIPLE_CHOICE = 'mc', 'Choix Multiple'
+        TEXT = 'text', 'Réponse textuelle'
+
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='questions')
+    question_text = models.CharField(max_length=500)
+    question_type = models.CharField(max_length=10, choices=QuestionType.choices)
+    points = models.PositiveIntegerField(default=1, help_text="Points awarded for a correct answer.")
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return self.question_text
+
+class Answer(models.Model):
+    """
+    Represents an answer option for a multiple-choice Question.
+    """
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
+    answer_text = models.CharField(max_length=255)
+    is_correct = models.BooleanField(default=False, help_text="Is this the correct answer?")
+
+    def __str__(self):
+        return f"{self.answer_text} ({'Correct' if self.is_correct else 'Incorrect'})"
+
+class Quiz(models.Model):
+    """
+    Represents a quiz associated with a training module.
+    """
+    training_module = models.ForeignKey(
+        TrainingModule,
+        on_delete=models.CASCADE,
+        related_name='quizzes',
+        verbose_name='Module de Formation Associé'
+    )
+    title = models.CharField(max_length=255, verbose_name='Titre du Quiz')
+    description = models.TextField(blank=True, verbose_name='Description')
+    pass_score = models.IntegerField(default=70, verbose_name='Score de Réussite (%)')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Date de Création')
+
+    class Meta:
+        verbose_name = 'Quiz'
+        verbose_name_plural = 'Quizzes'
+        unique_together = ('training_module', 'title')
+        ordering = ['title']
+
+    def __str__(self):
+        return f"{self.title} (pour {self.training_module.title})"
+
+
+class StaffTrainingRecord(models.Model):
+    """
+    Tracks the progress and completion of a training module by a staff member.
+    """
+    staff_member = models.ForeignKey(
+        Staff,
+        on_delete=models.CASCADE,
+        related_name='training_records',
+        verbose_name='Membre du Personnel'
+    )
+    training_module = models.ForeignKey(
+        TrainingModule,
+        on_delete=models.CASCADE,
+        related_name='records',
+        verbose_name='Module de Formation'
+    )
+    quiz = models.ForeignKey(
+        Quiz,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='records',
+        verbose_name='Quiz (optionnel)'
+    )
+    completion_date = models.DateField(default=timezone.now, verbose_name='Date de Complétion')
+    score = models.IntegerField(null=True, blank=True, verbose_name='Score obtenu (%)')
+    passed = models.BooleanField(default=False, verbose_name='Réussi')
+    notes = models.TextField(blank=True, verbose_name='Notes')
+
+    class Meta:
+        verbose_name = 'Historique de Formation du Personnel'
+        verbose_name_plural = 'Historiques de Formation du Personnel'
+        unique_together = ('staff_member', 'training_module', 'completion_date')
+        ordering = ['-completion_date']
+
+    def __str__(self):
+        return f"{self.staff_member.full_name} - {self.training_module.title} ({'Réussi' if self.passed else 'Échoué'})"
+
+class Communique(models.Model):
+    """
+    Represents an official announcement or message sent to staff members.
+    """
+    documentation_center = models.ForeignKey(
+        DocumentationCenter,
+        on_delete=models.CASCADE,
+        related_name='communiques'
+    )
+    author = models.ForeignKey(
+        Staff,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="The staff member who wrote the announcement."
+    )
+    title = models.CharField(max_length=255)
+    objective = models.CharField(max_length=500, help_text="A short summary of the message's goal.")
+    message_body = models.TextField(help_text="The full content of the announcement.")
+
+    # These fields will store who the message is for.
+    # A ManyToManyField allows sending to multiple specific activities.
+    target_activities = models.ManyToManyField(
+        Activity,
+        blank=True,
+        help_text="Send only to staff in these activities. Leave blank to send to all."
+    )
+
+    publication_date = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = "Communiqué"
+        verbose_name_plural = "Communiqués"
+        ordering = ['-publication_date']

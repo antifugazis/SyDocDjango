@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
 import os
-from core.models import DocumentationCenter, Book, Member, Loan, Staff, ArchivalDocument, TrainingModule, Activity, TrainingSubject
-from .forms import BookForm, MemberForm, CreateLoanForm, StaffForm, ActivityForm, ArchiveForm, TrainingSubjectForm
+from core.models import DocumentationCenter, Book, Member, Loan, Staff, ArchivalDocument, TrainingModule, Activity, TrainingSubject, TrainingModule, Lesson, Communique, Question, Answer, StaffTrainingRecord, Quiz 
+from .forms import BookForm, MemberForm, CreateLoanForm, StaffForm, ActivityForm, ArchiveForm, TrainingSubjectForm, TrainingModuleForm, LessonFormSet, CommuniqueForm
 from django.db.models import Count
 from django.utils import timezone
 from datetime import timedelta
@@ -68,6 +68,7 @@ def center_dashboard(request):
     # Add days_left to each upcoming return
     for loan in upcoming_returns:
         loan.days_left = (loan.due_date - timezone.localdate()).days
+        loan.days_left_abs = abs(loan.days_left)
     
     context = {
         'current_center': current_center,
@@ -767,3 +768,321 @@ def delete_training_subject(request, pk):
         'current_center': DocumentationCenter.objects.first(),
     }
     return render(request, 'center_panel/admin/delete_training_subject_confirm.html', context)
+
+@login_required
+def add_training_module(request):
+    current_center = DocumentationCenter.objects.first()
+    
+    if request.method == 'POST':
+        # Process the main form and the formset
+        form = TrainingModuleForm(request.POST, request.FILES, documentation_center=current_center)
+        lesson_formset = LessonFormSet(request.POST, queryset=Lesson.objects.none())
+
+        if form.is_valid() and lesson_formset.is_valid():
+            # First, save the main training module
+            training_module = form.save(commit=False)
+            training_module.documentation_center = current_center
+            training_module.save()
+
+            # Now, save the lessons associated with this module
+            lessons = lesson_formset.save(commit=False)
+            for lesson in lessons:
+                lesson.training_module = training_module
+                lesson.save()
+            
+            # Handle deleted lessons if any
+            lesson_formset.save_m2m()
+
+            messages.success(request, f"La formation '{training_module.title}' a été créée avec succès.")
+            return redirect('center_panel:trainings') # Redirect to a list view we'll create later
+        else:
+            messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
+            
+    else:
+        # On a GET request, show an empty form and formset
+        form = TrainingModuleForm(documentation_center=current_center)
+        lesson_formset = LessonFormSet(queryset=Lesson.objects.none())
+
+    context = {
+        'form': form,
+        'lesson_formset': lesson_formset,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/admin/add_edit_training_module.html', context)
+
+
+@login_required
+def training_list(request):
+    """
+    This view replaces the placeholder and lists all training modules.
+    """
+    current_center = DocumentationCenter.objects.first()
+    trainings = TrainingModule.objects.filter(documentation_center=current_center)
+    
+    context = {
+        'trainings': trainings,
+        'current_center': current_center
+    }
+    return render(request, 'center_panel/trainings.html', context)
+
+@login_required
+def training_detail(request, pk):
+    """
+    Display the details of a specific training module.
+    """
+    current_center = DocumentationCenter.objects.first()
+    training = get_object_or_404(TrainingModule, pk=pk, documentation_center=current_center)
+    
+    context = {
+        'training': training,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/training_detail.html', context)
+
+@login_required
+def lesson_detail(request, pk):
+    """
+    Display the details of a specific lesson.
+    """
+    lesson = get_object_or_404(Lesson, pk=pk)
+    current_center = DocumentationCenter.objects.first()
+    
+    # Ensure the lesson belongs to a training module in the current center
+    if lesson.training_module.documentation_center != current_center:
+        messages.error(request, "Vous n'avez pas accès à cette leçon.")
+        return redirect('center_panel:trainings')
+    
+    context = {
+        'lesson': lesson,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/lesson_detail.html', context)
+
+@login_required
+def lesson_list(request):
+    """View to display all lessons grouped by their training modules"""
+    # Get all training modules with their lessons
+    trainings = TrainingModule.objects.prefetch_related('lessons').all()
+    
+    # Filter access based on user permissions
+    if not request.user.is_staff:
+        trainings = trainings.filter(status='published')
+    
+    context = {
+        'trainings': trainings,
+    }
+    
+    return render(request, 'center_panel/lesson_list.html', context)
+
+@login_required
+def lesson_quiz(request, pk):
+    """
+    Display the quiz for a specific lesson.
+    This is a placeholder view that will be implemented later.
+    """
+    lesson = get_object_or_404(Lesson, pk=pk)
+    current_center = DocumentationCenter.objects.first()
+    
+    # Ensure the lesson belongs to a training module in the current center
+    if lesson.training_module.documentation_center != current_center:
+        messages.error(request, "Vous n'avez pas accès à ce quiz.")
+        return redirect('center_panel:trainings')
+    
+    # This is a placeholder - you'll implement the actual quiz functionality later
+    context = {
+        'lesson': lesson,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/lesson_quiz.html', context)
+
+
+
+@login_required
+def edit_training_module(request, pk):
+    """
+    This view handles editing an existing training module and its lessons.
+    """
+    current_center = DocumentationCenter.objects.first()
+    training_module = get_object_or_404(TrainingModule, pk=pk, documentation_center=current_center)
+
+    if request.method == 'POST':
+        form = TrainingModuleForm(request.POST, request.FILES, instance=training_module, documentation_center=current_center)
+        # We pass the instance to the formset to edit existing lessons
+        lesson_formset = LessonFormSet(request.POST, queryset=Lesson.objects.filter(training_module=training_module))
+
+        if form.is_valid() and lesson_formset.is_valid():
+            form.save() # Save changes to the main module
+
+            # Save changes to the lessons
+            lessons = lesson_formset.save(commit=False)
+            for lesson in lessons:
+                lesson.training_module = training_module
+                lesson.save()
+            
+            # This handles the deletion of lessons marked for deletion
+            lesson_formset.save_m2m() 
+            # This deletes lessons that were removed from the formset
+            for lesson in lesson_formset.deleted_objects:
+                lesson.delete()
+
+
+            messages.success(request, f"La formation '{training_module.title}' a été mise à jour.")
+            return redirect('center_panel:trainings')
+        else:
+            messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
+
+    else:
+        # On a GET request, populate the form and formset with existing data
+        form = TrainingModuleForm(instance=training_module, documentation_center=current_center)
+        lesson_formset = LessonFormSet(queryset=Lesson.objects.filter(training_module=training_module))
+
+    context = {
+        'form': form,
+        'lesson_formset': lesson_formset,
+        'training_module': training_module, # Pass the module to the template
+        'current_center': current_center,
+    }
+    # We reuse the same template for adding and editing
+    return render(request, 'center_panel/admin/add_edit_training_module.html', context)
+
+
+@login_required
+def delete_training_module(request, pk):
+    current_center = DocumentationCenter.objects.first()
+    training_module = get_object_or_404(TrainingModule, pk=pk, documentation_center=current_center)
+
+    if request.method == 'POST':
+        module_title = training_module.title
+        training_module.delete()
+        messages.success(request, f"La formation '{module_title}' et toutes ses leçons ont été supprimées.")
+        return redirect('center_panel:trainings')
+
+    context = {
+        'training': training_module,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/admin/delete_training_confirm.html', context)
+
+@login_required
+def communique_list(request):
+    current_center = DocumentationCenter.objects.first()
+    communiques = Communique.objects.filter(documentation_center=current_center)
+    context = {
+        'current_center': current_center,
+        'communiques': communiques,
+    }
+    return render(request, 'center_panel/communiques.html', context)
+
+@login_required
+def add_communique(request):
+    current_center = DocumentationCenter.objects.first()
+    if request.method == 'POST':
+        form = CommuniqueForm(center=current_center, data=request.POST)
+        if form.is_valid():
+            communique = form.save(commit=False)
+            communique.documentation_center = current_center
+            # Assuming the logged-in user is a Staff member
+            # In a real app, you'd get this from the request.user
+            communique.author = Staff.objects.first() # Placeholder
+            communique.save()
+            form.save_m2m() # Save ManyToMany relationships
+            messages.success(request, "Le communiqué a été publié avec succès.")
+            return redirect('center_panel:communiques')
+    else:
+        form = CommuniqueForm(center=current_center)
+
+    context = {
+        'form': form,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/add_edit_communique.html', context)
+
+@login_required
+def communique_detail(request, pk):
+    current_center = DocumentationCenter.objects.first()
+    communique = get_object_or_404(Communique, pk=pk, documentation_center=current_center)
+    context = {
+        'current_center': current_center,
+        'communique': communique,
+    }
+    return render(request, 'center_panel/communique_detail.html', context)
+
+@login_required
+def lesson_quiz(request, pk):
+    """
+    Displays the quiz for a specific lesson and processes the submission.
+    """
+    current_center = DocumentationCenter.objects.first()
+    lesson = get_object_or_404(
+        Lesson,
+        pk=pk,
+        training_module__documentation_center=current_center
+    )
+    # Get all questions for the lesson, prefetching the answers to be efficient
+    questions = lesson.questions.prefetch_related('answers')
+    
+    # This is a placeholder for the current staff member taking the quiz
+    # In a real app, you would get this from the logged-in user's profile
+    current_staff_member = Staff.objects.first() 
+
+    if request.method == 'POST':
+        total_possible_points = questions.aggregate(total=Sum('points'))['total'] or 0
+        user_score = 0
+        
+        # Loop through each question to check the submitted answer
+        for question in questions:
+            submitted_answer_id = request.POST.get(f'question_{question.id}')
+            if submitted_answer_id:
+                try:
+                    # Check if the submitted answer is correct
+                    correct_answer = question.answers.get(id=submitted_answer_id, is_correct=True)
+                    user_score += question.points
+                except Answer.DoesNotExist:
+                    # The submitted answer was incorrect
+                    pass
+        
+        # Calculate the final percentage
+        final_percentage = (user_score / total_possible_points * 100) if total_possible_points > 0 else 0
+
+        # Create or update the training record
+        training_record, created = StaffTrainingRecord.objects.update_or_create(
+            staff_member=current_staff_member,
+            training_module=lesson.training_module,
+            defaults={
+                'score': final_percentage,
+                'passed': final_percentage >= lesson.training_module.points_to_pass,
+                'completion_date': timezone.now().date()
+            }
+        )
+
+        # Redirect to a new results page
+        return redirect('center_panel:quiz_results', pk=training_record.pk)
+
+    context = {
+        'lesson': lesson,
+        'questions': questions,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/public/lesson_quiz_page.html', context)
+
+
+# --- ADD THIS NEW view for the results page ---
+
+@login_required
+def quiz_results(request, pk):
+    """
+    Displays the results of a completed quiz to the user.
+    """
+    current_center = DocumentationCenter.objects.first()
+    # Get the specific training record to show the results
+    training_record = get_object_or_404(
+        StaffTrainingRecord,
+        pk=pk,
+        training_module__documentation_center=current_center
+    )
+    
+    context = {
+        'training_record': training_record,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/public/quiz_results_page.html', context)

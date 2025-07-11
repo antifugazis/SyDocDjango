@@ -85,6 +85,20 @@
             font-family: 'Roboto Mono', monospace;
             font-weight: 600;
         }
+        
+        /* Desktop dropdown styles */
+        .group:hover .group-hover\:visible {
+            visibility: visible;
+        }
+        
+        .group:hover .group-hover\:opacity-100 {
+            opacity: 1;
+        }
+        
+        /* Mobile dropdown styles */
+        .mobile-dropdown-content.show {
+            display: block;
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -126,10 +140,15 @@
     <!-- Navigation -->
     <nav class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
         <div class="container mx-auto px-4">
-            <!-- Mobile menu button -->
-            <div class="flex items-center justify-between h-14">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo and brand -->
                 <div class="flex items-center">
                     <a href="{% url 'center_panel:dashboard' %}" class="flex items-center">
+                        <div class="p-2 bg-indigo-100 rounded-lg mr-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                        </div>
                         <span class="text-lg font-semibold text-indigo-600">SYDOC</span>
                     </a>
                 </div>
@@ -138,11 +157,9 @@
                 <div class="flex md:hidden">
                     <button type="button" id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-indigo-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
                         <span class="sr-only">Ouvrir le menu</span>
-                        <!-- Icon when menu is closed -->
                         <svg id="menu-closed-icon" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
-                        <!-- Icon when menu is open -->
                         <svg id="menu-open-icon" class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -150,38 +167,512 @@
                 </div>
                 
                 <!-- Desktop navigation -->
-                <div class="hidden md:flex md:items-center md:space-x-2">
-                    <a href="{% url 'center_panel:dashboard' %}" class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'dashboard' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %}">Tableau de bord</a>
-                    <a href="{% url 'center_panel:books' %}" class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'books' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %}">Livres</a>
-                    <a href="{% url 'center_panel:members' %}" class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'members' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %}">Membres</a>
-                    <a href="{% url 'center_panel:loans' %}" class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'loans' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %}">Prêts</a>
-                    <a href="{% url 'center_panel:staff' %}" class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'staff' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %}">Personnel</a>
-                    <a href="{% url 'center_panel:archives' %}" class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'archives' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %}">Archives</a>
-                    <a href="{% url 'center_panel:trainings' %}" class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'trainings' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %}">Formations</a>
-                    <a href="{% url 'center_panel:activities' %}" class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'activities' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %}">Activités</a>
-                    <a href="{% url 'center_panel:training_subjects' %}" class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'training_subjects' %}text-indigo-600{% else %}text-gray-700{% endif %}">Sujets de Formation</a>
-                    <a href="{% url 'center_panel:notifications' %}" class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'notifications' %}text-indigo-600{% else %}text-gray-700{% endif %}">Notifications</a>
-                    <a href="{% url 'logout' %}" class="ml-2 px-3 py-2 rounded-md text-sm dm-sans-medium text-red-600 hover:bg-red-50 transition-colors duration-200">Déconnexion</a>
-                </div>
+                <div class="hidden md:flex md:items-center md:space-x-1">
+                    <!-- Dashboard Link -->
+                    <a href="{% url 'center_panel:dashboard' %}" class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'dashboard' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %}">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                            </svg>
+                            Tableau de bord
+                        </div>
+                    </a>
+
+                    <!-- Formation Dropdown -->
+                    <div class="relative group">
+                        <button class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name in 'trainings,training_detail,add_training,edit_training_module,training_subjects,add_training_subject,edit_training_subject,lesson_list,lesson_detail,lesson_quiz' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %} flex items-center">
+                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                            Formation
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-56 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="py-1">
+                                <span class="block px-4 py-1 text-xs font-medium text-gray-500 uppercase tracking-wider">Formations</span>
+                                <a href="{% url 'center_panel:trainings' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                    </svg>
+                                    Liste des formations
+                                </a>
+                                <a href="{% url 'center_panel:add_training' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Ajouter une formation
+                                </a>
+                                <div class="border-t border-gray-100 my-1"></div>
+                                <span class="block px-4 py-1 text-xs font-medium text-gray-500 uppercase tracking-wider">Leçons</span>
+                                <a href="{% url 'center_panel:lesson_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    Liste des leçons
+                                </a>
+                                <div class="border-t border-gray-100 my-1"></div>
+                                <span class="block px-4 py-1 text-xs font-medium text-gray-500 uppercase tracking-wider">Sujets</span>
+                                <a href="{% url 'center_panel:training_subjects' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                    </svg>
+                                    Sujets de formation
+                                </a>
+                                <a href="{% url 'center_panel:add_training_subject' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Ajouter un sujet
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bibliothèque Dropdown -->
+                    <div class="relative group">
+                        <button class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name in 'books,book_detail,add_book,edit_book,delete_book,loans,add_loan,return_loan' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %} flex items-center">
+                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>
+                            </svg>
+                            Bibliothèque
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-56 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="py-1">
+                                <span class="block px-4 py-1 text-xs font-medium text-gray-500 uppercase tracking-wider">Livres</span>
+                                <a href="{% url 'center_panel:books' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                    </svg>
+                                    Liste des livres
+                                </a>
+                                <a href="{% url 'center_panel:add_book' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Ajouter un livre
+                                </a>
+                                <div class="border-t border-gray-100 my-1"></div>
+                                <span class="block px-4 py-1 text-xs font-medium text-gray-500 uppercase tracking-wider">Prêts</span>
+                                <a href="{% url 'center_panel:loans' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                                    </svg>
+                                    Gestion des prêts
+                                </a>
+                                <a href="{% url 'center_panel:add_loan' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Nouveau prêt
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Personnes Dropdown -->
+                    <div class="relative group">
+                        <button class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name in 'members,add_member,edit_member,delete_member,staff,add_staff,edit_staff,delete_staff' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %} flex items-center">
+                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                            Personnes
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-56 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="py-1">
+                                <span class="block px-4 py-1 text-xs font-medium text-gray-500 uppercase tracking-wider">Membres</span>
+                                <a href="{% url 'center_panel:members' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                    </svg>
+                                    Liste des membres
+                                </a>
+                                <a href="{% url 'center_panel:add_member' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                                    </svg>
+                                    Ajouter un membre
+                                </a>
+                                <div class="border-t border-gray-100 my-1"></div>
+                                <span class="block px-4 py-1 text-xs font-medium text-gray-500 uppercase tracking-wider">Personnel</span>
+                                <a href="{% url 'center_panel:staff' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                    Liste du personnel
+                                </a>
+                                <a href="{% url 'center_panel:add_staff' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                                    </svg>
+                                    Ajouter un membre du personnel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Activités Dropdown -->
+                    <div class="relative group">
+                        <button class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name in 'activities,add_activity,edit_activity,delete_activity' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %} flex items-center">
+                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            Activités
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-56 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="py-1">
+                                <a href="{% url 'center_panel:activities' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                    </svg>
+                                    Liste des activités
+                                </a>
+                                <a href="{% url 'center_panel:add_activity' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Ajouter une activité
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Communications Dropdown -->
+                    <div class="relative group">
+                        <button class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name in 'communiques,add_communique,communique_detail,notifications' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %} flex items-center">
+                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                            </svg>
+                            Communications
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-56 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="py-1">
+                                <span class="block px-4 py-1 text-xs font-medium text-gray-500 uppercase tracking-wider">Communiqués</span>
+                                <a href="{% url 'center_panel:communiques' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+                                    </svg>
+                                    Liste des communiqués
+                                </a>
+                                <a href="{% url 'center_panel:add_communique' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Nouveau communiqué
+                                </a>
+                                <div class="border-t border-gray-100 my-1"></div>
+                                <span class="block px-4 py-1 text-xs font-medium text-gray-500 uppercase tracking-wider">Notifications</span>
+                                <a href="{% url 'center_panel:notifications' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                                    </svg>
+                                    Voir les notifications
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Archives Dropdown -->
+                    <div class="relative group">
+                        <button class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name in 'archives,add_archive,edit_archive,download_archive,delete_archive' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %} flex items-center">
+                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+                            </svg>
+                            Archives
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div class="absolute left-0 mt-2 w-56 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="py-1">
+                                <a href="{% url 'center_panel:archives' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+                                    </svg>
+                                    Liste des archives
+                                </a>
+                                <a href="{% url 'center_panel:add_archive' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Ajouter une archive
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Logout Button -->
+                    <a href="{% url 'logout' %}" class="ml-2 px-3 py-2 rounded-md text-sm dm-sans-medium text-red-600 hover:bg-red-50 transition-colors duration-200 flex items-center">
+                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        Déconnexion
+                    </a>
             </div>
         </div>
         
         <!-- Mobile menu, show/hide based on menu state -->
         <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200 shadow-md">
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                <a href="{% url 'center_panel:dashboard' %}" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'dashboard' %}text-indigo-600 bg-indigo-50{% else %}text-gray-700{% endif %}">Tableau de bord</a>
-                <a href="{% url 'center_panel:books' %}" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'books' %}text-indigo-600 bg-indigo-50{% else %}text-gray-700{% endif %}">Livres</a>
-                <a href="{% url 'center_panel:members' %}" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'members' %}text-indigo-600 bg-indigo-50{% else %}text-gray-700{% endif %}">Membres</a>
-                <a href="{% url 'center_panel:loans' %}" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'loans' %}text-indigo-600 bg-indigo-50{% else %}text-gray-700{% endif %}">Prêts</a>
-                <a href="{% url 'center_panel:staff' %}" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'staff' %}text-indigo-600 bg-indigo-50{% else %}text-gray-700{% endif %}">Personnel</a>
-                <a href="{% url 'center_panel:archives' %}" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'archives' %}text-indigo-600 bg-indigo-50{% else %}text-gray-700{% endif %}">Archives</a>
-                <a href="{% url 'center_panel:trainings' %}" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'trainings' %}text-indigo-600 bg-indigo-50{% else %}text-gray-700{% endif %}">Formations</a>
-                <a href="{% url 'center_panel:activities' %}" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'activities' %}text-indigo-600 bg-indigo-50{% else %}text-gray-700{% endif %}">Activités</a>
-                <a href="{% url 'center_panel:training_subjects' %}" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'training_subjects' %}text-indigo-600 bg-indigo-50{% else %}text-gray-700{% endif %}">Sujets de Formation</a>
-                <a href="{% url 'center_panel:notifications' %}" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'notifications' %}text-indigo-600 bg-indigo-50{% else %}text-gray-700{% endif %}">Notifications</a>
-                <a href="{% url 'logout' %}" class="block px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50 transition-colors duration-200">Déconnexion</a>
-            </div>
-        </div>
+                <!-- Dashboard Link -->
+                <a href="{% url 'center_panel:dashboard' %}" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'dashboard' %}text-indigo-600 bg-indigo-50{% else %}text-gray-700{% endif %} flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    Tableau de bord
+                </a>
+                
+                <!-- Formation Dropdown -->
+                <div class="mobile-dropdown border-b border-gray-100 py-1">
+                    <button class="mobile-dropdown-toggle w-full px-3 py-2 rounded-md text-base font-medium text-left {% if request.resolver_match.url_name in 'trainings,training_detail,add_training,edit_training_module,training_subjects,add_training_subject,edit_training_subject,lesson_list,lesson_detail,lesson_quiz' %}text-indigo-600{% else %}text-gray-700{% endif %} flex items-center justify-between">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                            Formation
+                        </div>
+                        <svg class="w-5 h-5 mobile-dropdown-icon transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="mobile-dropdown-content hidden pl-6 py-2 space-y-2">
+                        <span class="block text-xs font-medium text-gray-500 uppercase tracking-wider px-3">Formations</span>
+                        <a href="{% url 'center_panel:trainings' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                            Liste des formations
+                        </a>
+                        <a href="{% url 'center_panel:add_training' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Ajouter une formation
+                        </a>
+                        <span class="block text-xs font-medium text-gray-500 uppercase tracking-wider px-3 mt-2">Leçons</span>
+                        <a href="{% url 'center_panel:lesson_list' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Liste des leçons
+                        </a>
+                        <span class="block text-xs font-medium text-gray-500 uppercase tracking-wider px-3 mt-2">Sujets</span>
+                        <a href="{% url 'center_panel:training_subjects' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                            </svg>
+                            Sujets de formation
+                        </a>
+                        <a href="{% url 'center_panel:add_training_subject' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Ajouter un sujet
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Bibliothèque Dropdown -->
+                <div class="mobile-dropdown border-b border-gray-100 py-1">
+                    <button class="mobile-dropdown-toggle w-full px-3 py-2 rounded-md text-base font-medium text-left {% if request.resolver_match.url_name in 'books,book_detail,add_book,edit_book,delete_book,loans,add_loan,return_loan' %}text-indigo-600{% else %}text-gray-700{% endif %} flex items-center justify-between">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>
+                            </svg>
+                            Bibliothèque
+                        </div>
+                        <svg class="w-5 h-5 mobile-dropdown-icon transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="mobile-dropdown-content hidden pl-6 py-2 space-y-2">
+                        <span class="block text-xs font-medium text-gray-500 uppercase tracking-wider px-3">Livres</span>
+                        <a href="{% url 'center_panel:books' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                            Liste des livres
+                        </a>
+                        <a href="{% url 'center_panel:add_book' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Ajouter un livre
+                        </a>
+                        <span class="block text-xs font-medium text-gray-500 uppercase tracking-wider px-3 mt-2">Prêts</span>
+                        <a href="{% url 'center_panel:loans' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                            </svg>
+                            Gestion des prêts
+                        </a>
+                        <a href="{% url 'center_panel:add_loan' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Nouveau prêt
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Personnes Dropdown -->
+                <div class="mobile-dropdown border-b border-gray-100 py-1">
+                    <button class="mobile-dropdown-toggle w-full px-3 py-2 rounded-md text-base font-medium text-left {% if request.resolver_match.url_name in 'members,add_member,edit_member,member_detail,staff,add_staff,edit_staff,staff_detail' %}text-indigo-600{% else %}text-gray-700{% endif %} flex items-center justify-between">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                            Personnes
+                        </div>
+                        <svg class="w-5 h-5 mobile-dropdown-icon transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="mobile-dropdown-content hidden pl-6 py-2 space-y-2">
+                        <span class="block text-xs font-medium text-gray-500 uppercase tracking-wider px-3">Membres</span>
+                        <a href="{% url 'center_panel:members' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                            Liste des membres
+                        </a>
+                        <a href="{% url 'center_panel:add_member' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Ajouter un membre
+                        </a>
+                        <span class="block text-xs font-medium text-gray-500 uppercase tracking-wider px-3 mt-2">Personnel</span>
+                        <a href="{% url 'center_panel:staff' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            Liste du personnel
+                        </a>
+                        <a href="{% url 'center_panel:add_staff' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Ajouter un membre du personnel
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Activités Dropdown -->
+                <div class="mobile-dropdown border-b border-gray-100 py-1">
+                    <button class="mobile-dropdown-toggle w-full px-3 py-2 rounded-md text-base font-medium text-left {% if request.resolver_match.url_name in 'activities,add_activity,edit_activity,activity_detail' %}text-indigo-600{% else %}text-gray-700{% endif %} flex items-center justify-between">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            Activités
+                        </div>
+                        <svg class="w-5 h-5 mobile-dropdown-icon transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="mobile-dropdown-content hidden pl-6 py-2 space-y-2">
+                        <a href="{% url 'center_panel:activities' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                            Liste des activités
+                        </a>
+                        <a href="{% url 'center_panel:add_activity' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Ajouter une activité
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Communications Dropdown -->
+                <div class="mobile-dropdown border-b border-gray-100 py-1">
+                    <button class="mobile-dropdown-toggle w-full px-3 py-2 rounded-md text-base font-medium text-left {% if request.resolver_match.url_name in 'communiques,add_communique,communique_detail,notifications' %}text-indigo-600{% else %}text-gray-700{% endif %} flex items-center justify-between">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                            </svg>
+                            Communications
+                        </div>
+                        <svg class="w-5 h-5 mobile-dropdown-icon transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="mobile-dropdown-content hidden pl-6 py-2 space-y-2">
+                        <span class="block text-xs font-medium text-gray-500 uppercase tracking-wider px-3">Communiqués</span>
+                        <a href="{% url 'center_panel:communiques' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+                            </svg>
+                            Liste des communiqués
+                        </a>
+                        <a href="{% url 'center_panel:add_communique' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Nouveau communiqué
+                        </a>
+                        <span class="block text-xs font-medium text-gray-500 uppercase tracking-wider px-3 mt-2">Notifications</span>
+                        <a href="{% url 'center_panel:notifications' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            </svg>
+                            Voir les notifications
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Archives Dropdown -->
+                <div class="mobile-dropdown border-b border-gray-100 py-1">
+                    <button class="mobile-dropdown-toggle w-full px-3 py-2 rounded-md text-base font-medium text-left {% if request.resolver_match.url_name in 'archives,add_archive,edit_archive,download_archive,delete_archive' %}text-indigo-600{% else %}text-gray-700{% endif %} flex items-center justify-between">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+                            </svg>
+                            Archives
+                        </div>
+                        <svg class="w-5 h-5 mobile-dropdown-icon transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="mobile-dropdown-content hidden pl-6 py-2 space-y-2">
+                        <a href="{% url 'center_panel:archives' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+                            </svg>
+                            Liste des archives
+                        </a>
+                        <a href="{% url 'center_panel:add_archive' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Ajouter une archive
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Logout Button -->
+                <a href="{% url 'logout' %}" class="block px-3 py-2 mt-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50 transition-colors duration-200 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    Déconnexion
+                </a>
     </nav>
 
     <!-- Messages -->
@@ -336,8 +827,66 @@
                     }
                 });
             });
+        });
+    </script>
+    <script>
+        // Mobile menu and dropdown functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const menuClosedIcon = document.getElementById('menu-closed-icon');
+            const menuOpenIcon = document.getElementById('menu-open-icon');
             
-
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    // Toggle mobile menu visibility
+                    mobileMenu.classList.toggle('hidden');
+                    
+                    // Toggle menu icons
+                    if (menuClosedIcon && menuOpenIcon) {
+                        menuClosedIcon.classList.toggle('hidden');
+                        menuOpenIcon.classList.toggle('hidden');
+                    }
+                });
+            }
+            
+            // Mobile dropdowns
+            const mobileDropdownToggles = document.querySelectorAll('.mobile-dropdown-toggle');
+            
+            mobileDropdownToggles.forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    e.preventDefault(); // Prevent default button behavior
+                    
+                    // Get the dropdown content that follows this toggle button
+                    const dropdownContent = this.nextElementSibling;
+                    const dropdownIcon = this.querySelector('.mobile-dropdown-icon');
+                    
+                    // Toggle the dropdown visibility
+                    dropdownContent.classList.toggle('hidden');
+                    dropdownContent.classList.toggle('show');
+                    
+                    // Rotate the dropdown icon when open
+                    if (dropdownIcon) {
+                        dropdownIcon.classList.toggle('rotate-180');
+                    }
+                    
+                    // Close other dropdowns when opening this one
+                    mobileDropdownToggles.forEach(otherToggle => {
+                        if (otherToggle !== this) {
+                            const otherContent = otherToggle.nextElementSibling;
+                            const otherIcon = otherToggle.querySelector('.mobile-dropdown-icon');
+                            
+                            if (!otherContent.classList.contains('hidden')) {
+                                otherContent.classList.add('hidden');
+                                otherContent.classList.remove('show');
+                                if (otherIcon) {
+                                    otherIcon.classList.remove('rotate-180');
+                                }
+                            }
+                        }
+                    });
+                });
+            });
         });
     </script>
     {% block extra_js %}{% endblock %}

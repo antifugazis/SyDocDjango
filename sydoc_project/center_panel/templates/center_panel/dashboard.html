@@ -8,93 +8,159 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Funnel+Sans:ital,wght@0,300..800;1,300..800&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
 <style>
+    /* Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Roboto+Mono:wght@400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Funnel+Sans:wght@400;500;600;700&display=swap');
+    
     /* Font Classes */
-    /* DM Sans - Main text */
-    .dm-sans-regular {
-        font-family: "DM Sans", sans-serif;
-        font-optical-sizing: auto;
-        font-weight: 400;
-        font-style: normal;
+    .dm-sans-regular { font-family: 'DM Sans', sans-serif; font-weight: 400; }
+    .dm-sans-medium { font-family: 'DM Sans', sans-serif; font-weight: 500; }
+    .dm-sans-bold { font-family: 'DM Sans', sans-serif; font-weight: 700; }
+    
+    .roboto-mono-regular { font-family: 'Roboto Mono', monospace; font-weight: 400; }
+    .roboto-mono-medium { font-family: 'Roboto Mono', monospace; font-weight: 500; }
+    .roboto-mono-semibold { font-family: 'Roboto Mono', monospace; font-weight: 600; }
+    
+    .funnel-sans-regular { font-family: 'Funnel Sans', sans-serif; font-weight: 400; }
+    .funnel-sans-medium { font-family: 'Funnel Sans', sans-serif; font-weight: 500; }
+    .funnel-sans-semibold { font-family: 'Funnel Sans', sans-serif; font-weight: 600; }
+    .funnel-sans-bold { font-family: 'Funnel Sans', sans-serif; font-weight: 700; }
+    
+    /* Animation Classes */
+    .animate-fade-in {
+        animation: fadeIn 0.6s ease-in-out forwards;
+        opacity: 0;
     }
     
-    .dm-sans-medium {
-        font-family: "DM Sans", sans-serif;
-        font-optical-sizing: auto;
-        font-weight: 500;
-        font-style: normal;
+    .animate-delay-100 { animation-delay: 0.1s; }
+    .animate-delay-200 { animation-delay: 0.2s; }
+    .animate-delay-300 { animation-delay: 0.3s; }
+    .animate-delay-400 { animation-delay: 0.4s; }
+    .animate-delay-500 { animation-delay: 0.5s; }
+    .animate-delay-600 { animation-delay: 0.6s; }
+    .animate-delay-700 { animation-delay: 0.7s; }
+    .animate-delay-800 { animation-delay: 0.8s; }
+    .animate-delay-900 { animation-delay: 0.9s; }
+    .animate-delay-1000 { animation-delay: 1s; }
+    .animate-delay-1100 { animation-delay: 1.1s; }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     
-    .dm-sans-semibold {
-        font-family: "DM Sans", sans-serif;
-        font-optical-sizing: auto;
+    /* Stat Cards */
+    .stat-card {
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    
+    .stat-card .stat-icon {
+        background-color: var(--accent-color-light);
+        color: var(--accent-color);
+    }
+    
+    .stat-card .stat-value {
+        color: var(--accent-color);
+        font-family: 'Roboto Mono', monospace;
         font-weight: 600;
-        font-style: normal;
     }
     
-    .dm-sans-bold {
-        font-family: "DM Sans", sans-serif;
-        font-optical-sizing: auto;
-        font-weight: 700;
-        font-style: normal;
+    /* Chart Cards */
+    .chart-card {
+        transition: all 0.3s ease;
     }
     
-    /* Funnel Sans - Headings and UI elements */
-    .funnel-sans-regular {
-        font-family: "Funnel Sans", sans-serif;
-        font-optical-sizing: auto;
-        font-weight: 400;
-        font-style: normal;
+    .chart-card:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
     
-    .funnel-sans-medium {
-        font-family: "Funnel Sans", sans-serif;
-        font-optical-sizing: auto;
+    .chart-loading {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(99, 102, 241, 0.1);
+        border-radius: 50%;
+        border-top-color: #6366f1;
+        animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    /* Activity Cards */
+    .activity-card {
+        transition: all 0.2s ease;
+    }
+    
+    .activity-card:hover {
+        background-color: #f9fafb;
+    }
+    
+    /* Status Badges */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.125rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
         font-weight: 500;
-        font-style: normal;
     }
     
-    .funnel-sans-semibold {
-        font-family: "Funnel Sans", sans-serif;
-        font-optical-sizing: auto;
-        font-weight: 600;
-        font-style: normal;
+    .status-active {
+        background-color: #dbeafe;
+        color: #1e40af;
     }
     
-    .funnel-sans-bold {
-        font-family: "Funnel Sans", sans-serif;
-        font-optical-sizing: auto;
-        font-weight: 700;
-        font-style: normal;
+    .status-pending {
+        background-color: #fef3c7;
+        color: #92400e;
     }
     
-    /* Roboto Mono - Numbers and code */
-    .roboto-mono-regular {
-        font-family: "Roboto Mono", monospace;
-        font-optical-sizing: auto;
-        font-weight: 400;
-        font-style: normal;
+    .status-overdue {
+        background-color: #fee2e2;
+        color: #b91c1c;
     }
     
-    .roboto-mono-medium {
-        font-family: "Roboto Mono", monospace;
-        font-optical-sizing: auto;
-        font-weight: 500;
-        font-style: normal;
+    .status-completed {
+        background-color: #d1fae5;
+        color: #065f46;
     }
     
-    .roboto-mono-semibold {
-        font-family: "Roboto Mono", monospace;
-        font-optical-sizing: auto;
-        font-weight: 600;
-        font-style: normal;
+    /* Custom Scrollbar */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
     }
     
-    .roboto-mono-bold {
-        font-family: "Roboto Mono", monospace;
-        font-optical-sizing: auto;
-        font-weight: 700;
-        font-style: normal;
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+    
+    /* Counter Animation */
+    .counter-animation {
+        display: inline-block;
+        position: relative;
     }
     
     /* Base Styles */
@@ -103,8 +169,8 @@
         background-color: #f8f9fa;
     }
     
-    h1, h2 {
-        font-family: "Old Standard TT", serif;
+    h1, h2, h3 {
+        font-family: "Funnel Sans", sans-serif;
     }
     
     /* Dashboard Components */
@@ -112,7 +178,7 @@
         transition: all 0.3s ease;
         border-radius: 12px;
         overflow: hidden;
-        border-left: 4px solid transparent;
+        position: relative;
     }
     
     .stat-card:hover {
@@ -120,14 +186,80 @@
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
     
-    .stat-card h3 {
-        font-family: "Funnel Sans", sans-serif;
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 4px;
+        background: linear-gradient(to bottom, var(--accent-color), var(--accent-color-light));
+    }
+    
+    .stat-card .stat-icon {
+        background-color: var(--accent-color-light);
+        color: var(--accent-color);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover .stat-icon {
+        background-color: var(--accent-color);
+        color: white;
+    }
+    
+    .stat-card .stat-value {
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 600;
+        color: var(--accent-color);
+    }
+    
+    /* Animated number counters */
+    .counter-animation {
+        transition: all 0.8s ease-out;
+    }
+    
+    /* Chart container styling */
+    .chart-container {
+        position: relative;
+        transition: all 0.3s ease;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .chart-container:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Activity cards */
+    .activity-card {
+        transition: all 0.2s ease;
+    }
+    
+    .activity-card:hover {
+        background-color: rgba(249, 250, 251, 0.8);
+    }
+    
+    /* Status badges */
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
         font-weight: 500;
     }
     
-    .stat-card p {
-        font-family: "Old Standard TT", serif;
-        font-weight: 700;
+    /* Trial period indicator */
+    .trial-indicator {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .trial-indicator .progress-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 4px;
+        background: linear-gradient(to right, #10b981, #3b82f6);
+        transition: width 1s ease-in-out;
     }
     
     /* Table Styling */
@@ -137,179 +269,311 @@
     }
     
     table tbody td {
-        font-family: "Funnel Sans", sans-serif;
+        font-family: "DM Sans", sans-serif;
         font-weight: 400;
     }
+    
+    /* Custom scrollbar */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+    }
+    
+    .animate-delay-100 { animation-delay: 0.1s; }
+    .animate-delay-200 { animation-delay: 0.2s; }
+    .animate-delay-300 { animation-delay: 0.3s; }
+    .animate-delay-400 { animation-delay: 0.4s; }
+    .animate-delay-500 { animation-delay: 0.5s; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="mb-8">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-end">
+<!-- Main Dashboard Container -->
+<div class="px-1 py-4 sm:px-3 md:px-6 max-w-7xl mx-auto">
+    <!-- Header Section with Center Info and Date -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 animate-fade-in">
         <div class="mb-4 md:mb-0">
             <h1 class="text-3xl md:text-4xl funnel-sans-bold text-gray-800 mb-1">Tableau de bord</h1>
-            <p class="text-xl md:text-2xl dm-sans-regular text-gray-600">{{ current_center.name }}</p>
+            <p class="text-xl dm-sans-regular text-gray-600">{{ current_center.name }}</p>
         </div>
-        <div class="w-full md:w-auto">
-            <div class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
-                <p class="text-gray-600 dm-sans-regular text-sm md:text-base">
-                    <span class="text-gray-500">Date du jour :</span>
-                    <span class="font-medium ml-1">{{ current_date|date:"l d F Y"|capfirst }}</span>
-                </p>
+        
+        <!-- Trial Period Status -->
+        <div class="flex flex-col md:flex-row items-start md:items-center space-y-3 md:space-y-0 md:space-x-4 w-full md:w-auto">
+            <div class="trial-indicator bg-white p-4 rounded-lg border border-gray-200 shadow-sm w-full md:w-auto">
+                {% if current_center.is_trial_expired %}
+                <div class="flex items-center">
+                    <div class="p-2 rounded-full bg-red-100 mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-red-600">Période d'essai expirée</p>
+                        <p class="text-xs text-gray-500">Contactez l'administrateur</p>
+                    </div>
+                </div>
+                <div class="progress-bar w-full bg-red-500"></div>
+                {% else %}
+                <div class="flex items-center">
+                    <div class="p-2 rounded-full bg-blue-100 mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-blue-600">Période d'essai: {{ current_center.get_remaining_trial_days }} jours restants</p>
+                        <p class="text-xs text-gray-500">Expire le {{ current_center.trial_end_date|date:"d/m/Y" }}</p>
+                    </div>
+                </div>
+                <div class="progress-bar" style="width: {{ current_center.get_remaining_trial_days }}%;"></div>
+                {% endif %}
+            </div>
+            
+            <!-- Current Date -->
+            <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm w-full md:w-auto">
+                <div class="flex items-center">
+                    <div class="p-2 rounded-full bg-indigo-100 mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-700">{{ current_date|date:"l"|capfirst }}</p>
+                        <p class="text-base font-semibold text-indigo-600">{{ current_date|date:"d F Y" }}</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>    
-    <!-- Quick Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 my-6">
+    
+    <!-- Quick Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
         <!-- Books Summary -->
-        <div class="bg-white rounded-lg p-4 flex items-center justify-between shadow-md hover:shadow-lg transition-all duration-300 animate__animated animate__fadeInUp">
-            <div>
-                <p class="funnel-sans-medium text-gray-500 text-sm">Collection</p>
-                <p class="old-standard-tt-bold text-2xl">{{ stats.total_books|default:"0" }} livres</p>
-            </div>
-            <div class="bg-gray-50 p-3 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-            </div>
-        </div>
-        
-        <!-- Members Summary -->
-        <div class="bg-white rounded-lg p-4 flex items-center justify-between shadow-md hover:shadow-lg transition-all duration-3001s">
-            <div>
-                <p class="funnel-sans-medium text-gray-500 text-sm">Membres</p>
-                <p class="old-standard-tt-bold text-2xl">{{ stats.total_members|default:"0" }} inscrits</p>
-            </div>
-            <div class="bg-gray-50 p-3 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-            </div>
-        </div>
-        
-        <!-- Active Loans Summary -->
-        <div class="bg-white rounded-lg p-4 flex items-center justify-between shadow-md hover:shadow-lg transition-all duration-3002s">
-            <div>
-                <p class="funnel-sans-medium text-gray-500 text-sm">Prêts actifs</p>
-                <p class="old-standard-tt-bold text-2xl">{{ stats.active_loans|default:"0" }} en cours</p>
-            </div>
-            <div class="bg-gray-50 p-3 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-            </div>
-        </div>
-        
-        <!-- Overdue Loans Summary -->
-        <div class="bg-white rounded-lg p-4 flex items-center justify-between shadow-md hover:shadow-lg transition-all duration-3003s">
-            <div>
-                <p class="funnel-sans-medium text-gray-500 text-sm">Retards</p>
-                <p class="old-standard-tt-bold text-2xl">{{ stats.overdue_loans|default:"0" }} en retard</p>
-            </div>
-            <div class="bg-gray-50 p-3 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Statistics Grid -->
-<div class="flex items-center justify-between mb-6">
-    <h2 class="text-2xl md:text-3xl funnel-sans-semibold text-gray-800">Statistiques</h2>
-    <div class="hidden md:flex items-center space-x-1">
-        <div class="w-2.5 h-2.5 bg-gray-400 rounded-full"></div>
-        <div class="w-2.5 h-2.5 bg-gray-300 rounded-full"></div>
-        <div class="w-2.5 h-2.5 bg-gray-200 rounded-full"></div>
-    </div>
-</div>
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-    <!-- Total Books -->
-    <div class="bg-white rounded-lg border border-gray-100 hover:shadow-md transition-shadow duration-200">
-        <div class="p-5">
-            <div class="flex items-start">
-                <div class="p-2.5 rounded-lg bg-gray-50 text-indigo-600 mr-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-100" style="--accent-color: #4f46e5; --accent-color-light: #e0e7ff;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
                 </div>
                 <div>
-                    <p class="dm-sans-regular text-gray-500">Total des livres</p>
-                    <h3 class="text-3xl roboto-mono-semibold text-indigo-600">{{ stats.total_books|default:"0" }}</h3>
+                    <h3 class="text-sm font-medium text-gray-500">Collection</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-3xl counter-animation">{{ stats.total_books|default:"0" }}</span>
+                        <span class="ml-1 text-sm text-gray-500">livres</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">{{ stats.physical_books|default:"0" }} physiques</span>
+                        <span class="mx-1.5 text-gray-300">•</span>
+                        <span class="text-gray-500">{{ stats.ebooks|default:"0" }} numériques</span>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Physical Books -->
-    <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-3001">
-        <div class="p-6">
+        
+        <!-- Members Summary -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-200" style="--accent-color: #8b5cf6; --accent-color-light: #ede9fe;">
             <div class="flex items-center">
-                <div class="p-3 rounded-full bg-blue-50 text-blue-600 mr-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
-                </div>
-                <div>
-                    <p class="dm-sans-regular text-gray-500">Livres physiques</p>
-                    <h3 class="text-3xl roboto-mono-semibold text-blue-600">{{ stats.physical_books|default:"0" }}</h3>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- E-Books -->
-    <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-3002">
-        <div class="p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-green-50 text-green-600 mr-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                </div>
-                <div>
-                    <p class="dm-sans-regular text-gray-500">Livres électroniques</p>
-                    <h3 class="text-3xl roboto-mono-semibold text-green-600">{{ stats.ebooks|default:"0" }}</h3>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Total Members -->
-    <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-3003">
-        <div class="p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-purple-50 text-purple-600 mr-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                 </div>
                 <div>
-                    <p class="dm-sans-regular text-gray-500">Total des membres</p>
-                    <h3 class="text-3xl roboto-mono-semibold text-purple-600">{{ stats.total_members|default:"0" }}</h3>
+                    <h3 class="text-sm font-medium text-gray-500">Membres</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-3xl counter-animation">{{ stats.total_members|default:"0" }}</span>
+                        <span class="ml-1 text-sm text-gray-500">inscrits</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="inline-flex items-center px-1.5 py-0.5 rounded-full bg-green-100 text-green-800">
+                            <svg class="-ml-0.5 mr-1 h-2 w-2 text-green-400" fill="currentColor" viewBox="0 0 8 8">
+                                <circle cx="4" cy="4" r="3" />
+                            </svg>
+                            Actifs
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Active Loans Summary -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-300" style="--accent-color: #eab308; --accent-color-light: #fef9c3;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Prêts actifs</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-3xl counter-animation">{{ stats.active_loans|default:"0" }}</span>
+                        <span class="ml-1 text-sm text-gray-500">en cours</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">{{ upcoming_returns|length }} retours prévus</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Overdue Loans Summary -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-400" style="--accent-color: #ef4444; --accent-color-light: #fee2e2;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Retards</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-3xl counter-animation">{{ stats.overdue_loans|default:"0" }}</span>
+                        <span class="ml-1 text-sm text-gray-500">en retard</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        {% if stats.overdue_loans > 0 %}
+                        <span class="inline-flex items-center px-1.5 py-0.5 rounded-full bg-red-100 text-red-800">
+                            <svg class="-ml-0.5 mr-1 h-2 w-2 text-red-400" fill="currentColor" viewBox="0 0 8 8">
+                                <circle cx="4" cy="4" r="3" />
+                            </svg>
+                            Attention requise
+                        </span>
+                        {% else %}
+                        <span class="text-gray-500">Tout est à jour</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Statistics & Charts Section -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Book Distribution Chart -->
+    <div class="chart-card bg-white p-6 rounded-lg shadow-md animate-fade-in animate-delay-500">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Distribution des livres</h3>
+            <div class="chart-legend flex items-center space-x-4">
+                <div class="flex items-center">
+                    <span class="inline-block w-3 h-3 rounded-full bg-indigo-500 mr-1"></span>
+                    <span class="text-xs text-gray-600">Physiques</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="inline-block w-3 h-3 rounded-full bg-emerald-400 mr-1"></span>
+                    <span class="text-xs text-gray-600">Numériques</span>
+                </div>
+            </div>
+        </div>
+        <div class="chart-container h-64 relative">
+            <canvas id="bookDistributionChart"></canvas>
+            <div class="absolute inset-0 flex items-center justify-center chart-loading">
+                <div class="loading-spinner"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loan Activity Chart -->
+    <div class="chart-card bg-white p-6 rounded-lg shadow-md animate-fade-in animate-delay-600">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Activité des prêts</h3>
+            <div class="chart-controls">
+                <select id="loanPeriodSelect" class="text-xs border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="week">7 derniers jours</option>
+                    <option value="month" selected>30 derniers jours</option>
+                    <option value="quarter">3 derniers mois</option>
+                </select>
+            </div>
+        </div>
+        <div class="chart-container h-64 relative">
+            <canvas id="loanActivityChart"></canvas>
+            <div class="absolute inset-0 flex items-center justify-center chart-loading">
+                <div class="loading-spinner"></div>
+            </div>
+        </div>
+    </div>
+    
+<!-- Additional Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+    <!-- Staff Card -->
+    <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-700" style="--accent-color: #0ea5e9; --accent-color-light: #e0f2fe;">
+        <div class="flex items-center">
+            <div class="stat-icon p-3 rounded-full mr-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Personnel</h3>
+                <div class="flex items-baseline">
+                    <span class="stat-value text-2xl counter-animation">{{ stats.total_staff|default:"0" }}</span>
+                    <span class="ml-1 text-sm text-gray-500">membres</span>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Active Loans -->
-    <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-3004">
-        <div class="p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-yellow-50 text-yellow-600 mr-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                </div>
-                <div>
-                    <p class="dm-sans-regular text-gray-500">Prêts actifs</p>
-                    <h3 class="text-3xl roboto-mono-semibold text-yellow-600">{{ stats.active_loans|default:"0" }}</h3>
+    <!-- Archives Card -->
+    <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-800" style="--accent-color: #f59e0b; --accent-color-light: #fef3c7;">
+        <div class="flex items-center">
+            <div class="stat-icon p-3 rounded-full mr-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Archives</h3>
+                <div class="flex items-baseline">
+                    <span class="stat-value text-2xl counter-animation">{{ stats.total_archives|default:"0" }}</span>
+                    <span class="ml-1 text-sm text-gray-500">documents</span>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- Training Modules Card -->
+    <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-900" style="--accent-color: #10b981; --accent-color-light: #d1fae5;">
+        <div class="flex items-center">
+            <div class="stat-icon p-3 rounded-full mr-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Modules de formation</h3>
+                <div class="flex items-baseline">
+                    <span class="stat-value text-2xl counter-animation">{{ stats.total_training_modules|default:"0" }}</span>
+                    <span class="ml-1 text-sm text-gray-500">modules</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
     
     <!-- Overdue Loans -->
     <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-3005">
@@ -428,81 +692,100 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Book Distribution Chart
         const bookDistributionCtx = document.getElementById('bookDistributionChart').getContext('2d');
-        const bookDistributionChart = new Chart(bookDistributionCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Livres physiques', 'Livres électroniques', 'Autres'],
-                datasets: [{
-                    data: [{{ stats.physical_books|default:"0" }}, {{ stats.ebooks|default:"0" }}, {{ stats.total_books|default:"0" }} - {{ stats.physical_books|default:"0" }} - {{ stats.ebooks|default:"0" }}],
-                    backgroundColor: [
-                        '#3b82f6', // blue
-                        '#10b981', // green
-                        '#6b7280'  // gray
-                    ],
-                    borderColor: '#ffffff',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            font: {
-                                family: "Funnel Sans",
-                                size: 12
+        const bookPhysical = Number('{{ stats.physical_books|default:"0" }}');
+        const bookEbooks = Number('{{ stats.ebooks|default:"0" }}');
+        const bookTotal = Number('{{ stats.total_books|default:"0" }}');
+        const bookOther = Math.max(bookTotal - bookPhysical - bookEbooks, 0);
+        const bookDistributionData = [bookPhysical, bookEbooks, bookOther];
+        let bookDistributionChart;
+        if (bookPhysical + bookEbooks + bookOther > 0) {
+            bookDistributionChart = new Chart(bookDistributionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Livres physiques', 'Livres électroniques', 'Autres'],
+                    datasets: [{
+                        data: bookDistributionData,
+                        backgroundColor: [
+                            '#6366f1', // indigo
+                            '#34d399', // emerald
+                            '#f59e42'  // orange
+                        ],
+                        borderColor: [
+                            '#3730a3',
+                            '#059669',
+                            '#ea580c'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    family: "Funnel Sans",
+                                    size: 12
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
-        
+            });
+        } else {
+            // Show fallback text if no data
+            const bookChartContainer = document.getElementById('bookDistributionChart').parentElement;
+            bookChartContainer.innerHTML = '<div class="flex items-center justify-center h-full text-gray-400">Aucune donnée à afficher</div>';
+        }
+        // Hide spinner if present
+        const bookSpinner = bookDistributionCtx.canvas.parentElement.querySelector('.chart-loading');
+        if (bookSpinner) bookSpinner.style.display = 'none';
+
         // Loan Activity Chart
         const loanActivityCtx = document.getElementById('loanActivityChart').getContext('2d');
-        const loanActivityChart = new Chart(loanActivityCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Prêts actifs', 'Prêts en retard', 'Retours prévus'],
-                datasets: [{
-                    label: 'Nombre',
-                    data: [{{ stats.active_loans|default:"0" }}, {{ stats.overdue_loans|default:"0" }}, {{ upcoming_returns|length|default:"0" }}],
-                    backgroundColor: [
-                        '#eab308', // yellow
-                        '#ef4444', // red
-                        '#8b5cf6'  // purple
-                    ],
-                    borderColor: [
-                        '#d97706',
-                        '#dc2626',
-                        '#7c3aed'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            font: {
-                                family: "Funnel Sans"
-                            }
+        const activeLoans = Number('{{ stats.active_loans|default:"0" }}');
+        const overdueLoans = Number('{{ stats.overdue_loans|default:"0" }}');
+        const upcomingReturns = Number('{{ upcoming_returns|length|default:"0" }}');
+        let loanActivityChart;
+        if (activeLoans + overdueLoans + upcomingReturns > 0) {
+            loanActivityChart = new Chart(loanActivityCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Prêts actifs', 'Prêts en retard', 'Retours prévus'],
+                    datasets: [{
+                        label: 'Nombre',
+                        data: [activeLoans, overdueLoans, upcomingReturns],
+                        backgroundColor: [
+                            '#eab308', // yellow
+                            '#ef4444', // red
+                            '#8b5cf6'  // purple
+                        ],
+                        borderColor: [
+                            '#d97706',
+                            '#dc2626',
+                            '#7c3aed'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
                         }
                     },
-                    x: {
-                        ticks: {
-                            font: {
-                                family: "Funnel Sans"
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
                             }
                         }
                     }
-                },
-                plugins: {
                     legend: {
                         display: false
                     }
@@ -522,29 +805,29 @@
     </div>
 </div>
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12 animate__animated animate__fadeIn">
-    <!-- Recent Activity -->
-    <div class="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
+    <!-- Recent Loans -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden animate-fade-in animate-delay-1000">
         <div class="px-5 py-4 border-b border-gray-100">
             <div class="flex items-center justify-between">
-                <h3 class="text-lg font-medium text-gray-900 flex items-center">
+                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
-                    Activité récente
+                    Prêts récents
                 </h3>
-                <a href="{% url 'center_panel:loans' %}" class="text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:underline">
+                <a href="{% url 'center_panel:loans' %}" class="text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:underline transition-colors">
                     Voir tout →
                 </a>
             </div>
         </div>
         
-        <div class="divide-y divide-gray-100">
+        <div class="divide-y divide-gray-100 max-h-80 overflow-y-auto custom-scrollbar">
             {% for loan in recent_loans|slice:":5" %}
-            <div class="hover:bg-gray-50 transition-colors">
-                <div class="px-5 py-3 flex items-center">
-                    <div class="bg-blue-50 p-2 rounded-md mr-3 flex-shrink-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            <div class="activity-card hover:bg-gray-50 transition-colors">
+                <div class="px-5 py-4 flex items-center">
+                    <div class="bg-indigo-50 p-2.5 rounded-md mr-4 flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
                     </div>
                     <div class="flex-1 min-w-0">
@@ -553,14 +836,19 @@
                     </div>
                     <div class="ml-4 flex flex-col items-end">
                         <p class="text-sm text-gray-500">{{ loan.loan_date|date:"d M" }}</p>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                        <span class="status-badge status-active">
                             En cours
                         </span>
                     </div>
                 </div>
             </div>
             {% empty %}
-            <div class="px-5 py-6 text-center">
+            <div class="px-5 py-8 text-center">
+                <div class="inline-flex items-center justify-center p-3 bg-indigo-50 rounded-full mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
                 <p class="text-gray-500 text-sm">Aucun prêt récent</p>
             </div>
             {% endfor %}
@@ -568,48 +856,55 @@
     </div>
 
     <!-- Upcoming Returns -->
-    <div class="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden animate-fade-in animate-delay-1100">
         <div class="px-5 py-4 border-b border-gray-100">
             <div class="flex items-center justify-between">
-                <h3 class="text-lg font-medium text-gray-900 flex items-center">
+                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     Retours prévus
                 </h3>
-                <a href="{% url 'center_panel:loans' %}?status=active" class="text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:underline">
+                <a href="{% url 'center_panel:loans' %}?status=active" class="text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:underline transition-colors">
                     Voir tout →
                 </a>
             </div>
         </div>
         
-        <div class="divide-y divide-gray-100">
-            {% for return in upcoming_returns|slice:":5" %}
-            <div class="hover:bg-gray-50 transition-colors">
-                <div class="px-5 py-3 flex items-center">
-                    <div class="{% if return.days_remaining < 0 %}bg-red-50{% else %}bg-amber-50{% endif %} p-2 rounded-md mr-3 flex-shrink-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 {% if return.days_remaining < 0 %}text-red-500{% else %}text-amber-500{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="divide-y divide-gray-100 max-h-80 overflow-y-auto custom-scrollbar">
+            {% for loan in upcoming_returns|slice:":5" %}
+            <div class="activity-card hover:bg-gray-50 transition-colors">
+                <div class="px-5 py-4 flex items-center">
+                    <div class="{% if loan.days_left < 0 %}bg-red-50{% else %}bg-amber-50{% endif %} p-2.5 rounded-md mr-4 flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 {% if loan.days_left < 0 %}text-red-500{% else %}text-amber-500{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-gray-900 truncate">{{ return.book.title }}</p>
-                        <p class="text-sm text-gray-500">{{ return.member.full_name|default:return.member.member_id }}</p>
+                        <p class="text-sm font-medium text-gray-900 truncate">{{ loan.book.title }}</p>
+                        <p class="text-sm text-gray-500">{{ loan.member.full_name|default:loan.member.member_id }}</p>
                     </div>
                     <div class="ml-4 flex flex-col items-end">
-                        <p class="text-sm {% if return.days_remaining < 0 %}text-red-600{% else %}text-amber-600{% endif %}">
-                            {{ return.due_date|date:"d M" }}
+                        <p class="text-sm {% if loan.days_left < 0 %}text-red-600{% else %}text-amber-600{% endif %}">
+                            {{ loan.due_date|date:"d M" }}
                         </p>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {% if return.days_remaining < 0 %}bg-red-100 text-red-800{% else %}bg-amber-100 text-amber-800{% endif %}">
-                            {% if return.days_remaining < 0 %}{{ return.days_remaining|stringformat:"d"|slice:"1:" }}j de retard
-                            {% elif return.days_remaining == 0 %}Aujourd'hui
-                            {% else %}{{ return.days_remaining }}j{% endif %}
+                        <span class="status-badge {% if loan.days_left < 0 %}status-overdue{% else %}status-pending{% endif %}">
+                            {% if loan.days_left < 0 %}
+                                {{ loan.days_left_abs }} jour(s) de retard
+                            {% else %}
+                                {{ loan.days_left }} jour(s) restant(s)
+                            {% endif %}
                         </span>
                     </div>
                 </div>
             </div>
             {% empty %}
-            <div class="px-5 py-6 text-center">
+            <div class="px-5 py-8 text-center">
+                <div class="inline-flex items-center justify-center p-3 bg-amber-50 rounded-full mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
                 <p class="text-gray-500 text-sm">Aucun retour prévu</p>
             </div>
             {% endfor %}

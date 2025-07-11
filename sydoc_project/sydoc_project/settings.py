@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "core",
     "superadmin_panel",  # Changed from supe_admin_panel to match directory name
     "center_panel",
+    "markdown_deux",  # For markdown rendering in templates
 ]
 
 MIDDLEWARE = [

@@ -3,6 +3,77 @@
 {% block title %}Formations{% endblock %}
 
 {% block content %}
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">Liste des formations</h1>
-    <p>Ceci est la page d'espace réservé pour les formations.</p>
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Gestion des Formations</h1>
+        <a href="{% url 'center_panel:add_training' %}" class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow transition duration-150 ease-in-out">
+            <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+            Créer une nouvelle formation
+        </a>
+    </div>
+    <div class="bg-white shadow-md rounded-lg overflow-x-auto">
+        <table id="trainings-table" class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Miniature</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Titre de la Formation</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sujet</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for training in trainings %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if training.thumbnail %}
+                        <img src="{{ training.thumbnail.url }}" alt="Miniature" class="w-24 h-16 object-cover rounded shadow border border-gray-200" style="width:100px; height:auto;">
+                        {% else %}
+                        <span class="text-gray-400 italic">Aucune miniature</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ training.title }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ training.subject.name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if training.status == 'published' %}
+                        <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">{{ training.get_status_display }}</span>
+                        {% elif training.status == 'draft' %}
+                        <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">{{ training.get_status_display }}</span>
+                        {% elif training.status == 'archived' %}
+                        <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">{{ training.get_status_display }}</span>
+                        {% else %}
+                        <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">{{ training.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div class="flex justify-end space-x-2">
+    <a href="{% url 'center_panel:training_detail' training.id %}" class="text-indigo-600 hover:text-indigo-800 px-3 py-1 rounded transition border border-indigo-200 bg-indigo-50 font-semibold">Consulter</a>
+    <a href="/center/trainings/{{ training.id }}/edit/" class="text-amber-600 hover:text-amber-800 px-3 py-1 rounded transition">Modifier</a>
+    <a href="/center/trainings/{{ training.id }}/delete/" class="text-red-600 hover:text-red-800 px-3 py-1 rounded transition">Supprimer</a>
+</div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">Aucune formation trouvée.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.jQuery && $.fn.dataTable) {
+            $('#trainings-table').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json'
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

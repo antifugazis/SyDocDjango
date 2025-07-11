@@ -1,0 +1,94 @@
+{% extends 'center_panel/base.html' %}
+
+{% block title %}Rédiger un communiqué{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Back button -->
+    <div class="mb-6">
+        <a href="{% url 'center_panel:communiques' %}" class="inline-flex items-center text-gray-600 hover:text-gray-800">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Retour aux communiqués
+        </a>
+    </div>
+    
+    <div class="bg-white shadow-md rounded-lg overflow-hidden max-w-3xl mx-auto">
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <h1 class="text-xl font-bold text-gray-800">Rédiger un nouveau communiqué</h1>
+            <p class="text-sm text-gray-600 mt-1">Créez un message officiel pour le personnel du centre de documentation.</p>
+        </div>
+        
+        <div class="p-6">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+                
+                <!-- Title field -->
+                <div class="mb-6">
+                    <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.title.label }}
+                    </label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.title.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Objective field -->
+                <div class="mb-6">
+                    <label for="{{ form.objective.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.objective.label }}
+                    </label>
+                    {{ form.objective }}
+                    {% if form.objective.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.objective.errors.0 }}</p>
+                    {% else %}
+                    <p class="mt-1 text-xs text-gray-500">{{ form.objective.help_text }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Message body field -->
+                <div class="mb-6">
+                    <label for="{{ form.message_body.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.message_body.label }}
+                    </label>
+                    {{ form.message_body }}
+                    {% if form.message_body.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.message_body.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Target activities field -->
+                <div class="mb-6">
+                    <label for="{{ form.target_activities.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.target_activities.label }}
+                    </label>
+                    {{ form.target_activities }}
+                    {% if form.target_activities.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.target_activities.errors.0 }}</p>
+                    {% else %}
+                    <p class="mt-1 text-xs text-gray-500">{{ form.target_activities.help_text }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Submit button -->
+                <div class="flex justify-end mt-8">
+                    <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Publier le communiqué
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

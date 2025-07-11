@@ -1,0 +1,52 @@
+{% extends 'center_panel/base.html' %}
+
+{% block title %}Communiqués Officiels{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Communiqués Officiels</h1>
+        <a href="{% url 'center_panel:add_communique' %}" class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow transition duration-150 ease-in-out">
+            <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+            Rédiger un communiqué
+        </a>
+    </div>
+
+    {% if communiques %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for communique in communiques %}
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                    <!-- Card Header -->
+                    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-gray-800 truncate">{{ communique.title }}</h3>
+                        <span class="text-sm text-gray-500">{{ communique.publication_date|date:"d F Y" }}</span>
+                    </div>
+                    
+                    <!-- Card Body -->
+                    <div class="px-6 py-4">
+                        <p class="text-gray-600 line-clamp-3">{{ communique.objective }}</p>
+                    </div>
+                    
+                    <!-- Card Footer -->
+                    <div class="px-6 py-3 bg-gray-50 flex justify-end">
+                        <a href="{% url 'center_panel:communique_detail' communique.id %}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium text-sm">
+                            Lire la suite
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="bg-white shadow-md rounded-lg p-8 text-center">
+            <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"></path>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-700 mb-2">Aucun communiqué disponible</h3>
+            <p class="text-gray-500">Aucun communiqué n'a été publié pour le moment.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
