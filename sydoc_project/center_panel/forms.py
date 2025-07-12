@@ -1,8 +1,8 @@
 # sydoc_project/center_panel/forms.py
 
 from django import forms
-from django.forms.models import modelformset_factory
-from core.models import Book, Author, Category, Member, Loan, Staff, Activity, ArchivalDocument, TrainingSubject, TrainingModule, Lesson, Question, Answer, Communique, Activity
+from django.forms.models import modelformset_factory, inlineformset_factory
+from core.models import Book, Author, Category, Member, Loan, Staff, Activity, ArchivalDocument, TrainingSubject, TrainingModule, Lesson, Question, Answer, Communique, Activity, Role
 
 class BookForm(forms.ModelForm):
     class Meta:
@@ -232,7 +232,33 @@ class TrainingModuleForm(forms.ModelForm):
                 )
         return title
 
+class QuestionForm(forms.ModelForm):
+    class Meta:
+        model = Question
+        fields = ['question_text', 'question_type', 'points', 'order']
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm'
+
+# Formset for the Answers of a single Question
+AnswerFormSet = inlineformset_factory(
+    Question,  # Parent model
+    Answer,    # Child model
+    fields=('answer_text', 'is_correct'),
+    extra=1,   # Start with 2 empty answer fields
+    can_delete=True
+)
+
+# Formset for the Questions of a single Lesson
+QuestionFormSet = inlineformset_factory(
+    Lesson,      # Parent model
+    Question,    # Child model
+    form=QuestionForm,
+    extra=1,     # Start with 1 empty question field
+    can_delete=True
+)
 class LessonForm(forms.ModelForm):
     class Meta:
         model = Lesson
@@ -255,7 +281,7 @@ class LessonForm(forms.ModelForm):
 LessonFormSet = modelformset_factory(
     Lesson,
     form=LessonForm,
-    extra=1, # Start with one empty lesson form
+    extra=1, # Don't add empty lesson forms automatically
     can_delete=True, # Allow deleting lessons from the form
     fields=('title', 'lesson_type', 'video_url', 'text_content', 'order')
 )
@@ -288,3 +314,48 @@ class CommuniqueForm(forms.ModelForm):
         # Apply Tailwind classes
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ['name', 'description']
+        labels = {
+            'name': 'Nom de la catégorie',
+            'description': 'Description',
+        }
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'}),
+            'description': forms.Textarea(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm', 'rows': 3}),
+        }
+
+class AuthorForm(forms.ModelForm):
+    class Meta:
+        model = Author
+        fields = ['first_name', 'last_name', 'biography', 'date_of_birth', 'date_of_death']
+        labels = {
+            'first_name': 'Prénom',
+            'last_name': 'Nom',
+            'biography': 'Biographie',
+            'date_of_birth': 'Date de naissance',
+            'date_of_death': 'Date de décès',
+        }
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'}),
+            'last_name': forms.TextInput(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'}),
+            'biography': forms.Textarea(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm', 'rows': 4}),
+            'date_of_birth': forms.DateInput(attrs={'type': 'date', 'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'}),
+            'date_of_death': forms.DateInput(attrs={'type': 'date', 'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'}),
+        }
+
+class RoleForm(forms.ModelForm):
+    class Meta:
+        model = Role
+        fields = ['name', 'description']
+        labels = {
+            'name': 'Nom du rôle',
+            'description': 'Description',
+        }
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'}),
+            'description': forms.Textarea(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm', 'rows': 3}),
+        }

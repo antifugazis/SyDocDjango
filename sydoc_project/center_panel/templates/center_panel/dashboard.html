@@ -8,7 +8,39 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Funnel+Sans:ital,wght@0,300..800;1,300..800&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
+<style>
+  /* Chart.js styles */
+  .chartjs-size-monitor,
+  .chartjs-size-monitor-shrink,
+  .chartjs-size-monitor-expand {
+    position: absolute;
+    direction: ltr;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    z-index: -1;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .chartjs-size-monitor-shrink,
+  .chartjs-size-monitor-expand {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+  .chartjs-size-monitor-shrink:before,
+  .chartjs-size-monitor-expand:before {
+    content: '';
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+  }
+</style>
 <style>
     /* Google Fonts */
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Roboto+Mono:wght@400;500;600&display=swap');
@@ -686,8 +718,8 @@
     </div>
 </div>
 
-<!-- Chart.js Script -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Book Distribution Chart
@@ -786,14 +818,21 @@
                             }
                         }
                     }
-                    legend: {
-                        display: false
-                    }
                 }
             }
-        });
+            });
+            
+            // Hide spinner if present
+            const loanSpinner = loanActivityCtx.canvas.parentElement.querySelector('.chart-loading');
+            if (loanSpinner) loanSpinner.style.display = 'none';
+        } else {
+            // Show fallback text if no data
+            const loanChartContainer = document.getElementById('loanActivityChart').parentElement;
+            loanChartContainer.innerHTML = '<div class="flex items-center justify-center h-full text-gray-400">Aucune donnée à afficher</div>';
+        }
     });
 </script>
+{% endblock %}
 
 <!-- Recent Loans and Upcoming Returns -->
 <div class="flex items-center justify-between mb-5">

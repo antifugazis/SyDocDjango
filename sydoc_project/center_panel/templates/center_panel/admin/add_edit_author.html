@@ -1,0 +1,142 @@
+{% extends 'center_panel/base.html' %}
+
+{% block title %}
+    {% if is_add %}
+        Ajouter un Auteur
+    {% else %}
+        Modifier l'Auteur
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-3xl mx-auto">
+        <!-- Page Header -->
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">
+                {% if is_add %}
+                    Ajouter un Auteur
+                {% else %}
+                    Modifier l'Auteur: {{ author.first_name }} {{ author.last_name }}
+                {% endif %}
+            </h1>
+            <p class="text-gray-600 mt-1">
+                {% if is_add %}
+                    Créez un nouvel auteur pour les livres de la bibliothèque.
+                {% else %}
+                    Modifiez les informations de cet auteur.
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- Form -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="p-4 mb-4 bg-red-100 text-red-700 rounded-md">
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <!-- First Name Field -->
+                    <div>
+                        <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ form.first_name.label }}
+                        </label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
+                            <div class="text-red-500 text-sm mt-1">
+                                {% for error in form.first_name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Last Name Field -->
+                    <div>
+                        <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ form.last_name.label }}
+                        </label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                            <div class="text-red-500 text-sm mt-1">
+                                {% for error in form.last_name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Date of Birth Field -->
+                    <div>
+                        <label for="{{ form.date_of_birth.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ form.date_of_birth.label }}
+                        </label>
+                        {{ form.date_of_birth }}
+                        {% if form.date_of_birth.errors %}
+                            <div class="text-red-500 text-sm mt-1">
+                                {% for error in form.date_of_birth.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Date of Death Field -->
+                    <div>
+                        <label for="{{ form.date_of_death.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ form.date_of_death.label }}
+                        </label>
+                        {{ form.date_of_death }}
+                        {% if form.date_of_death.errors %}
+                            <div class="text-red-500 text-sm mt-1">
+                                {% for error in form.date_of_death.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">
+                            Laissez vide si l'auteur est toujours en vie.
+                        </p>
+                    </div>
+                    
+                    <!-- Biography Field -->
+                    <div>
+                        <label for="{{ form.biography.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ form.biography.label }}
+                        </label>
+                        {{ form.biography }}
+                        {% if form.biography.errors %}
+                            <div class="text-red-500 text-sm mt-1">
+                                {% for error in form.biography.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="flex justify-end space-x-3 pt-5">
+                        <a href="{% url 'center_panel:authors' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Annuler
+                        </a>
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            {% if is_add %}
+                                Créer l'Auteur
+                            {% else %}
+                                Enregistrer les Modifications
+                            {% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

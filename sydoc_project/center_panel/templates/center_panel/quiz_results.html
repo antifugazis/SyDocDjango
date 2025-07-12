@@ -1,0 +1,153 @@
+{% extends 'center_panel/base.html' %}
+
+{% block title %}Résultats du Quiz - {{ training_record.training_module.title }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto">
+        <!-- Breadcrumb -->
+        <nav class="mb-8">
+            <ol class="flex items-center space-x-2 text-sm">
+                <li>
+                    <a href="{% url 'center_panel:training_detail' training_record.training_module.id %}" 
+                       class="text-indigo-600 hover:text-indigo-800">
+                        {{ training_record.training_module.title }}
+                    </a>
+                </li>
+                <li class="text-gray-500">/</li>
+                <li class="text-gray-700 font-medium">Résultats</li>
+            </ol>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+            <!-- Result Header -->
+            <div class="px-8 py-6 border-b border-gray-200">
+                <h1 class="text-2xl font-bold text-gray-900">Résultats du Quiz</h1>
+                <p class="mt-1 text-gray-600">{{ training_record.training_module.title }}</p>
+            </div>
+
+            <!-- Result Content -->
+            <div class="p-8">
+                {% if training_record.passed %}
+                    <!-- Success State -->
+                    <div class="text-center mb-8">
+                        <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-100">
+                            <svg class="h-12 w-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <h2 class="mt-4 text-2xl font-bold text-green-700">Félicitations, vous avez réussi !</h2>
+                        <p class="mt-2 text-gray-600">Vous avez terminé cette formation avec succès.</p>
+                    </div>
+
+                    <!-- Results Card -->
+                    <div class="max-w-md mx-auto border-2 border-green-200 rounded-lg overflow-hidden mb-8">
+                        <div class="p-6">
+                            <div class="flex justify-between py-3 border-b border-gray-100">
+                                <span class="font-medium text-gray-700">Formation</span>
+                                <span class="text-gray-900">{{ training_record.training_module.title }}</span>
+                            </div>
+                            <div class="flex justify-between py-3 border-b border-gray-100">
+                                <span class="font-medium text-gray-700">Votre score</span>
+                                <span class="font-semibold text-green-600">{{ training_record.score|floatformat:0 }}%</span>
+                            </div>
+                            <div class="flex justify-between py-3">
+                                <span class="font-medium text-gray-700">Statut</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-green-400" fill="currentColor" viewBox="0 0 8 8">
+                                        <circle cx="4" cy="4" r="3" />
+                                    </svg>
+                                    Réussi
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="mt-10 flex justify-center space-x-4">
+                        <a href="{% url 'center_panel:training_list' %}" 
+                           class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Retourner aux Formations
+                        </a>
+                    </div>
+                {% else %}
+                    <!-- Failure State -->
+                    <div class="text-center mb-8">
+                        <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-red-100">
+                            <svg class="h-12 w-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </div>
+                        <h2 class="mt-4 text-2xl font-bold text-red-700">Vous n'avez pas atteint le score requis</h2>
+                        <p class="mt-2 text-gray-600">Ne vous inquiétez pas, vous pouvez réessayer.</p>
+                    </div>
+
+                    <!-- Results Card -->
+                    <div class="max-w-md mx-auto border-2 border-red-200 rounded-lg overflow-hidden mb-8">
+                        <div class="p-6">
+                            <div class="flex justify-between py-3 border-b border-gray-100">
+                                <span class="font-medium text-gray-700">Formation</span>
+                                <span class="text-gray-900">{{ training_record.training_module.title }}</span>
+                            </div>
+                            <div class="flex justify-between py-3 border-b border-gray-100">
+                                <span class="font-medium text-gray-700">Votre score</span>
+                                <span class="font-semibold text-red-600">{{ training_record.score|floatformat:0 }}%</span>
+                            </div>
+                            <div class="flex justify-between py-3 border-b border-gray-100">
+                                <span class="font-medium text-gray-700">Score requis</span>
+                                <span class="text-gray-900">{{ training_record.training_module.points_to_pass }}%</span>
+                            </div>
+                            <div class="flex justify-between py-3">
+                                <span class="font-medium text-gray-700">Statut</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-red-400" fill="currentColor" viewBox="0 0 8 8">
+                                        <circle cx="4" cy="4" r="3" />
+                                    </svg>
+                                    Échoué
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+                        <a href="{% url 'center_panel:lesson_quiz' training_record.lesson.id %}" 
+                           class="inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Réessayer le Quiz
+                        </a>
+                        <a href="{% url 'center_panel:lesson_detail' training_record.lesson.id %}" 
+                           class="inline-flex justify-center items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Réviser la Leçon
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Additional Resources -->
+        <div class="mt-10 text-center">
+            <p class="text-sm text-gray-500">
+                Besoin d'aide ? 
+                <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">
+                    Contactez notre support
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add any additional JavaScript for result page here
+    document.addEventListener('DOMContentLoaded', function() {
+        // Example: Track when user views their results
+        console.log('Quiz results viewed', {
+            module: '{{ training_record.training_module.title|escapejs }}',
+            score: {{ training_record.score|floatformat:0 }},
+            passed: {{ training_record.passed|yesno:'true,false' }}
+        });
+    });
+</script>
+{% endblock %}

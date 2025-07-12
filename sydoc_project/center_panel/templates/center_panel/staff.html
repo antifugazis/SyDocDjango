@@ -1,4 +1,5 @@
 {% extends 'center_panel/base.html' %}
+{% load static %}
 
 {% block title %}Gestion du Personnel{% endblock %}
 
@@ -27,50 +28,54 @@
         <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
                 <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                    <table class="min-w-full divide-y divide-gray-300" id="staff-table" data-datatable>
+                    <table class="min-w-full divide-y divide-gray-300" id="staff-table">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Nom complet</th>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Poste</th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Rôle</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Adresse</th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Email</th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Téléphone</th>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Date d'embauche</th>
                                 <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
                                     <span class="sr-only">Actions</span>
                                 </th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 bg-white">
-                            {% for staff in staff_list %}
+                            {% for staff_member in staff %}
                             <tr>
                                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                                    {{ staff.full_name }}
-                                </td>
-                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                    {{ staff.position|default:"-" }}
+                                    {{ staff_member.full_name }}
                                 </td>
                                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                     <span class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
-                                        {{ staff.get_role_display|default:"-" }}
+                                        {{ staff_member.role.name|default:"Aucun rôle" }}
                                     </span>
                                 </td>
+                                <td class="px-3 py-4 text-sm text-gray-500 max-w-xs truncate" title="{{ staff_member.address|default:'-' }}">
+                                    {{ staff_member.address|default:"-" }}
+                                </td>
                                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                    <a href="mailto:{{ staff.email }}" class="text-blue-600 hover:text-blue-900">
-                                        {{ staff.email }}
+                                    <a href="mailto:{{ staff_member.email }}" class="text-blue-600 hover:text-blue-900">
+                                        {{ staff_member.email }}
                                     </a>
                                 </td>
                                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                    {{ staff.phone_number_1|default:"-" }}
+                                    {{ staff_member.phone_number|default:"-" }}
+                                </td>
+                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                    {{ staff_member.date_hired|date:"d/m/Y"|default:"-" }}
                                 </td>
                                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                     <div class="flex space-x-2 justify-end">
-                                        <a href="{% url 'center_panel:edit_staff' staff.pk %}" class="text-yellow-600 hover:text-yellow-900">
+                                        <a href="{% url 'center_panel:edit_staff' staff_member.pk %}" class="text-yellow-600 hover:text-yellow-900">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                                 <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                                             </svg>
                                             <span class="sr-only">Modifier</span>
                                         </a>
-                                        <a href="{% url 'center_panel:delete_staff' staff.pk %}" class="text-red-600 hover:text-red-900">
+                                        <a href="{% url 'center_panel:delete_staff' staff_member.pk %}" class="text-red-600 hover:text-red-900">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                                 <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
                                             </svg>
@@ -99,39 +104,25 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize DataTable with French language and custom options
-        let table;
-        if ($.fn.DataTable.isDataTable('#staff-table')) {
-            table = $('#staff-table').DataTable();
-        } else {
-            table = new DataTable('#staff-table', {
-                language: {
-                    url: '//cdn.datatables.net/plug-ins/2.3.2/i18n/fr-FR.json'
-                },
-                responsive: true,
-                pageLength: 25,
-                columnDefs: [
-                    { responsivePriority: 1, targets: 0 }, // Name
-                    { responsivePriority: 2, targets: -1 }, // Actions
-                    { orderable: false, targets: [-1] } // Make actions column not sortable
-                ],
-                dom: '<"flex flex-col md:flex-row md:items-center md:justify-between"<"mb-4"l><"mb-4 md:mb-0"f>>rt<"flex flex-col md:flex-row md:items-center md:justify-between"<"mb-2"i><"mb-2 md:mb-0"p>>',
-                initComplete: function() {
-                    // Add custom class to search input
-                    $('.dataTables_filter input').addClass('form-input w-full md:w-auto');
-                    // Add custom class to length select
-                    $('.dataTables_length select').addClass('form-select');
-                }
-            });
-            
-            // Add custom styling to pagination buttons
-            $('.dataTables_paginate .paginate_button').on('mouseover', function() {
-                $(this).addClass('hover:bg-gray-100');
-            }).on('mouseout', function() {
-                if (!$(this).hasClass('current')) {
-                    $(this).removeClass('hover:bg-gray-100');
-                }
-            });
-        }
+        $('#staff-table').DataTable({
+            language: {
+                url: '{% static 'center_panel/js/dataTables.french.json' %}'
+            },
+            responsive: true,
+            pageLength: 25,
+            columnDefs: [
+                { responsivePriority: 1, targets: 0 }, // Name
+                { responsivePriority: 2, targets: -1 }, // Actions
+                { orderable: false, targets: -1 } // Make actions column not sortable
+            ],
+            dom: '<"flex flex-col md:flex-row md:items-center md:justify-between"<"mb-4"l><"mb-4 md:mb-0"f>>rt<"flex flex-col md:flex-row md:items-center md:justify-between"<"mb-2"i><"mb-2 md:mb-0"p>>',
+            initComplete: function() {
+                // Add custom class to search input
+                $('.dataTables_filter input').addClass('form-input w-full md:w-auto');
+                // Add custom class to length select
+                $('.dataTables_length select').addClass('form-select');
+            }
+        });
     });
 </script>
 {% endblock %}

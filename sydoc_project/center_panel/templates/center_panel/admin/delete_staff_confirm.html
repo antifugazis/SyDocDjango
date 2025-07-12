@@ -46,8 +46,12 @@
     </div>
 </div>
 
-<!-- Modal Version (for JavaScript-triggered modals) -->
-<template id="deleteModalTemplate">
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Modal template as a JavaScript template literal
+const deleteModalTemplate = `
     <div class="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <!-- Background overlay -->
@@ -80,7 +84,7 @@
                 </div>
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                     <form method="post" id="deleteForm" class="sm:ml-3">
-                        {% csrf_token %}
+                        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                         <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
                             Oui, supprimer
                         </button>
@@ -92,60 +96,61 @@
             </div>
         </div>
     </div>
-</template>
+`;
 
-{% block extra_js %}
-<script>
-    // Function to open the modal (for JavaScript-triggered modals)
-    function openDeleteModal(staffId, staffName) {
-        const modal = document.createElement('div');
-        modal.id = 'deleteModal';
-        modal.innerHTML = document.getElementById('deleteModalTemplate').innerHTML;
-        
-        // Set the staff name in the modal
-        if (staffName) {
-            const nameElement = modal.querySelector('#staffName');
-            if (nameElement) nameElement.textContent = '"' + staffName + '"';
-        }
-        
-        // Set the form action
-        const form = modal.querySelector('#deleteForm');
-        if (form) {
-            form.action = `/center/staff/${staffId}/delete/`;
-        }
-        
-        // Add close modal handler
-        const closeButton = modal.querySelector('button[onclick="closeModal()"]');
-        if (closeButton) {
-            closeButton.onclick = () => document.body.removeChild(modal);
-        }
-        
-        // Add click outside to close
-        modal.querySelector('.fixed.inset-0').onclick = () => document.body.removeChild(modal);
-        
-        // Add to body and show
-        document.body.appendChild(modal);
-        return false;
+// Function to open the modal (for JavaScript-triggered modals)
+function openDeleteModal(staffId, staffName) {
+    const modal = document.createElement('div');
+    modal.id = 'deleteModal';
+    modal.innerHTML = deleteModalTemplate;
+    
+    // Set the staff name in the modal
+    if (staffName) {
+        const nameElement = modal.querySelector('#staffName');
+        if (nameElement) nameElement.textContent = '"' + staffName + '"';
     }
     
-    // Function to close the modal (for JavaScript-triggered modals)
-    function closeModal() {
-        const modal = document.getElementById('deleteModal');
-        if (modal) {
-            document.body.removeChild(modal);
-        }
+    // Set the form action
+    const form = modal.querySelector('#deleteForm');
+    if (form) {
+        form.action = `/center/staff/${staffId}/delete/`;
     }
     
-    // Add click handlers to all delete buttons on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('a[data-delete-staff]').forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-                const staffId = this.getAttribute('data-staff-id');
-                const staffName = this.getAttribute('data-staff-name');
-                openDeleteModal(staffId, staffName);
-            });
+    // Add close modal handler
+    const closeButton = modal.querySelector('button[onclick="closeModal()"]');
+    if (closeButton) {
+        closeButton.onclick = () => document.body.removeChild(modal);
+    }
+    
+    // Add click outside to close
+    const overlay = modal.querySelector('.fixed.inset-0');
+    if (overlay) {
+        overlay.onclick = () => document.body.removeChild(modal);
+    }
+    
+    // Add to body and show
+    document.body.appendChild(modal);
+    return false;
+}
+
+// Function to close the modal (for JavaScript-triggered modals)
+function closeModal() {
+    const modal = document.getElementById('deleteModal');
+    if (modal) {
+        document.body.removeChild(modal);
+    }
+}
+
+// Add click handlers to all delete buttons on page load
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('a[data-delete-staff]').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const staffId = this.getAttribute('data-staff-id');
+            const staffName = this.getAttribute('data-staff-name');
+            openDeleteModal(staffId, staffName);
         });
     });
+});
 </script>
 {% endblock %}

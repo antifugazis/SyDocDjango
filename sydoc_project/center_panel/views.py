@@ -3,9 +3,10 @@ from django.db.models import Q, Sum
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
+from django.http import JsonResponse
 import os
-from core.models import DocumentationCenter, Book, Member, Loan, Staff, ArchivalDocument, TrainingModule, Activity, TrainingSubject, TrainingModule, Lesson, Communique, Question, Answer, StaffTrainingRecord, Quiz 
-from .forms import BookForm, MemberForm, CreateLoanForm, StaffForm, ActivityForm, ArchiveForm, TrainingSubjectForm, TrainingModuleForm, LessonFormSet, CommuniqueForm
+from core.models import DocumentationCenter, Book, Member, Loan, Staff, ArchivalDocument, TrainingModule, Activity, TrainingSubject, TrainingModule, Lesson, Communique, Question, Answer, StaffTrainingRecord, Quiz, Category, Author, Role
+from .forms import BookForm, MemberForm, CreateLoanForm, StaffForm, ActivityForm, ArchiveForm, TrainingSubjectForm, TrainingModuleForm, LessonFormSet, CommuniqueForm, TrainingModuleForm, LessonForm, QuestionFormSet, CategoryForm, AuthorForm, RoleForm
 from django.db.models import Count
 from django.utils import timezone
 from datetime import timedelta
@@ -899,47 +900,43 @@ def lesson_quiz(request, pk):
 
 @login_required
 def edit_training_module(request, pk):
-    """
-    This view handles editing an existing training module and its lessons.
-    """
     current_center = DocumentationCenter.objects.first()
     training_module = get_object_or_404(TrainingModule, pk=pk, documentation_center=current_center)
 
     if request.method == 'POST':
-        form = TrainingModuleForm(request.POST, request.FILES, instance=training_module, documentation_center=current_center)
-        # We pass the instance to the formset to edit existing lessons
-        lesson_formset = LessonFormSet(request.POST, queryset=Lesson.objects.filter(training_module=training_module))
-
-        if form.is_valid() and lesson_formset.is_valid():
-            form.save() # Save changes to the main module
-
-            # Save changes to the lessons
-            lessons = lesson_formset.save(commit=False)
-            for lesson in lessons:
-                lesson.training_module = training_module
-                lesson.save()
+        form = TrainingModuleForm(request.POST, request.FILES, instance=training_module)
+        if form.is_valid():
+            # Save the main module first
+            module = form.save()
             
-            # This handles the deletion of lessons marked for deletion
-            lesson_formset.save_m2m() 
-            # This deletes lessons that were removed from the formset
-            for lesson in lesson_formset.deleted_objects:
-                lesson.delete()
+            # Now process the lessons and their nested questions
+            lessons = module.lessons.all()
+            for lesson in lessons:
+                # Create a QuestionFormSet for each individual lesson
+                question_formset = QuestionFormSet(request.POST, instance=lesson, prefix=f'questions-{lesson.id}')
+                if question_formset.is_valid():
+                    question_formset.save()
 
-
-            messages.success(request, f"La formation '{training_module.title}' a été mise à jour.")
+            messages.success(request, f"La formation '{module.title}' et ses quiz ont été mis à jour.")
             return redirect('center_panel:trainings')
         else:
             messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
 
-    else:
-        # On a GET request, populate the form and formset with existing data
-        form = TrainingModuleForm(instance=training_module, documentation_center=current_center)
-        lesson_formset = LessonFormSet(queryset=Lesson.objects.filter(training_module=training_module))
+    else: # GET request
+        form = TrainingModuleForm(instance=training_module)
+
+    # Prepare a list of formsets, one for each lesson, for the template
+    lesson_question_formsets = []
+    for lesson in training_module.lessons.all():
+        lesson_question_formsets.append({
+            'lesson': lesson,
+            'formset': QuestionFormSet(instance=lesson, prefix=f'questions-{lesson.id}')
+        })
 
     context = {
         'form': form,
-        'lesson_formset': lesson_formset,
-        'training_module': training_module, # Pass the module to the template
+        'training_module': training_module,
+        'lesson_question_formsets': lesson_question_formsets, # Pass the list of formsets
         'current_center': current_center,
     }
     # We reuse the same template for adding and editing
@@ -1012,14 +1009,43 @@ def lesson_quiz(request, pk):
     """
     Displays the quiz for a specific lesson and processes the submission.
     """
+    print("\n=== DEBUG: lesson_quiz view started ===")
+    print(f"Request method: {request.method}")
+    print(f"Lesson PK: {pk}")
+    
+    # Get current center (using first() for now, should be from request.user in production)
     current_center = DocumentationCenter.objects.first()
-    lesson = get_object_or_404(
-        Lesson,
-        pk=pk,
-        training_module__documentation_center=current_center
-    )
-    # Get all questions for the lesson, prefetching the answers to be efficient
-    questions = lesson.questions.prefetch_related('answers')
+    print(f"Current center: {current_center}")
+    
+    # Debug: Print all lessons to check if the requested one exists
+    all_lessons = Lesson.objects.all()
+    print(f"\nAll lessons in database ({all_lessons.count()} total):")
+    for l in all_lessons:
+        print(f"- {l.id}: {l.title} (Module: {l.training_module.title} - Center: {l.training_module.documentation_center.name if l.training_module.documentation_center else 'None'})")
+    
+    # Get the requested lesson
+    try:
+        lesson = Lesson.objects.get(
+            pk=pk,
+            training_module__documentation_center=current_center
+        )
+        print(f"\nFound lesson: {lesson.title} (ID: {lesson.id})")
+    except Lesson.DoesNotExist:
+        print(f"\nERROR: Lesson with pk={pk} not found for center {current_center}")
+        raise Http404("Lesson not found")
+    
+    # Get all questions for the lesson
+    questions = lesson.questions.prefetch_related('answers').all()
+    questions_count = questions.count()
+    print(f"\nFound {questions_count} questions for lesson {lesson.id}:")
+    
+    # Debug: Print detailed question and answer information
+    for i, question in enumerate(questions, 1):
+        answers = list(question.answers.all())
+        print(f"\nQuestion {i} (ID: {question.id}, Points: {question.points}): {question.question_text}")
+        print(f"  Answers ({len(answers)}):")
+        for j, answer in enumerate(answers, 1):
+            print(f"  {j}. {answer.answer_text} (ID: {answer.id}, Correct: {answer.is_correct})")
     
     # This is a placeholder for the current staff member taking the quiz
     # In a real app, you would get this from the logged-in user's profile
@@ -1063,7 +1089,8 @@ def lesson_quiz(request, pk):
         'questions': questions,
         'current_center': current_center,
     }
-    return render(request, 'center_panel/public/lesson_quiz_page.html', context)
+    # Use the SurveyJS template instead of the direct rendering template
+    return render(request, 'center_panel/lesson_quiz.html', context)
 
 
 # --- ADD THIS NEW view for the results page ---
@@ -1086,3 +1113,252 @@ def quiz_results(request, pk):
         'current_center': current_center,
     }
     return render(request, 'center_panel/public/quiz_results_page.html', context)
+
+@login_required
+def lesson_quiz_api(request, pk):
+    """
+    This view provides the quiz data in a JSON format for the SurveyJS library.
+    """
+    lesson = get_object_or_404(Lesson, pk=pk)
+    questions = lesson.questions.prefetch_related('answers')
+
+    # Build the JSON structure that SurveyJS expects
+    survey_json = {
+        "title": f"Quiz for {lesson.title}",
+        "showQuestionNumbers": "on",
+        "completedHtml": "<h4>You have answered correctly <b>{correctAnswers}</b> out of <b>{questionCount}</b> questions.</h4>", # Results page
+        "pages": [
+            {
+                "name": "quiz_page",
+                "elements": [
+                    {
+                        "type": "radiogroup", # for multiple choice
+                        "name": str(q.id),
+                        "title": q.question_text,
+                        "choices": [
+                            {
+                                "value": str(a.id),
+                                "text": a.answer_text
+                            } for a in q.answers.all()
+                        ],
+                        "correctAnswer": str(q.answers.get(is_correct=True).id) if q.answers.filter(is_correct=True).exists() else None
+                    } for q in questions if q.question_type == 'mc'
+                ]
+            }
+        ]
+    }
+    
+    return JsonResponse(survey_json)
+
+# Category CRUD Views
+@login_required
+def category_list(request):
+    """Display all book categories."""
+    current_center = DocumentationCenter.objects.first()
+    categories = Category.objects.all().order_by('name')
+    
+    context = {
+        'categories': categories,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/admin/category_list.html', context)
+
+@login_required
+def add_category(request):
+    """Add a new book category."""
+    current_center = DocumentationCenter.objects.first()
+    
+    if request.method == 'POST':
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Catégorie ajoutée avec succès.')
+            return redirect('center_panel:categories')
+    else:
+        form = CategoryForm()
+    
+    context = {
+        'form': form,
+        'current_center': current_center,
+        'is_add': True,
+    }
+    return render(request, 'center_panel/admin/add_edit_category.html', context)
+
+@login_required
+def edit_category(request, pk):
+    """Edit an existing book category."""
+    current_center = DocumentationCenter.objects.first()
+    category = get_object_or_404(Category, pk=pk)
+    
+    if request.method == 'POST':
+        form = CategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Catégorie modifiée avec succès.')
+            return redirect('center_panel:categories')
+    else:
+        form = CategoryForm(instance=category)
+    
+    context = {
+        'form': form,
+        'category': category,
+        'current_center': current_center,
+        'is_add': False,
+    }
+    return render(request, 'center_panel/admin/add_edit_category.html', context)
+
+@login_required
+def delete_category(request, pk):
+    """Delete a book category."""
+    category = get_object_or_404(Category, pk=pk)
+    
+    # Check if the category is associated with any books
+    if Book.objects.filter(category=category).exists():
+        messages.error(request, 'Impossible de supprimer cette catégorie car elle est associée à des livres.')
+    else:
+        category.delete()
+        messages.success(request, 'Catégorie supprimée avec succès.')
+    
+    return redirect('center_panel:categories')
+
+# Author CRUD Views
+@login_required
+def author_list(request):
+    """Display all book authors."""
+    current_center = DocumentationCenter.objects.first()
+    authors = Author.objects.all().order_by('last_name', 'first_name')
+    
+    context = {
+        'authors': authors,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/admin/author_list.html', context)
+
+@login_required
+def add_author(request):
+    """Add a new book author."""
+    current_center = DocumentationCenter.objects.first()
+    
+    if request.method == 'POST':
+        form = AuthorForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Auteur ajouté avec succès.')
+            return redirect('center_panel:authors')
+    else:
+        form = AuthorForm()
+    
+    context = {
+        'form': form,
+        'current_center': current_center,
+        'is_add': True,
+    }
+    return render(request, 'center_panel/admin/add_edit_author.html', context)
+
+@login_required
+def edit_author(request, pk):
+    """Edit an existing book author."""
+    current_center = DocumentationCenter.objects.first()
+    author = get_object_or_404(Author, pk=pk)
+    
+    if request.method == 'POST':
+        form = AuthorForm(request.POST, instance=author)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Auteur modifié avec succès.')
+            return redirect('center_panel:authors')
+    else:
+        form = AuthorForm(instance=author)
+    
+    context = {
+        'form': form,
+        'author': author,
+        'current_center': current_center,
+        'is_add': False,
+    }
+    return render(request, 'center_panel/admin/add_edit_author.html', context)
+
+@login_required
+def delete_author(request, pk):
+    """Delete a book author."""
+    author = get_object_or_404(Author, pk=pk)
+    
+    # Check if the author is associated with any books
+    if author.book_set.exists():
+        messages.error(request, 'Impossible de supprimer cet auteur car il est associé à des livres.')
+    else:
+        author.delete()
+        messages.success(request, 'Auteur supprimé avec succès.')
+    
+    return redirect('center_panel:authors')
+
+# Role CRUD Views
+@login_required
+def role_list(request):
+    """Display all staff roles."""
+    current_center = DocumentationCenter.objects.first()
+    roles = Role.objects.all().order_by('name')
+    
+    context = {
+        'roles': roles,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/admin/role_list.html', context)
+
+@login_required
+def add_role(request):
+    """Add a new staff role."""
+    current_center = DocumentationCenter.objects.first()
+    
+    if request.method == 'POST':
+        form = RoleForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Rôle ajouté avec succès.')
+            return redirect('center_panel:roles')
+    else:
+        form = RoleForm()
+    
+    context = {
+        'form': form,
+        'current_center': current_center,
+        'is_add': True,
+    }
+    return render(request, 'center_panel/admin/add_edit_role.html', context)
+
+@login_required
+def edit_role(request, pk):
+    """Edit an existing staff role."""
+    current_center = DocumentationCenter.objects.first()
+    role = get_object_or_404(Role, pk=pk)
+    
+    if request.method == 'POST':
+        form = RoleForm(request.POST, instance=role)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Rôle modifié avec succès.')
+            return redirect('center_panel:roles')
+    else:
+        form = RoleForm(instance=role)
+    
+    context = {
+        'form': form,
+        'role': role,
+        'current_center': current_center,
+        'is_add': False,
+    }
+    return render(request, 'center_panel/admin/add_edit_role.html', context)
+
+@login_required
+def delete_role(request, pk):
+    """Delete a staff role."""
+    role = get_object_or_404(Role, pk=pk)
+    
+    # Check if the role is associated with any staff members
+    if Staff.objects.filter(role=role).exists():
+        messages.error(request, 'Impossible de supprimer ce rôle car il est associé à des membres du personnel.')
+    else:
+        role.delete()
+        messages.success(request, 'Rôle supprimé avec succès.')
+    
+    return redirect('center_panel:roles')

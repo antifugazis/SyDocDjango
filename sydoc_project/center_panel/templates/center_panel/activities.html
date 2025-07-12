@@ -207,7 +207,7 @@
         $('#activity-table').DataTable({
             responsive: true,
             language: {
-                url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/French.json'
+url: '{% static 'center_panel/js/dataTables.french.json' %}'
             },
             columnDefs: [
                 { orderable: false, targets: [5] } // Disable sorting on Actions column

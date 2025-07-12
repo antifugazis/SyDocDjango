@@ -8,6 +8,53 @@
     {% endif %}
 {% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Quiz question styling */
+    .question-form {
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+    
+    .answer-form {
+        background-color: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.375rem;
+        padding: 0.75rem;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .delete-question {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        color: #ef4444;
+        cursor: pointer;
+    }
+    
+    .delete-answer {
+        color: #ef4444;
+        cursor: pointer;
+        margin-left: 0.5rem;
+    }
+    
+    .add-answer-btn {
+        margin-top: 0.5rem;
+    }
+    
+    .quiz-section {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px dashed #d1d5db;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-4xl mx-auto">
@@ -270,6 +317,96 @@
                                 <p class="mt-1 text-sm text-red-600">{{ lesson_form.text_content.errors.0 }}</p>
                                 {% endif %}
                             </div>
+                            
+                            <!-- Quiz Section -->
+                            <div class="quiz-section mt-6">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h3 class="text-md font-medium text-gray-800">Quiz pour cette Leçon</h3>
+                                    <button type="button" class="add-question-btn inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                        <svg class="-ml-0.5 mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                        </svg>
+                                        Ajouter une question
+                                    </button>
+                                </div>
+                                
+                                <div class="questions-container">
+                                    {% for question_data in lesson_question_formsets %}
+                                        {% if question_data.lesson.id == lesson.id %}
+                                            {% with question_data.formset as lesson_questions %}
+                                        {% if lesson_questions %}
+                                            {% for question_form in lesson_questions %}
+                                                <div class="question-form mb-4">
+                                                    {% if question_form.instance.pk %}
+                                                        {{ question_form.id }}
+                                                        <input type="hidden" name="lessons-{{ forloop.parentloop.counter0 }}-questions-{{ forloop.counter0 }}-id" value="{{ question_form.instance.id }}">
+                                                    {% endif %}
+                                                    
+                                                    <button type="button" class="delete-question text-red-600 hover:text-red-800">
+                                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                    
+                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label class="block text-sm font-medium text-gray-700">Question</label>
+                                                            {{ question_form.question_text }}
+                                                        </div>
+                                                        <div class="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <label class="block text-sm font-medium text-gray-700">Type</label>
+                                                                {{ question_form.question_type }}
+                                                            </div>
+                                                            <div>
+                                                                <label class="block text-sm font-medium text-gray-700">Points</label>
+                                                                {{ question_form.points }}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Answers -->
+                                                    <div class="answers-container mt-4">
+                                                        {% for answer_form in question_form.answer_forms %}
+                                                            <div class="answer-form flex items-center">
+                                                                {% if answer_form.instance.pk %}
+                                                                    {{ answer_form.id }}
+                                                                    <input type="hidden" name="lessons-{{ forloop.parentloop.parentloop.parentloop.counter0 }}-questions-{{ forloop.parentloop.parentloop.counter0 }}-answers-{{ forloop.counter0 }}-id" value="{{ answer_form.instance.id }}">
+                                                                {% endif %}
+                                                                
+                                                                <div class="flex-grow">
+                                                                    {{ answer_form.answer_text }}
+                                                                </div>
+                                                                <div class="flex items-center ml-4">
+                                                                    {{ answer_form.is_correct }}
+                                                                    <label class="ml-2 block text-sm text-gray-700">Correcte</label>
+                                                                </div>
+                                                                <button type="button" class="delete-answer text-red-600 hover:text-red-800 ml-4">
+                                                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                    
+                                                    <button type="button" class="add-answer-btn mt-2 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                                        <svg class="-ml-0.5 mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                                        </svg>
+                                                        Ajouter une réponse
+                                                    </button>
+                                                </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                            {% endwith %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                
+                                <!-- Management forms for questions -->
+                                {{ lesson_questions.management_form }}
+                            </div>
                         </div>
                         {% endfor %}
                     </div>
@@ -289,7 +426,81 @@
     </div>
 </div>
 
-<!-- Empty Form Template for JavaScript -->
+<!-- Empty Question Form Template for JavaScript -->
+<template id="question-form-template">
+    <div class="question-form mb-4">
+        <button type="button" class="delete-question text-red-600 hover:text-red-800">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+        </button>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Question</label>
+                <input type="text" name="questions-__prefix__-question_text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Type</label>
+                    <select name="questions-__prefix__-question_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <option value="multiple_choice">Choix multiple</option>
+                        <option value="true_false">Vrai/Faux</option>
+                        <option value="short_answer">Réponse courte</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Points</label>
+                    <input type="number" name="questions-__prefix__-points" value="1" min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Answers container -->
+        <div class="answers-container mt-4">
+            <div class="answer-form flex items-center">
+                <div class="flex-grow">
+                    <input type="text" name="questions-__prefix__-answers-0-answer_text" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Réponse">
+                </div>
+                <div class="flex items-center ml-4">
+                    <input type="checkbox" name="questions-__prefix__-answers-0-is_correct" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                    <label class="ml-2 block text-sm text-gray-700">Correcte</label>
+                </div>
+                <button type="button" class="delete-answer text-red-600 hover:text-red-800 ml-4">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <button type="button" class="add-answer-btn mt-2 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <svg class="-ml-0.5 mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            Ajouter une réponse
+        </button>
+    </div>
+</template>
+
+<!-- Empty Answer Form Template for JavaScript -->
+<template id="answer-form-template">
+    <div class="answer-form flex items-center">
+        <div class="flex-grow">
+            <input type="text" name="__prefix__" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Réponse">
+        </div>
+        <div class="flex items-center ml-4">
+            <input type="checkbox" name="__prefix__-is_correct" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+            <label class="ml-2 block text-sm text-gray-700">Correcte</label>
+        </div>
+        <button type="button" class="delete-answer text-red-600 hover:text-red-800 ml-4">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+        </button>
+    </div>
+</template>
+
+<!-- Empty Lesson Form Template for JavaScript -->
 <div id="empty-form-template" style="display: none;">
     <div class="lesson-form bg-gray-50 rounded-lg p-4 mb-4 relative">
         {{ lesson_formset.empty_form }}
@@ -391,72 +602,483 @@ select {
 
 {% block extra_js %}
 <script>
+// Global error handler
+window.onerror = function(message, source, lineno, colno, error) {
+    console.error('Global error:', {message, source, lineno, colno, error});
+    return true; // Prevent default error handling
+};
+    // Add CSRF token for AJAX requests if not already defined
+    if (typeof getCookie === 'undefined') {
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    }
+    
+    // Only define csrftoken if it's not already defined
+    if (typeof csrftoken === 'undefined') {
+        window.csrftoken = getCookie('csrftoken');
+    }
+    
+    // Debug: Check if DOM is loaded
+    console.log('DOM fully loaded');
+    
+    // Function to update question indices after reordering or deletion
+    function updateQuestionIndices(container) {
+        const questionForms = container.querySelectorAll('.question-form');
+        questionForms.forEach((form, index) => {
+            // Update the question number display
+            const questionNumber = form.querySelector('.question-number');
+            if (questionNumber) {
+                questionNumber.textContent = `Question ${index + 1}`;
+            }
+            
+            // Update all form field names with the new index
+            const formInputs = form.querySelectorAll('input, select, textarea');
+            formInputs.forEach(input => {
+                if (input.name) {
+                    // Update the question index in the field name
+                    // This handles fields like 'lessons-0-questions-0-text'
+                    input.name = input.name.replace(
+                        /lessons-(\d+)-questions-(\d+)-/,
+                        (match, lessonIdx, questionIdx) => {
+                            return `lessons-${lessonIdx}-questions-${index}-`;
+                        }
+                    );
+                    
+                    // Update the ID to match the new name
+                    if (input.id) {
+                        input.id = input.id.replace(
+                            /id_lessons-\d+-questions-\d+-/,
+                            `id_lessons-${container.dataset.lessonIndex}-questions-${index}-`
+                        );
+                    }
+                }
+            });
+            
+            // Update the answer form indices
+            const answerForms = form.querySelectorAll('.answer-form');
+            answerForms.forEach((answerForm, answerIndex) => {
+                const answerInputs = answerForm.querySelectorAll('input, select, textarea');
+                answerInputs.forEach(input => {
+                    if (input.name) {
+                        input.name = input.name.replace(
+                            /lessons-(\d+)-questions-(\d+)-answers-(\d+)-/,
+                            (match, lessonIdx, questionIdx, answerIdx) => {
+                                return `lessons-${lessonIdx}-questions-${index}-answers-${answerIndex}-`;
+                            }
+                        );
+                        
+                        if (input.id) {
+                            input.id = input.id.replace(
+                                /id_lessons-\d+-questions-\d+-answers-\d+-/,
+                                `id_lessons-${container.dataset.lessonIndex}-questions-${index}-answers-${answerIndex}-`
+                            );
+                        }
+                    }
+                });
+            });
+        });
+        
+        // Update the TOTAL_FORMS count
+        const totalForms = container.querySelector('input[name$="-TOTAL_FORMS"]');
+        if (totalForms) {
+            totalForms.value = questionForms.length;
+        }
+    }
+
+    // Function to handle question type changes
+    function handleQuestionTypeChange(select) {
+        const form = select.closest('.question-form');
+        const answersContainer = form.querySelector('.answers-container');
+        const addAnswerBtn = form.querySelector('.add-answer-btn');
+        
+        if (select.value === 'short_answer') {
+            if (answersContainer) answersContainer.style.display = 'none';
+            if (addAnswerBtn) addAnswerBtn.style.display = 'none';
+        } else {
+            if (answersContainer) answersContainer.style.display = 'block';
+            if (addAnswerBtn) addAnswerBtn.style.display = 'inline-flex';
+        }
+    }
+    
+    // Function to add an answer form to a question
+    function addAnswerForm(questionForm, answersContainer, totalFormsInput) {
+        console.log('addAnswerForm called with:', { questionForm, answersContainer, totalFormsInput });
+        
+        const formCount = parseInt(totalFormsInput.value);
+        console.log('Current answer form count:', formCount);
+        
+        // Create a new answer form from the template
+        const answerTemplate = document.getElementById('answer-form-template');
+        if (!answerTemplate) {
+            console.error('Answer template not found');
+            return;
+        }
+        
+        const answerForm = answerTemplate.content.cloneNode(true);
+        const answerFormElement = answerForm.querySelector('.answer-form');
+        
+        if (!answerFormElement) {
+            console.error('Answer form element not found in template');
+            return;
+        }
+        
+        // Update form indices
+        answerFormElement.innerHTML = answerFormElement.innerHTML.replace(/__prefix__/g, formCount);
+        
+        // Add the answer form to the container
+        try {
+            answersContainer.appendChild(answerFormElement);
+            console.log('Answer form added to container');
+            
+            // Update the total forms count
+            totalFormsInput.value = formCount + 1;
+            
+        } catch (error) {
+            console.error('Error appending answer form:', error);
+        }
+    }
+    
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOMContentLoaded event fired');
+        
+        // Debug: Check if we can find any quiz sections
+        const initialQuizSections = document.querySelectorAll('.lesson-quiz-section');
+        console.log('Initial check found', initialQuizSections.length, 'quiz sections');
+        
+        if (initialQuizSections.length === 0) {
+            console.warn('No quiz sections found with class .lesson-quiz-section');
+            // Let's see what's actually in the DOM
+            console.log('Available elements with class starting with "lesson":', 
+                Array.from(document.querySelectorAll('[class^="lesson"],[class*=" lesson"]'))
+                    .map(el => ({
+                        className: el.className,
+                        id: el.id,
+                        tag: el.tagName
+                    }))
+            );
+        }
+        
         // Function to handle lesson type changes
         function handleLessonTypeChange(select) {
             const form = select.closest('.lesson-form');
-            const videoField = form.querySelector('.video-field');
-            const textField = form.querySelector('.text-field');
+            const quizSection = form.querySelector('.lesson-quiz-section');
             
-            if (select.value === 'video') {
-                videoField.style.display = 'block';
-                textField.style.display = 'none';
-            } else if (select.value === 'text') {
-                videoField.style.display = 'none';
-                textField.style.display = 'block';
+            if (select.value === 'quiz') {
+                if (quizSection) quizSection.style.display = 'block';
+            } else {
+                if (quizSection) quizSection.style.display = 'none';
             }
         }
         
-        // Add event listeners to existing lesson type selects
-        document.querySelectorAll('.lesson-form select[id$="-lesson_type"]').forEach(function(select) {
+        // Initialize lesson type change handlers
+        document.querySelectorAll('select[name$="-lesson_type"]').forEach(function(select) {
             select.addEventListener('change', function() {
                 handleLessonTypeChange(this);
             });
-            
-            // Initialize display based on current value
+            // Trigger initial state
             handleLessonTypeChange(select);
         });
         
-        // Handle adding new lessons
-        const addLessonBtn = document.getElementById('add-lesson-btn');
-        const lessonsContainer = document.getElementById('lessons-container');
-        const emptyFormTemplate = document.getElementById('empty-form-template');
+        // Debug: Check if we can find the add button in the DOM
+        console.log('Looking for .add-question-btn in the entire document...');
+        const allAddButtons = document.querySelectorAll('.add-question-btn');
+        console.log('Found', allAddButtons.length, 'add question buttons in total');
+        allAddButtons.forEach((btn, i) => {
+            console.log(`Button ${i + 1}:`, {
+                id: btn.id,
+                classes: btn.className,
+                parent: btn.parentElement ? btn.parentElement.className : 'no parent',
+                text: btn.textContent.trim()
+            });
+        });
+
+        // Find all add question buttons and their related elements
+        document.querySelectorAll('.add-question-btn').forEach(function(button) {
+            console.log('=== DEBUGGING ADD QUESTION BUTTON ===');
+            console.log('Button element:', button);
+            console.log('Button classes:', button.className);
+            console.log('Button parent element:', button.parentElement);
+            
+            // Log the hierarchy
+            let parent = button.parentElement;
+            let level = 0;
+            console.log('=== ELEMENT HIERARCHY ===');
+            while (parent) {
+                console.log(`Level ${level}:`, {
+                    tag: parent.tagName,
+                    id: parent.id,
+                    classes: parent.className,
+                    nodeName: parent.nodeName
+                });
+                parent = parent.parentElement;
+                level++;
+                if (level > 10) break; // Prevent infinite loops
+            }
+            
+            // Try to find the form that contains this button
+            const form = button.closest('form');
+            console.log('Closest form:', form);
+            
+            // Try to find a container for questions
+            const questionsContainer = document.querySelector('.questions-container');
+            console.log('Questions container:', questionsContainer);
+            
+            // Try to find the total forms input
+            const totalFormsInput = document.querySelector('input[id$="-TOTAL_FORMS"]');
+            console.log('Total forms input:', totalFormsInput);
+            
+            // Add click handler directly to the button
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Add question button clicked');
+                
+                if (!questionsContainer || !totalFormsInput) {
+                    console.error('Missing required elements:', {
+                        questionsContainer: questionsContainer,
+                        totalFormsInput: totalFormsInput
+                    });
+                    return;
+                }
+                
+                try {
+                    // Try to use the form as the container if available
+                    const container = form || document.body;
+                    addQuestionForm(container, questionsContainer, totalFormsInput);
+                } catch (error) {
+                    console.error('Error in addQuestionForm:', error);
+                    alert('Une erreur est survenue lors de l\'ajout de la question. Veuillez vérifier la console pour plus de détails.');
+                }
+            });
+            
+            // Removed duplicate code that was causing variable redeclaration
+            
+            // Add delete question handlers
+            questionsContainer.addEventListener('click', function(e) {
+                // Delete question button
+                if (e.target.closest('.delete-question')) {
+                    e.preventDefault();
+                    const questionForm = e.target.closest('.question-form');
+                    if (questionForm) {
+                        // If this is a saved question, mark it for deletion
+                        const deleteInput = questionForm.querySelector('input[name$="-DELETE"]');
+                        if (deleteInput) {
+                            deleteInput.value = 'on';
+                            questionForm.style.display = 'none';
+                        } else {
+                            const quizSection = questionForm.closest('.lesson-quiz-section');
+                            questionForm.remove();
+                            if (quizSection) {
+                                updateQuestionIndices(quizSection);
+                            }
+                        }
+                    }
+                }
+                
+                // Delete answer button
+                if (e.target.closest('.delete-answer')) {
+                    e.preventDefault();
+                    const answerForm = e.target.closest('.answer-form');
+                    if (answerForm) {
+                        // If this is a saved answer, mark it for deletion
+                        const deleteInput = answerForm.querySelector('input[type="hidden"][name$="-DELETE"]');
+                        if (deleteInput) {
+                            deleteInput.value = 'on';
+                            answerForm.style.display = 'none';
+                        } else {
+                            answerForm.remove();
+                        }
+                    }
+                }
+                
+                // Add answer button
+                if (e.target.closest('.add-answer-btn')) {
+                    e.preventDefault();
+                    const questionForm = e.target.closest('.question-form');
+                    if (questionForm) {
+                        const answersContainer = questionForm.querySelector('.answers-container');
+                        
+                        // Find the question ID or index to construct the management form name
+                        let questionIndex = 0;
+                        const questionIdInput = questionForm.querySelector('input[name$="-id"]');
+                        if (questionIdInput) {
+                            // Extract the question index from the name attribute
+                            const nameMatch = questionIdInput.name.match(/questions-(\d+)-id/);
+                            if (nameMatch && nameMatch[1]) {
+                                questionIndex = nameMatch[1];
+                            }
+                        }
+                        
+                        // Look for the management form for this specific question's answers
+                        // Format is typically: id_questions-{questionIndex}-answers-TOTAL_FORMS
+                        let totalFormsInput = document.getElementById(`id_questions-${questionIndex}-answers-TOTAL_FORMS`);
+                        
+                        // If not found, try to create a management form
+                        if (!totalFormsInput) {
+                            console.log('Creating management form for answers');
+                            // Create a hidden input for TOTAL_FORMS if it doesn't exist
+                            totalFormsInput = document.createElement('input');
+                            totalFormsInput.type = 'hidden';
+                            totalFormsInput.id = `id_questions-${questionIndex}-answers-TOTAL_FORMS`;
+                            totalFormsInput.name = `questions-${questionIndex}-answers-TOTAL_FORMS`;
+                            totalFormsInput.value = answersContainer.querySelectorAll('.answer-form').length.toString();
+                            questionForm.appendChild(totalFormsInput);
+                            
+                            // Also create INITIAL_FORMS and MIN_NUM_FORMS if needed
+                            const initialFormsInput = document.createElement('input');
+                            initialFormsInput.type = 'hidden';
+                            initialFormsInput.id = `id_questions-${questionIndex}-answers-INITIAL_FORMS`;
+                            initialFormsInput.name = `questions-${questionIndex}-answers-INITIAL_FORMS`;
+                            initialFormsInput.value = '0';
+                            questionForm.appendChild(initialFormsInput);
+                            
+                            const minFormsInput = document.createElement('input');
+                            minFormsInput.type = 'hidden';
+                            minFormsInput.id = `id_questions-${questionIndex}-answers-MIN_NUM_FORMS`;
+                            minFormsInput.name = `questions-${questionIndex}-answers-MIN_NUM_FORMS`;
+                            minFormsInput.value = '0';
+                            questionForm.appendChild(minFormsInput);
+                            
+                            const maxFormsInput = document.createElement('input');
+                            maxFormsInput.type = 'hidden';
+                            maxFormsInput.id = `id_questions-${questionIndex}-answers-MAX_NUM_FORMS`;
+                            maxFormsInput.name = `questions-${questionIndex}-answers-MAX_NUM_FORMS`;
+                            maxFormsInput.value = '1000';
+                            questionForm.appendChild(maxFormsInput);
+                        }
+                        
+                        console.log('Debug - Add Answer Clicked:', {
+                            questionForm: questionForm,
+                            answersContainer: answersContainer,
+                            totalFormsInput: totalFormsInput,
+                            questionIndex: questionIndex
+                        });
+                        
+                        if (answersContainer && totalFormsInput) {
+                            addAnswerForm(questionForm, answersContainer, totalFormsInput);
+                        } else {
+                            console.error('Missing required elements for adding answer:', {
+                                answersContainer: answersContainer,
+                                totalFormsInput: totalFormsInput
+                            });
+                        }
+                    }
+                }
+            });
+            
+            // Initialize question type change handlers
+            questionsContainer.addEventListener('change', function(e) {
+                if (e.target && e.target.matches('select[name$="-question_type"]')) {
+                    handleQuestionTypeChange(e.target);
+                }
+            });
+        });
         
-        addLessonBtn.addEventListener('click', function() {
-            // Get the total form count from the management form
-            const totalFormsInput = document.querySelector('#id_form-TOTAL_FORMS');
+        // Function to add a question form
+        function addQuestionForm(quizSection, container, totalFormsInput) {
+            console.log('addQuestionForm called with:', { quizSection, container, totalFormsInput });
+            
             const formCount = parseInt(totalFormsInput.value);
+            console.log('Current form count:', formCount);
             
-            // Clone the empty form template
-            const newForm = emptyFormTemplate.querySelector('.lesson-form').cloneNode(true);
+            const questionTemplate = document.getElementById('question-form-template');
+            if (!questionTemplate) {
+                console.error('Question template not found');
+                return;
+            }
             
-            // Update form index in the ID and name attributes
-            newForm.innerHTML = newForm.innerHTML.replace(/__prefix__/g, formCount);
+            const questionFormTemplate = questionTemplate.content.cloneNode(true);
+            const questionForm = questionFormTemplate.querySelector('.question-form');
             
-            // Append the new form to the container
-            lessonsContainer.appendChild(newForm);
+            if (!questionForm) {
+                console.error('Question form element not found in template');
+                return;
+            }
+            
+            // Update form indices
+            console.log('Updating form prefixes with index:', formCount);
+            questionForm.innerHTML = questionForm.innerHTML.replace(/__prefix__/g, formCount);
+            
+            // Add the question form to the container
+            try {
+                container.appendChild(questionForm);
+                console.log('Question form added to container');
+            } catch (error) {
+                console.error('Error appending question form:', error);
+                throw error;
+            }
             
             // Update the total form count
             totalFormsInput.value = formCount + 1;
             
-            // Add event listener to the new lesson type select
-            const newSelect = newForm.querySelector(`select[id$="-lesson_type"]`);
+            // Add event listener to the new question type select
+            const newSelect = questionForm.querySelector(`select[name$="-question_type"]`);
             if (newSelect) {
+                console.log('Question type select found, adding change handler');
                 newSelect.addEventListener('change', function() {
-                    handleLessonTypeChange(this);
+                    console.log('Question type changed to:', this.value);
+                    try {
+                        const answersContainer = this.closest('.question-form').querySelector('.answers-container');
+                        if (!answersContainer) {
+                            console.error('Answers container not found');
+                            return;
+                        }
+                        
+                        if (this.value === 'short_answer') {
+                            answersContainer.style.display = 'none';
+                            console.log('Hiding answers container for short answer');
+                        } else {
+                            answersContainer.style.display = 'block';
+                            console.log('Showing answers container for question type:', this.value);
+                        }
+                    } catch (error) {
+                        console.error('Error handling question type change:', error);
+                    }
                 });
                 
-                // Initialize display based on current value
-                handleLessonTypeChange(newSelect);
+                // Trigger change event to set initial state
+                newSelect.dispatchEvent(new Event('change'));
             }
             
-            // Set a default order number (incremental)
-            const orderInput = newForm.querySelector(`input[id$="-order"]`);
-            if (orderInput) {
-                orderInput.value = formCount + 1;
+            // Add event listener for adding answers
+            const addAnswerBtn = questionForm.querySelector('.add-answer-btn');
+            if (addAnswerBtn) {
+                addAnswerBtn.addEventListener('click', function() {
+                    const answersContainer = this.closest('.question-form').querySelector('.answers-container');
+                    const answerFormTemplate = document.getElementById('answer-form-template').content.cloneNode(true);
+                    const answerCount = answersContainer.querySelectorAll('.answer-form').length;
+                    
+                    answerFormTemplate.querySelector('.answer-form').innerHTML = 
+                        answerFormTemplate.querySelector('.answer-form').innerHTML
+                            .replace(/__prefix__/g, answerCount)
+                            .replace(/__question_prefix__/g, formCount);
+                    
+                    answersContainer.appendChild(answerFormTemplate);
+                });
             }
-        });
+            
+            // Add event listener for deleting questions
+            const deleteBtn = questionForm.querySelector('.delete-question');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', function() {
+                    this.closest('.question-form').remove();
+                    totalFormsInput.value = parseInt(totalFormsInput.value) - 1;
+                });
+            }
+        }
     });
 </script>
 {% endblock %}
+
 {% endblock %}

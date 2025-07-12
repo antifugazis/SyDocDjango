@@ -1,4 +1,5 @@
 {% extends 'center_panel/base.html' %}
+{% load static %}
 
 {% block title %}Gestion des Prêts - SYDOC Center Panel{% endblock %}
 
@@ -206,7 +207,7 @@
             // Initialize DataTable with French language and custom options
             table = new DataTable('#loans-table', {
                 language: {
-                    url: '//cdn.datatables.net/plug-ins/2.3.2/i18n/fr-FR.json'
+                    url: '{% static 'center_panel/js/dataTables.french.json' %}'
                 },
                 responsive: true,
                 pageLength: 25,

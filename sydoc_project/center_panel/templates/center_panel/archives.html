@@ -1,4 +1,5 @@
 {% extends 'center_panel/base.html' %}
+{% load static %}
 
 {% block title %}Gestion des Archives{% endblock %}
 
@@ -90,7 +91,7 @@
         // Initialize DataTable with French language
         $('#archive-table').DataTable({
             language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/fr-FR.json'
+                url: '{% static 'center_panel/js/dataTables.french.json' %}'
             },
             responsive: true,
             order: [[2, 'desc']], // Sort by date by default

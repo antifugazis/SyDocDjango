@@ -1,0 +1,185 @@
+{% extends 'center_panel/base.html' %}
+{% load static %}
+
+{% block title %}Auteurs{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Modal styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 50;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .modal-content {
+        background-color: #fff;
+        margin: 15% auto;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        width: 90%;
+        max-width: 28rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+        gap: 0.75rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h3 class="text-lg font-medium text-gray-900">Confirmer la suppression</h3>
+        <p class="mt-2 text-sm text-gray-600">Êtes-vous sûr de vouloir supprimer cet auteur ? Cette action est irréversible.</p>
+        
+        <div class="modal-actions">
+            <button type="button" id="cancelDelete" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Annuler
+            </button>
+            <button type="button" id="confirmDelete" class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                Supprimer
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Auteurs</h1>
+        <a href="{% url 'center_panel:add_author' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+            Ajouter un auteur
+        </a>
+    </div>
+
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="p-4">
+            <table id="author-table" class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prénom</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Livres</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for author in authors %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ author.last_name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ author.first_name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ author.book_set.count }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a href="{% url 'center_panel:edit_author' author.id %}" class="text-blue-600 hover:text-blue-900 mr-3">Modifier</a>
+                            <a href="#" class="text-red-600 hover:text-red-900 delete-btn" data-id="{{ author.id }}">Supprimer</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
+                            Aucun auteur trouvé. <a href="{% url 'center_panel:add_author' %}" class="text-indigo-600 hover:text-indigo-900">Ajouter un auteur</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Delete modal handling
+        const deleteModal = document.getElementById('deleteModal');
+        const deleteBtns = document.querySelectorAll('.delete-btn');
+        const cancelBtn = document.getElementById('cancelDelete');
+        const confirmBtn = document.getElementById('confirmDelete');
+        let currentAuthorId = null;
+        
+        function showDeleteModal() {
+            deleteModal.style.display = 'block';
+        }
+        
+        function hideDeleteModal() {
+            deleteModal.style.display = 'none';
+        }
+        
+        deleteBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                currentAuthorId = this.getAttribute('data-id');
+                showDeleteModal();
+            });
+        });
+        
+        cancelBtn.addEventListener('click', hideDeleteModal);
+        
+        confirmBtn.addEventListener('click', function() {
+            if (currentAuthorId) {
+                const originalText = confirmBtn.innerHTML;
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = 'Suppression en cours...';
+                
+                fetch(`/center/authors/${currentAuthorId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFTOKEN': '{{ csrf_token }}',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `csrfmiddlewaretoken={{ csrf_token }}`
+                })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    } else {
+                        return response.json();
+                    }
+                })
+                .then(data => {
+                    if (data && data.success) {
+                        window.location.reload();
+                    } else {
+                        alert('Une erreur est survenue lors de la suppression.');
+                        hideDeleteModal();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Une erreur est survenue lors de la suppression.');
+                    hideDeleteModal();
+                })
+                .finally(() => {
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = originalText;
+                });
+            }
+        });
+        
+        // Initialize DataTable
+        $('#author-table').DataTable({
+            responsive: true,
+            language: {
+url: '{% static 'center_panel/js/dataTables.french.json' %}'
+            },
+            columnDefs: [
+                { orderable: false, targets: [3] } // Disable sorting on Actions column
+            ],
+            order: [[0, 'asc']], // Default sort by last name
+            dom: "<'flex flex-col md:flex-row md:items-center md:justify-between'<'mb-4 md:mb-0'l>f>rt<'flex flex-col md:flex-row md:items-center md:justify-between'ip>>",
+            responsive: true
+        });
+    });
+</script>
+{% endblock %}

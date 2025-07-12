@@ -1,4 +1,5 @@
 {% extends 'center_panel/base.html' %}
+{% load static %}
 
 {% block title %}Sujets de Formation{% endblock %}
 
@@ -53,7 +54,7 @@
         if (window.jQuery && $.fn.dataTable) {
             $('#subjects-table').DataTable({
                 language: {
-                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json'
+                    url: '{% static 'center_panel/js/dataTables.french.json' %}'
                 }
             });
         }

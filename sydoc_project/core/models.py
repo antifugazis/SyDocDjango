@@ -14,7 +14,14 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 
 # Basic Geographical Models
 class Department(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+    """
+    Represents a geographical department.
+    """
+    name = models.CharField(
+        max_length=100, 
+        unique=True,
+        verbose_name=_("Nom du Département")
+    ) # The name of the department, must be unique.
 
     class Meta:
         verbose_name = _("Département")
@@ -22,11 +29,21 @@ class Department(models.Model):
         ordering = ['name']
 
     def __str__(self):
+        """
+        Returns the name of the department.
+        """
         return self.name
 
 class Arrondissement(models.Model):
-    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='arrondissements')
-    name = models.CharField(max_length=100)
+    """
+    Represents a geographical arrondissement within a Department.
+    """
+    department = models.ForeignKey(
+        Department, 
+        on_delete=models.CASCADE, 
+        related_name='arrondissements'
+    ) # The Department this arrondissement belongs to.
+    name = models.CharField(max_length=100) # The name of the arrondissement.
 
     class Meta:
         verbose_name = _("Arrondissement")
@@ -35,11 +52,21 @@ class Arrondissement(models.Model):
         ordering = ['name']
 
     def __str__(self):
+        """
+        Returns the name of the arrondissement and its department.
+        """
         return f"{self.name} ({self.department.name})"
 
 class Commune(models.Model):
-    arrondissement = models.ForeignKey(Arrondissement, on_delete=models.CASCADE, related_name='communes')
-    name = models.CharField(max_length=100)
+    """
+    Represents a geographical commune within an Arrondissement.
+    """
+    arrondissement = models.ForeignKey(
+        Arrondissement, 
+        on_delete=models.CASCADE, 
+        related_name='communes'
+    ) # The Arrondissement this commune belongs to.
+    name = models.CharField(max_length=100) # The name of the commune.
 
     class Meta:
         verbose_name = _("Commune")
@@ -48,6 +75,9 @@ class Commune(models.Model):
         ordering = ['name']
 
     def __str__(self):
+        """
+        Returns the name of the commune and its arrondissement.
+        """
         return f"{self.name} ({self.arrondissement.name})"
 
 # Documentation Center Model

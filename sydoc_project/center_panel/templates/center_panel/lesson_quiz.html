@@ -7,84 +7,191 @@
     <div class="max-w-4xl mx-auto">
         <!-- Breadcrumb Navigation -->
         <div class="mb-6">
-            <div class="flex items-center space-x-2 text-sm">
-                <a href="{% url 'center_panel:training_detail' lesson.training_module.id %}" class="text-indigo-600 hover:text-indigo-800">
-                    {{ lesson.training_module.title }}
-                </a>
-                <span class="text-gray-500">/</span>
-                <a href="{% url 'center_panel:lesson_detail' lesson.id %}" class="text-indigo-600 hover:text-indigo-800">
-                    {{ lesson.title }}
-                </a>
-                <span class="text-gray-500">/</span>
-                <span class="text-gray-700">Quiz</span>
-            </div>
+            <a href="{% url 'center_panel:lesson_detail' lesson.id %}" class="inline-flex items-center text-sm text-indigo-600 hover:text-indigo-800">
+                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                Retour à la Leçon
+            </a>
         </div>
 
-        <!-- Quiz Card -->
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
-            <!-- Header -->
-            <div class="p-6 border-b border-gray-200">
-                <h1 class="text-2xl font-bold text-gray-800">Quiz: {{ lesson.title }}</h1>
-                <p class="text-sm text-gray-500 mt-1">
-                    Testez vos connaissances sur cette leçon
-                </p>
-            </div>
+        <!-- Quiz Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Quiz pour : {{ lesson.title }}</h1>
+            <p class="mt-2 text-gray-600">Répondez aux questions pour tester vos connaissances</p>
+        </div>
 
-            <!-- Placeholder Content -->
-            <div class="p-6">
-                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                            </svg>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm text-blue-700">
-                                Cette fonctionnalité est en cours de développement. Le quiz sera bientôt disponible.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Placeholder Quiz Questions -->
-                <div class="space-y-8">
-                    <div class="border border-gray-200 rounded-lg p-4">
-                        <h3 class="font-medium text-gray-800 mb-2">Question 1</h3>
-                        <p class="text-gray-600 mb-4">Exemple de question à choix multiple</p>
-                        <div class="space-y-2">
-                            <div class="flex items-center">
-                                <input id="option1" name="question1" type="radio" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
-                                <label for="option1" class="ml-3 block text-sm font-medium text-gray-700">Option 1</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input id="option2" name="question1" type="radio" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
-                                <label for="option2" class="ml-3 block text-sm font-medium text-gray-700">Option 2</label>
-                            </div>
-                            <div class="flex items-center">
-                                <input id="option3" name="question1" type="radio" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
-                                <label for="option3" class="ml-3 block text-sm font-medium text-gray-700">Option 3</label>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="border border-gray-200 rounded-lg p-4">
-                        <h3 class="font-medium text-gray-800 mb-2">Question 2</h3>
-                        <p class="text-gray-600 mb-4">Exemple de question à réponse courte</p>
-                        <div>
-                            <textarea rows="3" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="Votre réponse ici..."></textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+            <p class="mt-4 text-gray-600">Chargement du quiz...</p>
+        </div>
 
-            <!-- Action Footer -->
-            <div class="p-6 bg-gray-50 border-t border-gray-200 flex justify-end">
-                <button type="button" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Soumettre les réponses
-                </button>
+        <!-- Quiz Container -->
+        <div id="quizContainer" class="hidden"></div>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="hidden bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-red-700">
+                        Une erreur est survenue lors du chargement du quiz. Veuillez rafraîchir la page ou réessayer plus tard.
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- SurveyJS Dependencies -->
+<script src="https://unpkg.com/survey-knockout-ui/survey.ko.min.js"></script>
+<link href="https://unpkg.com/survey-core/defaultV2.min.css" rel="stylesheet" />
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const quizContainer = document.getElementById('quizContainer');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const errorMessage = document.getElementById('errorMessage');
+    const quizApiUrl = '/api/lessons/{{ lesson.id }}/quiz/';
+
+    // Function to show error state
+    function showError() {
+        loadingIndicator.classList.add('hidden');
+        quizContainer.classList.add('hidden');
+        errorMessage.classList.remove('hidden');
+    }
+
+    // Fetch quiz data from the API
+    fetch(quizApiUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(quizData => {
+            // Hide loading indicator
+            loadingIndicator.classList.add('hidden');
+            
+            // Create SurveyJS model
+            const survey = new Survey.Model(quizData);
+            
+            // Configure survey appearance
+            survey.showProgressBar = 'bottom';
+            survey.showNavigationButtons = true;
+            survey.completeText = 'Soumettre le quiz';
+            survey.completedHtml = '<h3 class="text-xl font-semibold text-gray-900 mb-4">Merci d\'avoir complété ce quiz !</h3><p class="text-gray-600">Vos réponses ont été enregistrées.</p>';
+            
+            // Handle survey completion
+            survey.onComplete.add(function (sender) {
+                // Here you would typically send the results to your backend
+                // For now, we'll just log them to the console
+                console.log('Survey results:', sender.data);
+                
+                // Example of how to send data to your backend:
+                /*
+                fetch('/api/quiz/submit/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        lesson_id: {{ lesson.id }},
+                        answers: sender.data
+                    })
+                });
+                */
+            });
+            
+            // Apply custom styling
+            survey.css = {
+                navigationButton: 'btn',
+                completeButton: 'btn btn-primary',
+                header: 'mb-4',
+                title: 'text-2xl font-bold text-gray-900 mb-2',
+                description: 'text-gray-600 mb-6',
+                question: {
+                    mainRoot: 'mb-6 p-4 bg-white rounded-lg shadow-sm border border-gray-200',
+                    title: 'text-lg font-medium text-gray-900 mb-2',
+                    description: 'text-gray-600 mb-3',
+                    requiredText: 'text-red-500',
+                    titleRequired: 'text-red-500',
+                },
+                checkbox: {
+                    item: 'mb-2',
+                    itemControl: 'mr-2',
+                    controlLabel: 'font-medium text-gray-700',
+                },
+                radiogroup: {
+                    item: 'mb-2',
+                    itemControl: 'mr-2',
+                    label: 'font-medium text-gray-700',
+                },
+                text: 'form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500',
+                comment: 'form-textarea mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500',
+                rating: {
+                    item: 'mr-2',
+                },
+                navigation: {
+                    complete: 'btn btn-primary',
+                    prev: 'btn btn-secondary mr-2',
+                    next: 'btn btn-primary',
+                    start: 'btn btn-primary',
+                },
+                progress: 'mb-4',
+                progressText: 'text-sm text-gray-600',
+                progressBar: 'h-2 bg-gray-200 rounded overflow-hidden',
+                progressBarInner: 'h-full bg-indigo-600',
+            };
+            
+            // Render the survey
+            survey.render('quizContainer');
+            quizContainer.classList.remove('hidden');
+        })
+        .catch(error => {
+            console.error('Error loading quiz:', error);
+            showError();
+        });
+});
+</script>
+
+<style>
+/* Custom styles for SurveyJS to match your design system */
+.btn {
+    @apply inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+.btn-primary {
+    @apply bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500;
+}
+
+.btn-secondary {
+    @apply bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-indigo-500;
+}
+
+.form-input, .form-textarea {
+    @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm;
+}
+
+/* Ensure proper spacing for survey elements */
+.sv_qstn {
+    margin-bottom: 1.5rem;
+}
+
+.sv_q_radiogroup_control_label, .sv_q_checkbox_control_label {
+    margin-left: 0.5rem;
+}
+
+/* Style for required questions */
+.sv_q_required_text {
+    color: #ef4444;
+    margin-left: 0.25rem;
+}
+</style>
 {% endblock %}
