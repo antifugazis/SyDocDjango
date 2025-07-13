@@ -316,3 +316,67 @@ INFO 2025-07-13 17:24:22,025 basehttp "GET /center/nubo/scan/2/ HTTP/1.1" 200 96
 INFO 2025-07-13 17:24:41,436 basehttp "GET /center/dashboard/ HTTP/1.1" 200 125148
 INFO 2025-07-13 17:24:47,042 basehttp "GET /center/books/ HTTP/1.1" 200 88980
 INFO 2025-07-13 17:24:47,066 basehttp "GET /books/covers/clacklogo.png HTTP/1.1" 304 0
+WARNING 2025-07-13 17:27:49,129 log Not Found: /center/books/2
+WARNING 2025-07-13 17:27:49,129 basehttp "GET /center/books/2 HTTP/1.1" 404 16274
+INFO 2025-07-13 17:27:52,589 basehttp "GET /center/books/ HTTP/1.1" 200 88980
+INFO 2025-07-13 17:28:36,086 basehttp "GET /center/dashboard/ HTTP/1.1" 302 0
+INFO 2025-07-13 17:29:56,785 basehttp "GET /center/books/2/ HTTP/1.1" 200 81031
+INFO 2025-07-13 17:30:02,359 basehttp "GET /center/books/ HTTP/1.1" 200 88980
+INFO 2025-07-13 17:38:21,105 basehttp "GET /center/books/ HTTP/1.1" 200 89352
+INFO 2025-07-13 17:38:21,142 basehttp "GET /books/covers/clacklogo.png HTTP/1.1" 304 0
+WARNING 2025-07-13 17:38:26,828 log Not Found: /center/books/1
+WARNING 2025-07-13 17:38:26,828 basehttp "GET /center/books/1 HTTP/1.1" 404 16274
+INFO 2025-07-13 17:40:24,278 basehttp "GET /center/books/2/ HTTP/1.1" 200 89098
+INFO 2025-07-13 17:40:35,703 basehttp "GET /center/books/3/ HTTP/1.1" 200 88196
+INFO 2025-07-13 17:40:35,717 basehttp "GET /books/covers/clacklogo.png HTTP/1.1" 304 0
+INFO 2025-07-13 17:40:41,896 basehttp "GET /books/digital/wow.txt HTTP/1.1" 200 1426
+INFO 2025-07-13 17:40:45,906 basehttp "GET /center/books/3/edit/ HTTP/1.1" 200 92556
+INFO 2025-07-13 17:40:47,273 basehttp "GET /center/books/3/ HTTP/1.1" 200 88196
+INFO 2025-07-13 17:40:48,364 basehttp "GET /center/books/2/ HTTP/1.1" 200 89098
+INFO 2025-07-13 17:40:50,658 basehttp "GET /center/books/ HTTP/1.1" 200 89352
+INFO 2025-07-13 17:41:01,694 basehttp "GET /center/trainings/ HTTP/1.1" 200 88492
+INFO 2025-07-13 17:41:03,826 basehttp "GET /center/members/ HTTP/1.1" 200 84798
+INFO 2025-07-13 17:41:40,548 basehttp "GET /profile/ HTTP/1.1" 200 85472
+WARNING 2025-07-13 17:41:40,578 log Not Found: /profile_pics/45e5abbb4dc1154c2fdfbe64bfec8baf_aPsietI1.jpg
+WARNING 2025-07-13 17:41:40,578 basehttp "GET /profile_pics/45e5abbb4dc1154c2fdfbe64bfec8baf_aPsietI1.jpg HTTP/1.1" 404 3618
+WARNING 2025-07-13 17:51:28,773 log Not Found: /profiles
+WARNING 2025-07-13 17:51:28,773 basehttp "GET /profiles HTTP/1.1" 404 3418
+WARNING 2025-07-13 17:51:37,617 log Not Found: /profile/1
+WARNING 2025-07-13 17:51:37,617 basehttp "GET /profile/1 HTTP/1.1" 404 3422
+WARNING 2025-07-13 17:51:42,521 log Not Found: /profiles/1
+WARNING 2025-07-13 17:51:42,521 basehttp "GET /profiles/1 HTTP/1.1" 404 3426
+WARNING 2025-07-13 17:51:47,546 log Not Found: /profiles/2
+WARNING 2025-07-13 17:51:47,569 basehttp "GET /profiles/2 HTTP/1.1" 404 3426
+WARNING 2025-07-13 17:52:07,088 log Not Found: /center/profiles/2
+WARNING 2025-07-13 17:52:07,088 basehttp "GET /center/profiles/2 HTTP/1.1" 404 16286
+WARNING 2025-07-13 17:52:10,070 log Not Found: /center/profiles/1
+WARNING 2025-07-13 17:52:10,070 basehttp "GET /center/profiles/1 HTTP/1.1" 404 16286
+INFO 2025-07-13 17:52:22,736 basehttp "GET /center/profiles/ HTTP/1.1" 200 84671
+WARNING 2025-07-13 17:52:22,811 log Not Found: /profile_pics/45e5abbb4dc1154c2fdfbe64bfec8baf_aPsietI1.jpg
+WARNING 2025-07-13 17:52:22,823 basehttp "GET /profile_pics/45e5abbb4dc1154c2fdfbe64bfec8baf_aPsietI1.jpg HTTP/1.1" 404 3618
+INFO 2025-07-13 17:52:25,715 basehttp "GET /center/profiles/1/ HTTP/1.1" 200 85964
+WARNING 2025-07-13 17:52:25,786 log Not Found: /profile_pics/45e5abbb4dc1154c2fdfbe64bfec8baf_aPsietI1.jpg
+WARNING 2025-07-13 17:52:25,799 basehttp "GET /profile_pics/45e5abbb4dc1154c2fdfbe64bfec8baf_aPsietI1.jpg HTTP/1.1" 404 3618
+INFO 2025-07-13 17:52:27,380 basehttp "GET /center/profiles/ HTTP/1.1" 200 86217
+INFO 2025-07-13 17:52:29,284 basehttp "GET /center/profiles/1/edit/ HTTP/1.1" 200 93133
+WARNING 2025-07-13 17:52:29,372 log Not Found: /profile_pics/45e5abbb4dc1154c2fdfbe64bfec8baf_aPsietI1.jpg
+WARNING 2025-07-13 17:52:29,373 basehttp "GET /profile_pics/45e5abbb4dc1154c2fdfbe64bfec8baf_aPsietI1.jpg HTTP/1.1" 404 3618
+INFO 2025-07-13 17:52:32,729 basehttp "GET /center/profiles/ HTTP/1.1" 200 86217
+INFO 2025-07-13 17:52:34,906 basehttp "GET /center/profiles/1/ HTTP/1.1" 200 87510
+WARNING 2025-07-13 17:52:35,021 log Not Found: /profile_pics/45e5abbb4dc1154c2fdfbe64bfec8baf_aPsietI1.jpg
+WARNING 2025-07-13 17:52:35,022 basehttp "GET /profile_pics/45e5abbb4dc1154c2fdfbe64bfec8baf_aPsietI1.jpg HTTP/1.1" 404 3618
+INFO 2025-07-13 17:52:36,108 basehttp "GET /center/profiles/ HTTP/1.1" 200 86217
+INFO 2025-07-13 17:52:41,432 basehttp "GET /center/profiles/ HTTP/1.1" 200 86217
+WARNING 2025-07-13 17:52:41,503 log Not Found: /profile_pics/45e5abbb4dc1154c2fdfbe64bfec8baf_aPsietI1.jpg
+WARNING 2025-07-13 17:52:41,516 basehttp "GET /profile_pics/45e5abbb4dc1154c2fdfbe64bfec8baf_aPsietI1.jpg HTTP/1.1" 404 3618
+INFO 2025-07-13 17:52:43,619 basehttp "GET /center/profiles/ HTTP/1.1" 200 86217
+WARNING 2025-07-13 17:52:43,693 log Not Found: /profile_pics/45e5abbb4dc1154c2fdfbe64bfec8baf_aPsietI1.jpg
+WARNING 2025-07-13 17:52:43,693 basehttp "GET /profile_pics/45e5abbb4dc1154c2fdfbe64bfec8baf_aPsietI1.jpg HTTP/1.1" 404 3618
+INFO 2025-07-13 17:52:47,276 basehttp "GET /center/nubo/ HTTP/1.1" 200 90982
+INFO 2025-07-13 17:53:59,258 basehttp "GET /center/nubo/ HTTP/1.1" 200 90982
+INFO 2025-07-13 17:54:14,021 basehttp "GET /center/nubo/ HTTP/1.1" 200 90982
+INFO 2025-07-13 17:54:17,545 basehttp "GET /center/books/ HTTP/1.1" 200 90929
+INFO 2025-07-13 17:54:17,644 basehttp "GET /books/covers/clacklogo.png HTTP/1.1" 304 0
+INFO 2025-07-13 17:54:23,629 basehttp "GET /center/books/ HTTP/1.1" 200 90929
+INFO 2025-07-13 17:54:30,035 basehttp "GET /center/books/ HTTP/1.1" 200 90929
+INFO 2025-07-13 17:54:32,182 basehttp "GET /center/books/ HTTP/1.1" 200 90929
