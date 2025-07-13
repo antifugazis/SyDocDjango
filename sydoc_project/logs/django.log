@@ -468,3 +468,4 @@ INFO 2025-07-13 18:54:45,001 basehttp "GET /center/dashboard/ HTTP/1.1" 200 1284
 INFO 2025-07-13 18:55:20,686 basehttp "GET /center/dashboard/ HTTP/1.1" 200 126509
 INFO 2025-07-13 18:55:22,799 basehttp "GET /center/admin/ HTTP/1.1" 200 109849
 INFO 2025-07-13 20:01:54,478 basehttp "GET /center/admin/ HTTP/1.1" 200 136859
+INFO 2025-07-13 21:02:26,647 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/sydoc_project/settings.py changed, reloading.
