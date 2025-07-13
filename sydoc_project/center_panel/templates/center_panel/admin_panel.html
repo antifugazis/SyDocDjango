@@ -1,0 +1,701 @@
+{% extends 'center_panel/base.html' %}
+
+{% block title %}Tableau de bord d'administration - {{ current_center.name }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Tableau de bord d'administration</h1>
+        <div class="text-sm text-gray-500">
+            <span class="font-medium">{{ current_center.name }}</span> • {{ current_center.address }}
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Livres -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
+                        <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dt class="text-sm font-medium text-gray-500 truncate">
+                            Livres
+                        </dt>
+                        <dd class="flex items-baseline">
+                            <div class="text-2xl font-semibold text-gray-900">
+                                {{ stats.books_count }}
+                            </div>
+                            <div class="ml-2 flex items-baseline text-sm font-semibold text-green-600">
+                                <a href="{% url 'center_panel:books' %}" class="text-blue-600 hover:text-blue-800">
+                                    Voir tout
+                                </a>
+                            </div>
+                        </dd>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Membres -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
+                        <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dt class="text-sm font-medium text-gray-500 truncate">
+                            Membres
+                        </dt>
+                        <dd class="flex items-baseline">
+                            <div class="text-2xl font-semibold text-gray-900">
+                                {{ stats.members_count }}
+                            </div>
+                            <div class="ml-2 flex items-baseline text-sm font-semibold text-green-600">
+                                <a href="{% url 'center_panel:members' %}" class="text-blue-600 hover:text-blue-800">
+                                    Voir tout
+                                </a>
+                            </div>
+                        </dd>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prêts en cours -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-yellow-500 rounded-md p-3">
+                        <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dt class="text-sm font-medium text-gray-500 truncate">
+                            Prêts en cours
+                        </dt>
+                        <dd class="flex items-baseline">
+                            <div class="text-2xl font-semibold text-gray-900">
+                                {{ stats.active_loans_count }}
+                            </div>
+                            <div class="ml-2 flex items-baseline text-sm font-semibold text-green-600">
+                                <a href="{% url 'center_panel:loans' %}" class="text-blue-600 hover:text-blue-800">
+                                    Voir tout
+                                </a>
+                            </div>
+                        </dd>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- Prêts en retard -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Prêts en retard</h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">Livres non retournés après la date d'échéance</p>
+            </div>
+            <div class="bg-white overflow-hidden">
+                <ul class="divide-y divide-gray-200">
+                    {% if overdue_loans %}
+                        {% for loan in overdue_loans %}
+                        <li class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                        {{ loan.book.title }}
+                                    </p>
+                                    <p class="text-sm text-gray-500">
+                                        Emprunté par {{ loan.member.first_name }} {{ loan.member.last_name }}
+                                    </p>
+                                    <p class="text-sm text-red-600">
+                                        En retard depuis {{ loan.due_date|timesince }}
+                                    </p>
+                                </div>
+                                <div class="ml-4 flex-shrink-0">
+                                    <a href="{% url 'center_panel:return_loan' loan.id %}" class="text-sm font-medium text-blue-600 hover:text-blue-800">
+                                        Marquer comme retourné
+                                    </a>
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="px-6 py-4 text-center text-gray-500">
+                            Aucun prêt en retard
+                        </li>
+                    {% endif %}
+                </ul>
+                {% if overdue_loans %}
+                <div class="px-6 py-4 border-t border-gray-200 text-right">
+                    <a href="{% url 'center_panel:loans' %}?status=overdue" class="text-sm font-medium text-blue-600 hover:text-blue-800">
+                        Voir tous les prêts en retard
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Activités récentes -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Activités récentes</h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">Dernières actions effectuées sur la plateforme</p>
+            </div>
+            <div class="bg-white overflow-hidden">
+                <ul class="divide-y divide-gray-200">
+                    {% if recent_activities %}
+                        {% for activity in recent_activities %}
+                        <li class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    {% if activity.activity_type == 'book_added' %}
+                                    <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                        </svg>
+                                    </div>
+                                    {% elif activity.activity_type == 'loan_created' %}
+                                    <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                                        <svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                        </svg>
+                                    </div>
+                                    {% elif activity.activity_type == 'loan_returned' %}
+                                    <div class="h-10 w-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                                        <svg class="h-5 w-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                    {% else %}
+                                    <div class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                        <svg class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-900">
+                                        {{ activity.get_activity_type_display }}
+                                    </p>
+                                    <p class="text-sm text-gray-500">
+                                        {{ activity.description }}
+                                    </p>
+                                    <p class="text-xs text-gray-400">
+                                        {{ activity.activity_date|timesince }} ago
+                                    </p>
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="px-6 py-4 text-center text-gray-500">
+                            Aucune activité récente
+                        </li>
+                    {% endif %}
+                </ul>
+                {% if recent_activities %}
+                <div class="px-6 py-4 border-t border-gray-200 text-right">
+                    <a href="{% url 'center_panel:activities' %}" class="text-sm font-medium text-blue-600 hover:text-blue-800">
+                        Voir toutes les activités
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- System Status & Calendar -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <!-- System Status -->
+        <div class="lg:col-span-2 bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">État du système</h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">Vue d'ensemble de l'état du système</p>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-blue-100 rounded-md p-3">
+                                <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-sm font-medium text-gray-900">Performance</h4>
+                                <p class="text-xs text-gray-500">Optimale</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-green-100 rounded-md p-3">
+                                <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-sm font-medium text-gray-900">Sécurité</h4>
+                                <p class="text-xs text-gray-500">À jour</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-yellow-50 p-4 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-yellow-100 rounded-md p-3">
+                                <svg class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-sm font-medium text-gray-900">Dernière sauvegarde</h4>
+                                <p class="text-xs text-gray-500">Il y a 2 heures</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 bg-purple-100 rounded-md p-3">
+                                <svg class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-sm font-medium text-gray-900">Stockage</h4>
+                                <p class="text-xs text-gray-500">1.2 Go / 10 Go utilisé</p>
+                                <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                    <div class="bg-purple-600 h-2 rounded-full" style="width: 12%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Calendrier</h3>
+                    <div class="flex space-x-1">
+                        <button class="p-1 rounded-full hover:bg-gray-100">
+                            <svg class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+                        <span class="text-sm text-gray-700">Juillet 2025</span>
+                        <button class="p-1 rounded-full hover:bg-gray-100">
+                            <svg class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4">
+                <div class="grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-500 mb-2">
+                    <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
+                </div>
+                <div class="grid grid-cols-7 gap-1">
+                    {% for day in "12345678910111213141516171819202122232425262728293031"|make_list %}
+                        {% if forloop.counter == 13 %}
+                            <div class="h-8 w-8 flex items-center justify-center rounded-full bg-blue-600 text-white text-sm font-medium">
+                                {{ day }}
+                            </div>
+                        {% else %}
+                            <div class="h-8 w-8 flex items-center justify-center text-sm {% if forloop.counter == 13 %}bg-blue-100{% endif %}">
+                                {{ day }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="mt-4 border-t border-gray-200 pt-4">
+                    <h4 class="text-sm font-medium text-gray-900 mb-2">Aujourd'hui</h4>
+                    <ul class="space-y-2">
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 h-2 w-2 mt-1.5 rounded-full bg-blue-600"></span>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-900">Réunion d'équipe</p>
+                                <p class="text-xs text-gray-500">10:00 - 11:30 • Salle de conférence</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 h-2 w-2 mt-1.5 rounded-full bg-green-600"></span>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-900">Formation nouveaux membres</p>
+                                <p class="text-xs text-gray-500">14:00 - 16:00 • Salle de formation</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-lg shadow">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h4 class="text-sm text-gray-500">Visites aujourd'hui</h4>
+                    <p class="text-2xl font-semibold text-gray-900">124</p>
+                    <p class="text-xs text-green-600">+12% hier</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h4 class="text-sm text-gray-500">Revenus du mois</h4>
+                    <p class="text-2xl font-semibold text-gray-900">2 450 €</p>
+                    <p class="text-xs text-green-600">+8% le mois dernier</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h4 class="text-sm text-gray-500">Nouveaux membres</h4>
+                    <p class="text-2xl font-semibold text-gray-900">24</p>
+                    <p class="text-xs text-green-600">+4 la semaine dernière</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-red-100 text-red-600">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h4 class="text-sm text-gray-500">Alertes</h4>
+                    <p class="text-2xl font-semibold text-gray-900">3</p>
+                    <p class="text-xs text-red-600">Action requise</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
+        <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Notifications récentes</h3>
+                <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-800">Voir tout</a>
+            </div>
+        </div>
+        <div class="bg-white overflow-hidden">
+            <ul class="divide-y divide-gray-200">
+                <li class="px-6 py-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-900">Rappel : Formation sécurité</p>
+                            <p class="text-sm text-gray-500">La formation sur la sécurité des données est prévue demain à 10h.</p>
+                            <p class="text-xs text-gray-400 mt-1">Il y a 2 heures</p>
+                        </div>
+                    </div>
+                </li>
+                <li class="px-6 py-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                            <svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-900">Mise à jour terminée</p>
+                            <p class="text-sm text-gray-500">La mise à jour du système a été installée avec succès.</p>
+                            <p class="text-xs text-gray-400 mt-1">Il y a 5 heures</p>
+                        </div>
+                    </div>
+                </li>
+                <li class="px-6 py-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                            <svg class="h-5 w-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-900">Attention : Espace disque</p>
+                            <p class="text-sm text-gray-500">L'espace disque du serveur atteint 85% de sa capacité.</p>
+                            <p class="text-xs text-gray-400 mt-1">Il y a 1 jour</p>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
+        <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Actions rapides</h3>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">Accédez rapidement aux fonctionnalités fréquemment utilisées</p>
+        </div>
+        <div class="bg-white p-6">
+            <h4 class="text-md font-medium text-gray-900 mb-4">Gestion des Livres</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <a href="{% url 'center_panel:add_book' %}" class="group p-4 border border-gray-200 rounded-lg hover:bg-blue-50 transition-colors">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <svg class="h-5 w-5 text-blue-600 group-hover:text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900 group-hover:text-blue-700">Ajouter un livre</h4>
+                            <p class="text-xs text-gray-500">Enregistrer un nouveau livre</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="{% url 'center_panel:books' %}" class="group p-4 border border-gray-200 rounded-lg hover:bg-blue-50 transition-colors">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <svg class="h-5 w-5 text-blue-600 group-hover:text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900 group-hover:text-blue-700">Voir les livres</h4>
+                            <p class="text-xs text-gray-500">Parcourir tous les livres</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="{% url 'center_panel:nubo_dashboard' %}" class="group p-4 border border-gray-200 rounded-lg hover:bg-indigo-50 transition-colors">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                            <svg class="h-5 w-5 text-indigo-600 group-hover:text-indigo-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900 group-hover:text-indigo-700">Numérisation</h4>
+                            <p class="text-xs text-gray-500">Gérer la numérisation des livres</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <h4 class="text-md font-medium text-gray-900 mb-4">Gestion des Membres</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <a href="{% url 'center_panel:add_member' %}" class="group p-4 border border-gray-200 rounded-lg hover:bg-green-50 transition-colors">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                            <svg class="h-5 w-5 text-green-600 group-hover:text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900 group-hover:text-green-700">Ajouter un membre</h4>
+                            <p class="text-xs text-gray-500">Créer un nouveau compte membre</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="{% url 'center_panel:members' %}" class="group p-4 border border-gray-200 rounded-lg hover:bg-green-50 transition-colors">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                            <svg class="h-5 w-5 text-green-600 group-hover:text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900 group-hover:text-green-700">Voir les membres</h4>
+                            <p class="text-xs text-gray-500">Liste complète des membres</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <h4 class="text-md font-medium text-gray-900 mb-4">Gestion des Prêts</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <a href="{% url 'center_panel:add_loan' %}" class="group p-4 border border-gray-200 rounded-lg hover:bg-yellow-50 transition-colors">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                            <svg class="h-5 w-5 text-yellow-600 group-hover:text-yellow-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900 group-hover:text-yellow-700">Nouveau prêt</h4>
+                            <p class="text-xs text-gray-500">Enregistrer un prêt de livre</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="{% url 'center_panel:loans' %}" class="group p-4 border border-gray-200 rounded-lg hover:bg-yellow-50 transition-colors">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                            <svg class="h-5 w-5 text-yellow-600 group-hover:text-yellow-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V19a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900 group-hover:text-yellow-700">Voir les prêts</h4>
+                            <p class="text-xs text-gray-500">Liste des prêts en cours</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <h4 class="text-md font-medium text-gray-900 mb-4">Gestion du Personnel</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <a href="{% url 'center_panel:add_staff' %}" class="group p-4 border border-gray-200 rounded-lg hover:bg-purple-50 transition-colors">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
+                            <svg class="h-5 w-5 text-purple-600 group-hover:text-purple-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900 group-hover:text-purple-700">Ajouter un membre du personnel</h4>
+                            <p class="text-xs text-gray-500">Nouveau membre de l'équipe</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="{% url 'center_panel:staff' %}" class="group p-4 border border-gray-200 rounded-lg hover:bg-purple-50 transition-colors">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
+                            <svg class="h-5 w-5 text-purple-600 group-hover:text-purple-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900 group-hover:text-purple-700">Voir le personnel</h4>
+                            <p class="text-xs text-gray-500">Liste du personnel</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <h4 class="text-md font-medium text-gray-900 mb-4">Formation</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <a href="{% url 'center_panel:training_subjects' %}" class="group p-4 border border-gray-200 rounded-lg hover:bg-pink-50 transition-colors">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-pink-100 flex items-center justify-center">
+                            <svg class="h-5 w-5 text-pink-600 group-hover:text-pink-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900 group-hover:text-pink-700">Sujets de formation</h4>
+                            <p class="text-xs text-gray-500">Gérer les sujets de formation</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="{% url 'center_panel:trainings' %}" class="group p-4 border border-gray-200 rounded-lg hover:bg-pink-50 transition-colors">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-pink-100 flex items-center justify-center">
+                            <svg class="h-5 w-5 text-pink-600 group-hover:text-pink-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900 group-hover:text-pink-700">Modules de formation</h4>
+                            <p class="text-xs text-gray-500">Gérer les modules de formation</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <h4 class="text-md font-medium text-gray-900 mb-4">Archives et Documents</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <a href="{% url 'center_panel:archives' %}" class="group p-4 border border-gray-200 rounded-lg hover:bg-teal-50 transition-colors">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center">
+                            <svg class="h-5 w-5 text-teal-600 group-hover:text-teal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900 group-hover:text-teal-700">Archives</h4>
+                            <p class="text-xs text-gray-500">Gérer les documents d'archives</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="{% url 'center_panel:activities' %}" class="group p-4 border border-gray-200 rounded-lg hover:bg-teal-50 transition-colors">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center">
+                            <svg class="h-5 w-5 text-teal-600 group-hover:text-teal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900 group-hover:text-teal-700">Activités</h4>
+                            <p class="text-xs text-gray-500">Voir le journal des activités</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="{% url 'center_panel:communiques' %}" class="group p-4 border border-gray-200 rounded-lg hover:bg-teal-50 transition-colors">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center">
+                            <svg class="h-5 w-5 text-teal-600 group-hover:text-teal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900 group-hover:text-teal-700">Communiqués</h4>
+                            <p class="text-xs text-gray-500">Voir les annonces</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="{% url 'center_panel:logs' %}" class="group p-4 border border-gray-200 rounded-lg hover:bg-teal-50 transition-colors">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center">
+                            <svg class="h-5 w-5 text-teal-600 group-hover:text-teal-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900 group-hover:text-teal-700">Journaux système</h4>
+                            <p class="text-xs text-gray-500">Voir les journaux d'activité</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

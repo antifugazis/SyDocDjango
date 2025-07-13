@@ -380,3 +380,91 @@ INFO 2025-07-13 17:54:17,644 basehttp "GET /books/covers/clacklogo.png HTTP/1.1"
 INFO 2025-07-13 17:54:23,629 basehttp "GET /center/books/ HTTP/1.1" 200 90929
 INFO 2025-07-13 17:54:30,035 basehttp "GET /center/books/ HTTP/1.1" 200 90929
 INFO 2025-07-13 17:54:32,182 basehttp "GET /center/books/ HTTP/1.1" 200 90929
+INFO 2025-07-13 18:32:26,026 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 18:32:37,502 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/models.py changed, reloading.
+INFO 2025-07-13 18:32:42,151 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 18:32:46,350 basehttp "GET /admin/ HTTP/1.1" 200 16189
+INFO 2025-07-13 18:32:46,517 basehttp "GET /static/admin/css/dashboard.css HTTP/1.1" 304 0
+INFO 2025-07-13 18:32:46,535 basehttp "GET /static/admin/css/dark_mode.css HTTP/1.1" 200 2929
+INFO 2025-07-13 18:32:46,553 basehttp "GET /static/admin/js/theme.js HTTP/1.1" 200 1943
+INFO 2025-07-13 18:32:46,565 basehttp "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 200 2694
+INFO 2025-07-13 18:32:46,567 basehttp "GET /static/admin/css/responsive.css HTTP/1.1" 200 18559
+INFO 2025-07-13 18:32:46,569 basehttp "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 200 3063
+INFO 2025-07-13 18:32:46,571 basehttp "GET /static/admin/css/base.css HTTP/1.1" 200 21310
+INFO 2025-07-13 18:32:46,607 basehttp "GET /static/admin/img/icon-addlink.svg HTTP/1.1" 200 331
+INFO 2025-07-13 18:32:46,607 basehttp "GET /static/admin/img/icon-changelink.svg HTTP/1.1" 200 380
+WARNING 2025-07-13 18:32:46,678 log Not Found: /favicon.ico
+INFO 2025-07-13 18:32:46,679 basehttp - Broken pipe from ('127.0.0.1', 59128)
+INFO 2025-07-13 18:33:50,884 basehttp "GET /admin/ HTTP/1.1" 200 16189
+INFO 2025-07-13 18:33:54,758 basehttp "GET /admin/auth/group/ HTTP/1.1" 200 13255
+INFO 2025-07-13 18:33:54,941 basehttp "GET /static/admin/js/filters.js HTTP/1.1" 200 978
+INFO 2025-07-13 18:33:54,941 basehttp "GET /static/admin/css/changelists.css HTTP/1.1" 200 6566
+INFO 2025-07-13 18:33:54,945 basehttp "GET /static/admin/img/search.svg HTTP/1.1" 200 458
+INFO 2025-07-13 18:33:55,003 basehttp "GET /static/admin/js/jquery.init.js HTTP/1.1" 200 347
+INFO 2025-07-13 18:33:55,023 basehttp "GET /static/admin/js/prepopulate.js HTTP/1.1" 200 1531
+INFO 2025-07-13 18:33:55,024 basehttp "GET /static/admin/js/core.js HTTP/1.1" 200 5682
+INFO 2025-07-13 18:33:55,024 basehttp "GET /static/admin/js/urlify.js HTTP/1.1" 200 7887
+INFO 2025-07-13 18:33:55,074 basehttp "GET /static/admin/js/admin/RelatedObjectLookups.js HTTP/1.1" 200 8943
+INFO 2025-07-13 18:33:55,089 basehttp "GET /static/admin/js/vendor/jquery/jquery.js HTTP/1.1" 304 0
+INFO 2025-07-13 18:33:55,157 basehttp "GET /static/admin/js/actions.js HTTP/1.1" 200 7872
+INFO 2025-07-13 18:33:55,158 basehttp "GET /admin/jsi18n/ HTTP/1.1" 200 8621
+INFO 2025-07-13 18:33:55,191 basehttp "GET /static/admin/js/vendor/xregexp/xregexp.js HTTP/1.1" 200 232381
+INFO 2025-07-13 18:33:55,358 basehttp "GET /static/admin/img/tooltag-add.svg HTTP/1.1" 200 331
+INFO 2025-07-13 18:33:58,299 basehttp "GET /admin/auth/user/ HTTP/1.1" 200 16571
+INFO 2025-07-13 18:33:58,481 basehttp "GET /admin/jsi18n/ HTTP/1.1" 200 8621
+INFO 2025-07-13 18:33:58,517 basehttp "GET /static/admin/img/icon-yes.svg HTTP/1.1" 200 436
+INFO 2025-07-13 18:33:58,624 basehttp "GET /static/admin/img/sorting-icons.svg HTTP/1.1" 200 1097
+INFO 2025-07-13 18:34:06,912 basehttp "GET /admin/core/archivaldocument/ HTTP/1.1" 200 17207
+INFO 2025-07-13 18:34:06,956 basehttp "GET /admin/jsi18n/ HTTP/1.1" 200 8621
+INFO 2025-07-13 18:34:53,605 basehttp "GET /admin/auth/group/add/ HTTP/1.1" 200 25421
+INFO 2025-07-13 18:34:53,642 basehttp "GET /static/admin/js/SelectFilter2.js HTTP/1.1" 200 15292
+INFO 2025-07-13 18:34:53,643 basehttp "GET /static/admin/js/change_form.js HTTP/1.1" 304 0
+INFO 2025-07-13 18:34:53,644 basehttp "GET /static/admin/js/prepopulate_init.js HTTP/1.1" 304 0
+INFO 2025-07-13 18:34:53,644 basehttp "GET /static/admin/css/forms.css HTTP/1.1" 200 9090
+INFO 2025-07-13 18:34:53,645 basehttp "GET /static/admin/js/SelectBox.js HTTP/1.1" 200 4530
+INFO 2025-07-13 18:34:53,649 basehttp "GET /admin/jsi18n/ HTTP/1.1" 200 8621
+INFO 2025-07-13 18:34:53,651 basehttp "GET /static/admin/css/widgets.css HTTP/1.1" 304 0
+INFO 2025-07-13 18:34:53,708 basehttp "GET /static/admin/img/icon-unknown-alt.svg HTTP/1.1" 200 655
+INFO 2025-07-13 18:34:53,708 basehttp "GET /static/admin/img/icon-unknown.svg HTTP/1.1" 200 655
+INFO 2025-07-13 18:34:53,710 basehttp "GET /static/admin/img/selector-icons.svg HTTP/1.1" 200 3291
+INFO 2025-07-13 18:39:07,670 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/admin.py changed, reloading.
+INFO 2025-07-13 18:39:13,452 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 18:40:10,162 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/admin.py changed, reloading.
+INFO 2025-07-13 18:40:14,679 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 18:41:34,409 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 18:41:36,938 basehttp "GET /admin/ HTTP/1.1" 200 16189
+INFO 2025-07-13 18:41:39,695 basehttp "GET /admin/core/book/1/change/ HTTP/1.1" 302 0
+INFO 2025-07-13 18:41:39,731 basehttp "GET /admin/ HTTP/1.1" 200 16393
+INFO 2025-07-13 18:41:39,762 basehttp "GET /static/admin/img/icon-alert.svg HTTP/1.1" 200 504
+INFO 2025-07-13 18:41:46,870 basehttp "GET /admin/core/author/1/change/ HTTP/1.1" 200 16755
+INFO 2025-07-13 18:41:46,961 basehttp "GET /static/admin/js/calendar.js HTTP/1.1" 200 8466
+INFO 2025-07-13 18:41:46,962 basehttp "GET /static/admin/js/admin/DateTimeShortcuts.js HTTP/1.1" 200 19319
+INFO 2025-07-13 18:41:46,969 basehttp "GET /admin/jsi18n/ HTTP/1.1" 200 8621
+INFO 2025-07-13 18:41:47,119 basehttp "GET /static/admin/img/icon-calendar.svg HTTP/1.1" 200 1086
+INFO 2025-07-13 18:45:24,605 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/urls.py changed, reloading.
+INFO 2025-07-13 18:45:25,356 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 18:45:37,983 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 18:45:39,552 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 18:48:10,495 basehttp "GET /center/dashboard/ HTTP/1.1" 200 126509
+INFO 2025-07-13 18:48:15,862 basehttp "GET /center/admin/ HTTP/1.1" 302 0
+INFO 2025-07-13 18:48:15,974 basehttp "GET /center/dashboard/ HTTP/1.1" 200 128529
+INFO 2025-07-13 18:48:23,933 basehttp "GET /center/admin/ HTTP/1.1" 302 0
+INFO 2025-07-13 18:48:25,451 basehttp "GET /center/dashboard/ HTTP/1.1" 200 128529
+INFO 2025-07-13 18:49:11,704 basehttp "GET /center/admin/ HTTP/1.1" 302 0
+INFO 2025-07-13 18:49:11,800 basehttp "GET /center/dashboard/ HTTP/1.1" 200 128529
+INFO 2025-07-13 18:50:16,792 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 18:50:17,237 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 18:50:41,205 basehttp "GET /center/dashboard/ HTTP/1.1" 200 126509
+INFO 2025-07-13 18:50:42,652 basehttp "GET /center/admin/ HTTP/1.1" 200 96698
+INFO 2025-07-13 18:51:10,069 basehttp "GET /center/loans/add/ HTTP/1.1" 200 87583
+INFO 2025-07-13 18:51:10,816 basehttp "GET /center/admin/ HTTP/1.1" 200 96698
+INFO 2025-07-13 18:54:20,890 basehttp "GET /center/activities/ HTTP/1.1" 200 92689
+INFO 2025-07-13 18:54:21,228 basehttp "GET /static/center_panel/js/dataTables.french.json HTTP/1.1" 200 1050
+INFO 2025-07-13 18:54:24,444 basehttp "GET /center/admin/ HTTP/1.1" 200 96698
+INFO 2025-07-13 18:54:39,541 basehttp "GET /center/admin/ HTTP/1.1" 302 0
+INFO 2025-07-13 18:54:39,702 basehttp "GET /center/dashboard/ HTTP/1.1" 200 128469
+INFO 2025-07-13 18:54:44,927 basehttp "GET /center/admin/ HTTP/1.1" 302 0
+INFO 2025-07-13 18:54:45,001 basehttp "GET /center/dashboard/ HTTP/1.1" 200 128469
+INFO 2025-07-13 18:55:20,686 basehttp "GET /center/dashboard/ HTTP/1.1" 200 126509
+INFO 2025-07-13 18:55:22,799 basehttp "GET /center/admin/ HTTP/1.1" 200 109849
+INFO 2025-07-13 20:01:54,478 basehttp "GET /center/admin/ HTTP/1.1" 200 136859

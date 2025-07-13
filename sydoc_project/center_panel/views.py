@@ -1703,6 +1703,57 @@ def nubo_download_book(request, book_id):
 
 
 @login_required
+def admin_panel(request):
+    """
+    Custom admin panel for the documentation center management.
+    This serves as a central hub for all administrative actions.
+    """
+    try:
+        current_center = DocumentationCenter.objects.first()  # For dev purposes
+        if not current_center:
+            messages.error(request, "Aucun centre de documentation trouvé pour l'utilisateur actuel.")
+            return redirect('admin:index')
+            
+        # Get counts for all major models
+        stats = {
+            'books_count': Book.objects.filter(documentation_center=current_center).count(),
+            'members_count': Member.objects.filter(documentation_center=current_center).count(),
+            'active_loans_count': Loan.objects.filter(
+                book__documentation_center=current_center,
+                return_date__isnull=True
+            ).count(),
+            'staff_count': Staff.objects.filter(documentation_center=current_center).count(),
+            'archival_docs_count': ArchivalDocument.objects.filter(documentation_center=current_center).count(),
+            'training_modules_count': TrainingModule.objects.filter(documentation_center=current_center).count(),
+        }
+        
+        # Get recent activities
+        recent_activities = Activity.objects.filter(
+            documentation_center=current_center
+        ).order_by('-created_at')[:5]
+        
+        # Get overdue loans
+        overdue_loans = Loan.objects.filter(
+            book__documentation_center=current_center,
+            return_date__isnull=True,
+            due_date__lt=timezone.now().date()
+        ).select_related('book', 'member')[:5]
+        
+        context = {
+            'current_center': current_center,
+            'stats': stats,
+            'recent_activities': recent_activities,
+            'overdue_loans': overdue_loans,
+        }
+        
+        return render(request, 'center_panel/admin_panel.html', context)
+        
+    except Exception as e:
+        messages.error(request, f"Une erreur est survenue: {str(e)}")
+        return redirect('center_panel:dashboard')
+
+
+@login_required
 def nubo_delete_page(request, page_id):
     """
     Delete a digitized page and update the page numbers of subsequent pages.

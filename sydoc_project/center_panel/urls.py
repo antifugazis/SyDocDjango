@@ -103,6 +103,9 @@ urlpatterns = [
     path('profiles/<int:pk>/edit/', views.edit_profile, name='edit_profile'),
     path('profiles/<int:pk>/delete/', views.delete_profile, name='delete_profile'),
     
+    # Admin Panel
+    path('admin/', views.admin_panel, name='admin_panel'),
+    
     # Nubo Digitization Features
     path('nubo/', views.nubo_dashboard, name='nubo_dashboard'),
     path('nubo/scan/<int:book_id>/', views.nubo_scan, name='nubo_scan'),
