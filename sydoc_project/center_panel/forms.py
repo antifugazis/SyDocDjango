@@ -2,7 +2,9 @@
 
 from django import forms
 from django.forms.models import modelformset_factory, inlineformset_factory
-from core.models import Book, Author, Category, Member, Loan, Staff, Activity, ArchivalDocument, TrainingSubject, TrainingModule, Lesson, Question, Answer, Communique, Activity, Role
+from django.contrib.auth.models import User
+from django.utils.translation import gettext_lazy as _
+from core.models import Book, Author, Category, Member, Loan, Staff, Activity, ArchivalDocument, TrainingSubject, TrainingModule, Lesson, Question, Answer, Communique, Activity, Role, Profile
 
 class BookForm(forms.ModelForm):
     class Meta:
@@ -352,10 +354,47 @@ class RoleForm(forms.ModelForm):
         model = Role
         fields = ['name', 'description']
         labels = {
-            'name': 'Nom du rôle',
-            'description': 'Description',
+            'name': 'Nom du Rôle',
+            'description': 'Description du Rôle',
+        }
+
+class UserForm(forms.ModelForm):
+    """Form for user account details (username, email, etc.)"""
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']
+        labels = {
+            'first_name': _('Prénom'),
+            'last_name': _('Nom'),
+            'email': _('Adresse email'),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Apply Tailwind CSS classes
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+
+class ProfileForm(forms.ModelForm):
+    """Form for profile details (profile picture, phone, etc.)"""
+    class Meta:
+        model = Profile
+        fields = ['profile_picture', 'establishment_name', 'phone_number', 'date_of_birth', 'bio']
+        labels = {
+            'profile_picture': _('Photo de profil'),
+            'establishment_name': _("Nom de l'établissement"),
+            'phone_number': _('Numéro de téléphone'),
+            'date_of_birth': _('Date de naissance'),
+            'bio': _('À propos de moi'),
         }
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'}),
-            'description': forms.Textarea(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm', 'rows': 3}),
+            'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
+            'bio': forms.Textarea(attrs={'rows': 3}),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Apply Tailwind CSS classes
+        for field in self.fields.values():
+            if field.widget.__class__.__name__ != 'CheckboxInput':
+                field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'

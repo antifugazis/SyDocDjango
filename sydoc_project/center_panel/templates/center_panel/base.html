@@ -18,6 +18,19 @@
     <!-- DataTables CSS -->
     <link href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css" rel="stylesheet">
     
+    <!-- Tawk.to Script -->
+    <script type="text/javascript">
+    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    (function(){
+    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+    s1.async=true;
+    s1.src='https://embed.tawk.to/6873081a7f202b19181e9c37/1j00lfa1n';
+    s1.charset='UTF-8';
+    s1.setAttribute('crossorigin','*');
+    s0.parentNode.insertBefore(s1,s0);
+    })();
+    </script>
+    
     <!-- Custom styles -->
     <style>
         body {
@@ -107,6 +120,14 @@
     <!-- Header -->
     <header class="bg-white border-b border-gray-200 shadow-sm">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <!-- Print Page Button -->
+            <button onclick="printTablesWithTitle()" title="Imprimer la page" class="hidden md:inline-flex items-center px-3 py-2 ml-4 rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2V7a2 2 0 012-2h16a2 2 0 012 2v9a2 2 0 01-2 2h-2m-6 0v4m0 0h4m-4 0H8" />
+                </svg>
+                Imprimer la page
+            </button>
+
             <div class="flex items-center animate__animated animate__fadeIn">
                 <div class="mr-3 p-2 bg-indigo-100 rounded-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -128,10 +149,21 @@
                     </button>
                 </div>
                 <div class="border-l border-gray-300 h-6"></div>
-                <div class="flex items-center">
-                    <span class="text-sm dm-sans-medium text-gray-700 mr-2">{{ request.user.username }}</span>
-                    <div class="bg-indigo-100 rounded-full h-8 w-8 flex items-center justify-center">
-                        <span class="text-sm funnel-sans-medium text-indigo-700">{{ request.user.username|slice:":1"|upper }}</span>
+                <div class="relative group">
+                    <button class="flex items-center focus:outline-none">
+                        <span class="text-sm dm-sans-medium text-gray-700 mr-2">{{ request.user.username }}</span>
+                        <div class="bg-indigo-100 rounded-full h-8 w-8 flex items-center justify-center">
+                            <span class="text-sm funnel-sans-medium text-indigo-700">{{ request.user.username|slice:":1"|upper }}</span>
+                        </div>
+                    </button>
+                    <!-- Dropdown menu -->
+                    <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                        <a href="{% url 'core:profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-user-edit mr-2 text-indigo-500"></i>Mon profil
+                        </a>
+                        <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-sign-out-alt mr-2 text-red-500"></i>Déconnexion
+                        </a>
                     </div>
                 </div>
             </div>
@@ -277,6 +309,14 @@
                                     </svg>
                                     Rôles
                                 </a>
+                                {% if request.user.is_superuser %}
+                                <a href="{% url 'center_panel:logs' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                                    </svg>
+                                    Logs système
+                                </a>
+                                {% endif %}
                                 <div class="border-t border-gray-100 my-1"></div>
                                 <span class="block px-4 py-1 text-xs font-medium text-gray-500 uppercase tracking-wider">Prêts</span>
                                 <a href="{% url 'center_panel:loans' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
@@ -334,6 +374,14 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
                                     </svg>
                                     Ajouter un membre du personnel
+                                </a>
+                                <div class="border-t border-gray-100 my-1"></div>
+                                <a href="{% url 'center_panel:profiles' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    Gérer les profils
                                 </a>
                             </div>
                         </div>
@@ -554,6 +602,15 @@
                             Rôles
                         </a>
                         
+                        {% if request.user.is_superuser %}
+                        <a href="{% url 'center_panel:logs' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                            </svg>
+                            Logs système
+                        </a>
+                        {% endif %}
+                        
                         <span class="block text-xs font-medium text-gray-500 uppercase tracking-wider px-3 mt-2">Prêts</span>
                         <a href="{% url 'center_panel:loans' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -609,6 +666,14 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
                             </svg>
                             Ajouter un membre du personnel
+                        </a>
+                        <div class="border-t border-gray-100 my-1"></div>
+                        <a href="{% url 'center_panel:profiles' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Gérer les profils
                         </a>
                     </div>
                 </div>
@@ -933,6 +998,73 @@
             });
         });
     </script>
+    <script>
+    function printTablesWithTitle() {
+        // Get the page title (from <title> or h1)
+        var pageTitle = document.title;
+        // Get all tables
+        var tables = document.querySelectorAll('table');
+        if (tables.length === 0) {
+            alert('Aucun tableau à imprimer sur cette page.');
+            return;
+        }
+        // Get current date and time (localized)
+        var now = new Date();
+        var dateStr = now.toLocaleString();
+        // Open new window
+        var printWin = window.open('', '', 'height=900,width=1200');
+        printWin.document.write('<html><head><title>' + pageTitle + '</title>');
+        printWin.document.write('<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">');
+        printWin.document.write(`
+          <style>
+            @media print { .no-print { display: none !important; } }
+            body { background: #f9fafb; }
+            .print-header { text-align: center; margin-bottom: 2.5rem; }
+            .print-title { font-size: 2.25rem; font-weight: 700; color: #1e293b; }
+            .print-meta { color: #64748b; font-size: 1.1rem; margin-top: 0.5rem; }
+            .print-table-container { display: flex; justify-content: center; }
+            .print-table { margin: 0 auto; border-radius: 0.75rem; overflow: hidden; box-shadow: 0 2px 16px 0 #0001; background: #fff; max-width: 900px; }
+            .print-table th { background: #f1f5f9; color: #334155; font-weight: 600; font-size: 1rem; padding: 0.75rem 1.25rem; }
+            .print-table td { padding: 0.6rem 1.25rem; font-size: 0.98rem; border-bottom: 1px solid #e5e7eb; }
+            .print-table tr:nth-child(even) { background: #f9fafb; }
+            .print-table tr:last-child td { border-bottom: none; }
+            .print-footer { text-align: center; color: #94a3b8; font-size: 0.95rem; margin-top: 2.5rem; border-top: 1px solid #e5e7eb; padding-top: 1.2rem; }
+          </style>
+        `);
+        printWin.document.write('</head><body class="p-8">');
+        printWin.document.write('<div class="print-header">');
+        printWin.document.write('<div class="print-title">' + pageTitle + '</div>');
+        printWin.document.write('<div class="print-meta">' + dateStr + ' &mdash; SyDoc Platform</div>');
+        printWin.document.write('</div>');
+        tables.forEach(function(table) {
+            // Clone and add print-table class
+            var t = table.cloneNode(true);
+            t.classList.add('print-table');
+            printWin.document.write('<div class="print-table-container mb-8">' + t.outerHTML + '</div>');
+        });
+        printWin.document.write('<div class="print-footer">Imprimé depuis ' + window.location.href + '</div>');
+        printWin.document.write('</body></html>');
+        printWin.document.close();
+        printWin.focus();
+        printWin.print();
+        printWin.close();
+    }
+    </script>
     {% block extra_js %}{% endblock %}
+    
+    <!-- Tawk.to Chat Widget -->
+    <!--Start of Tawk.to Script-->
+    <script type="text/javascript">
+    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    (function(){
+    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+    s1.async=true;
+    s1.src='https://embed.tawk.to/6873081a7f202b19181e9c37/1j00lfa1n';
+    s1.charset='UTF-8';
+    s1.setAttribute('crossorigin','*');
+    s0.parentNode.insertBefore(s1,s0);
+    })();
+    </script>
+    <!--End of Tawk.to Script-->
 </body>
 </html>

@@ -1,0 +1,89 @@
+{% extends 'center_panel/base.html' %}
+{% load static %}
+
+{% block title %}Logs du système{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <div class="flex flex-col">
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Logs du système</h1>
+            <p class="text-gray-600">Affichage des logs de l'application (accès réservé aux administrateurs)</p>
+        </div>
+
+        {% if log_exists %}
+            <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                <!-- Pagination controls -->
+                <div class="flex justify-between items-center p-4 bg-gray-50 border-b">
+                    <div class="text-sm text-gray-600">
+                        Page {{ current_page }} sur {{ total_pages }}
+                    </div>
+                    <div class="space-x-2">
+                        {% if has_prev %}
+                            <a href="?page={{ prev_page }}" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+                                Précédent
+                            </a>
+                        {% else %}
+                            <span class="px-3 py-1 bg-gray-300 text-gray-500 rounded text-sm cursor-not-allowed">
+                                Précédent
+                            </span>
+                        {% endif %}
+                        
+                        {% if has_next %}
+                            <a href="?page={{ next_page }}" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+                                Suivant
+                            </a>
+                        {% else %}
+                            <span class="px-3 py-1 bg-gray-300 text-gray-500 rounded text-sm cursor-not-allowed">
+                                Suivant
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Log content -->
+                <div class="p-4 overflow-x-auto">
+                    <pre class="text-xs font-mono bg-gray-100 p-4 rounded-lg overflow-x-auto max-h-[70vh] whitespace-pre-wrap">{{ log_content }}</pre>
+                </div>
+                
+                <!-- Bottom pagination controls -->
+                <div class="flex justify-between items-center p-4 bg-gray-50 border-t">
+                    <div class="text-sm text-gray-600">
+                        Page {{ current_page }} sur {{ total_pages }}
+                    </div>
+                    <div class="space-x-2">
+                        {% if has_prev %}
+                            <a href="?page={{ prev_page }}" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+                                Précédent
+                            </a>
+                        {% else %}
+                            <span class="px-3 py-1 bg-gray-300 text-gray-500 rounded text-sm cursor-not-allowed">
+                                Précédent
+                            </span>
+                        {% endif %}
+                        
+                        {% if has_next %}
+                            <a href="?page={{ next_page }}" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+                                Suivant
+                            </a>
+                        {% else %}
+                            <span class="px-3 py-1 bg-gray-300 text-gray-500 rounded text-sm cursor-not-allowed">
+                                Suivant
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="bg-white shadow-md rounded-lg p-6 text-center">
+                <div class="text-yellow-600 mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <p class="text-gray-700">{{ log_content }}</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

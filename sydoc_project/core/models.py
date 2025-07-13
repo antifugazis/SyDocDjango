@@ -4,10 +4,10 @@ from django.core.validators import RegexValidator, EmailValidator
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
+from django.dispatch import receiver
+from django.db.models.signals import post_save
 from django.contrib.contenttypes.fields import GenericForeignKey  
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.fields import GenericForeignKey
 
 # Create your models here.
 # sydoc_project/core/models.py
@@ -868,3 +868,73 @@ class Communique(models.Model):
         verbose_name = "Communiqué"
         verbose_name_plural = "Communiqués"
         ordering = ['-publication_date']
+
+
+class Profile(models.Model):
+    """
+    Extends the default User model with additional profile information.
+    """
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='profile',
+        verbose_name=_('Utilisateur')
+    )
+    
+    profile_picture = models.ImageField(
+        upload_to='profile_pics/',
+        blank=True,
+        null=True,
+        verbose_name=_('Photo de profil'),
+        help_text=_('Téléchargez une photo de profil')
+    )
+    
+    establishment_name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name=_("Nom de l'établissement"),
+        help_text=_("Le nom de l'établissement où vous travaillez")
+    )
+    
+    phone_number = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        verbose_name=_('Numéro de téléphone'),
+        validators=[DocumentationCenter.phone_regex],
+        help_text=_('Format: +999999999. Maximum 15 chiffres.')
+    )
+    
+    date_of_birth = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name=_('Date de naissance'),
+        help_text=_('Format: JJ/MM/AAAA')
+    )
+    
+    bio = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name=_('À propos de moi'),
+        help_text=_('Une brève description de vous-même')
+    )
+    
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=_('Dernière mise à jour'))
+    
+    class Meta:
+        verbose_name = _('Profil')
+        verbose_name_plural = _('Profils')
+    
+    def __str__(self):
+        return f"Profil de {self.user.username}"
+
+
+@receiver(post_save, sender=User)
+def create_or_update_user_profile(sender, instance, created, **kwargs):
+    """
+    Signal to create or update the user profile when a User instance is saved.
+    """
+    if created:
+        Profile.objects.create(user=instance)
+    instance.profile.save()

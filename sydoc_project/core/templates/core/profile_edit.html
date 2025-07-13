@@ -1,0 +1,241 @@
+{% extends 'center_panel/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans 'Modifier mon Profil' %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">
+                        {% trans 'Modifier mon Profil' %}
+                    </h3>
+                    <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                        {% trans 'Mettez à jour vos informations personnelles' %}
+                    </p>
+                </div>
+                <a href="{% url 'core:profile' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <svg class="-ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    {% trans 'Annuler' %}
+                </a>
+            </div>
+        </div>
+        
+        <div class="px-4 py-5 sm:p-6">
+            <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Messages -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="rounded-md bg-{% if message.tags == 'success' %}green{% else %}red{% endif %}-50 p-4 mb-6">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-{% if message.tags == 'success' %}green{% else %}red{% endif %}-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-{% if message.tags == 'success' %}green{% else %}red{% endif %}-800">
+                                        {{ message }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div class="space-y-6">
+                    <!-- Profile Picture -->
+                    <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
+                        <label for="id_profile_picture" class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
+                            {{ p_form.profile_picture.label }}
+                        </label>
+                        <div class="mt-1 sm:mt-0 sm:col-span-2">
+                            <div class="flex items-center">
+                                <div class="h-16 w-16 rounded-full overflow-hidden bg-gray-100 mr-4">
+                                    {% if p_form.instance.profile_picture %}
+                                        <img id="profile-preview" class="h-full w-full object-cover" src="{{ p_form.instance.profile_picture.url }}" alt="">
+                                    {% else %}
+                                        <div id="profile-preview" class="h-full w-full bg-gray-200 flex items-center justify-center">
+                                            <span class="text-2xl text-gray-500">{{ user.get_full_name|default:user.username|first|upper }}</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="flex items-center">
+                                    <label for="id_profile_picture" class="cursor-pointer">
+                                        <span class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                            <svg class="-ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                            </svg>
+                                            {% trans 'Changer' %}
+                                        </span>
+                                        <input id="id_profile_picture" name="profile_picture" type="file" class="sr-only" onchange="previewImage(this)">
+                                    </label>
+                                    {% if p_form.profile_picture.value %}
+                                    <button type="button" onclick="document.getElementById('id_profile_picture-clear').checked = true; document.getElementById('profile-preview').innerHTML = '<span class=\'text-2xl text-gray-500\'>{{ user.get_full_name|default:user.username|first|upper }}</span>';" class="ml-3 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                        <svg class="-ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        {% trans 'Supprimer' %}
+                                    </button>
+                                    <input type="checkbox" name="profile_picture-clear" id="id_profile_picture-clear" class="hidden">
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if p_form.profile_picture.help_text %}
+                                <p class="mt-2 text-sm text-gray-500">{{ p_form.profile_picture.help_text }}</p>
+                            {% endif %}
+                            {% if p_form.profile_picture.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ p_form.profile_picture.errors|join:", " }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- User Form -->
+                    <div class="space-y-6">
+                        <h3 class="text-lg font-medium text-gray-900">{% trans 'Informations de connexion' %}</h3>
+                        
+                        <div class="grid grid-cols-1 gap-y-6 sm:grid-cols-6 sm:gap-x-6">
+                            <div class="sm:col-span-3">
+                                <label for="id_first_name" class="block text-sm font-medium text-gray-700">
+                                    {{ u_form.first_name.label }}
+                                </label>
+                                <div class="mt-1">
+                                    {{ u_form.first_name }}
+                                    {% if u_form.first_name.errors %}
+                                        <p class="mt-2 text-sm text-red-600">{{ u_form.first_name.errors|join:", " }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="sm:col-span-3">
+                                <label for="id_last_name" class="block text-sm font-medium text-gray-700">
+                                    {{ u_form.last_name.label }}
+                                </label>
+                                <div class="mt-1">
+                                    {{ u_form.last_name }}
+                                    {% if u_form.last_name.errors %}
+                                        <p class="mt-2 text-sm text-red-600">{{ u_form.last_name.errors|join:", " }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="sm:col-span-6">
+                                <label for="id_email" class="block text-sm font-medium text-gray-700">
+                                    {{ u_form.email.label }}
+                                </label>
+                                <div class="mt-1">
+                                    {{ u_form.email }}
+                                    {% if u_form.email.errors %}
+                                        <p class="mt-2 text-sm text-red-600">{{ u_form.email.errors|join:", " }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Form -->
+                    <div class="space-y-6 pt-6 border-t border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">{% trans 'Informations personnelles' %}</h3>
+                        
+                        <div class="grid grid-cols-1 gap-y-6 sm:grid-cols-6 sm:gap-x-6">
+                            <div class="sm:col-span-3">
+                                <label for="id_phone_number" class="block text-sm font-medium text-gray-700">
+                                    {{ p_form.phone_number.label }}
+                                </label>
+                                <div class="mt-1">
+                                    {{ p_form.phone_number }}
+                                    {% if p_form.phone_number.errors %}
+                                        <p class="mt-2 text-sm text-red-600">{{ p_form.phone_number.errors|join:", " }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="sm:col-span-3">
+                                <label for="id_date_of_birth" class="block text-sm font-medium text-gray-700">
+                                    {{ p_form.date_of_birth.label }}
+                                </label>
+                                <div class="mt-1">
+                                    {{ p_form.date_of_birth }}
+                                    {% if p_form.date_of_birth.errors %}
+                                        <p class="mt-2 text-sm text-red-600">{{ p_form.date_of_birth.errors|join:", " }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="sm:col-span-6">
+                                <label for="id_establishment_name" class="block text-sm font-medium text-gray-700">
+                                    {{ p_form.establishment_name.label }}
+                                </label>
+                                <div class="mt-1">
+                                    {{ p_form.establishment_name }}
+                                    {% if p_form.establishment_name.errors %}
+                                        <p class="mt-2 text-sm text-red-600">{{ p_form.establishment_name.errors|join:", " }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="sm:col-span-6">
+                                <label for="id_bio" class="block text-sm font-medium text-gray-700">
+                                    {{ p_form.bio.label }}
+                                </label>
+                                <div class="mt-1">
+                                    {{ p_form.bio }}
+                                    {% if p_form.bio.errors %}
+                                        <p class="mt-2 text-sm text-red-600">{{ p_form.bio.errors|join:", " }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-5 border-t border-gray-200">
+                    <div class="flex justify-end">
+                        <a href="{% url 'core:profile' %}" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            {% trans 'Annuler' %}
+                        </a>
+                        <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            {% trans 'Enregistrer les modifications' %}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function previewImage(input) {
+    const preview = document.getElementById('profile-preview');
+    const file = input.files[0];
+    const reader = new FileReader();
+    
+    // Clear the clear checkbox when a new file is selected
+    const clearCheckbox = document.getElementById('id_profile_picture-clear');
+    if (clearCheckbox) {
+        clearCheckbox.checked = false;
+    }
+    
+    reader.onloadend = function() {
+        preview.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = reader.result;
+        img.className = 'h-full w-full object-cover';
+        preview.appendChild(img);
+    }
+    
+    if (file) {
+        reader.readAsDataURL(file);
+    } else {
+        preview.innerHTML = '<span class="text-2xl text-gray-500">{{ user.get_full_name|default:user.username|first|upper }}</span>';
+    }
+}
+</script>
+{% endblock %}

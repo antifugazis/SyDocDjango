@@ -2,6 +2,7 @@
 
 from django.urls import path
 from . import views
+from . import log_views
 
 app_name = 'center_panel' # Namespace for this app's URLs
 
@@ -95,4 +96,13 @@ urlpatterns = [
     path('roles/add/', views.add_role, name='add_role'),
     path('roles/<int:pk>/edit/', views.edit_role, name='edit_role'),
     path('roles/<int:pk>/delete/', views.delete_role, name='delete_role'),
+    
+    # Profile Management
+    path('profiles/', views.profile_list, name='profiles'),
+    path('profiles/<int:pk>/', views.profile_detail, name='profile_detail'),
+    path('profiles/<int:pk>/edit/', views.edit_profile, name='edit_profile'),
+    path('profiles/<int:pk>/delete/', views.delete_profile, name='delete_profile'),
+    
+    # System Logs (admin only)
+    path('admin/logs/', log_views.view_logs, name='logs'),
 ]

@@ -1,0 +1,26 @@
+INFO 2025-07-13 04:12:44,441 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 04:15:13,539 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/urls.py changed, reloading.
+INFO 2025-07-13 04:15:14,078 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 04:15:25,589 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/urls.py changed, reloading.
+INFO 2025-07-13 04:15:25,964 autoreload Watching for file changes with StatReloader
+WARNING 2025-07-13 04:17:04,821 log Not Found: /admin/logs
+WARNING 2025-07-13 04:17:04,822 basehttp "GET /admin/logs HTTP/1.1" 404 7880
+WARNING 2025-07-13 04:17:08,879 log Not Found: //logs
+WARNING 2025-07-13 04:17:08,879 basehttp "GET //logs HTTP/1.1" 404 3387
+WARNING 2025-07-13 04:17:12,599 log Not Found: /logs
+WARNING 2025-07-13 04:17:12,600 basehttp "GET /logs HTTP/1.1" 404 3384
+WARNING 2025-07-13 04:17:18,981 log Not Found: /center/admin/logs
+WARNING 2025-07-13 04:17:18,981 basehttp "GET /center/admin/logs HTTP/1.1" 404 15264
+WARNING 2025-07-13 04:18:53,951 log Not Found: /center/admin/logs
+WARNING 2025-07-13 04:18:53,952 basehttp "GET /center/admin/logs HTTP/1.1" 404 15264
+WARNING 2025-07-13 04:18:54,642 log Not Found: /center/admin/logs
+WARNING 2025-07-13 04:18:54,642 basehttp "GET /center/admin/logs HTTP/1.1" 404 15264
+WARNING 2025-07-13 04:18:57,757 log Not Found: /center/
+WARNING 2025-07-13 04:18:57,758 basehttp "GET /center/ HTTP/1.1" 404 15223
+INFO 2025-07-13 04:19:03,500 basehttp "GET /center/dashboard/ HTTP/1.1" 200 123013
+INFO 2025-07-13 04:19:09,016 basehttp "GET /center/admin/logs/ HTTP/1.1" 200 82822
+INFO 2025-07-13 04:19:12,753 basehttp "GET /center/admin/logs/ HTTP/1.1" 200 83662
+INFO 2025-07-13 04:19:41,054 <string> Test log entry from shell
+WARNING 2025-07-13 04:19:41,054 <string> This is a warning log entry
+ERROR 2025-07-13 04:19:41,054 <string> This is an error log entry
+INFO 2025-07-13 04:19:45,447 basehttp "GET /center/admin/logs/ HTTP/1.1" 200 83972

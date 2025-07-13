@@ -1,12 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.db.models import Q, Sum
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
+from django.contrib.auth.models import User
 import os
-from core.models import DocumentationCenter, Book, Member, Loan, Staff, ArchivalDocument, TrainingModule, Activity, TrainingSubject, TrainingModule, Lesson, Communique, Question, Answer, StaffTrainingRecord, Quiz, Category, Author, Role
-from .forms import BookForm, MemberForm, CreateLoanForm, StaffForm, ActivityForm, ArchiveForm, TrainingSubjectForm, TrainingModuleForm, LessonFormSet, CommuniqueForm, TrainingModuleForm, LessonForm, QuestionFormSet, CategoryForm, AuthorForm, RoleForm
+from core.models import DocumentationCenter, Book, Member, Loan, Staff, ArchivalDocument, TrainingModule, Activity, TrainingSubject, TrainingModule, Lesson, Communique, Question, Answer, StaffTrainingRecord, Quiz, Category, Author, Role, Profile
+from .forms import BookForm, MemberForm, CreateLoanForm, StaffForm, ActivityForm, ArchiveForm, TrainingSubjectForm, TrainingModuleForm, LessonFormSet, CommuniqueForm, TrainingModuleForm, LessonForm, QuestionFormSet, CategoryForm, AuthorForm, RoleForm, UserForm, ProfileForm
 from django.db.models import Count
 from django.utils import timezone
 from datetime import timedelta
@@ -1291,6 +1292,85 @@ def delete_author(request, pk):
         messages.success(request, 'Auteur supprimé avec succès.')
     
     return redirect('center_panel:authors')
+
+# Profile Management Views
+def profile_list(request):
+    """
+    List all user profiles with their associated information.
+    """
+    profiles = Profile.objects.select_related('user').all()
+    context = {
+        'profiles': profiles,
+        'title': 'Gestion des profils utilisateurs'
+    }
+    return render(request, 'center_panel/profiles/profile_list.html', context)
+
+def profile_detail(request, pk):
+    """
+    Display detailed information about a specific user profile.
+    """
+    profile = get_object_or_404(Profile, pk=pk)
+    context = {
+        'profile': profile,
+        'title': f'Profil de {profile.user.get_full_name() or profile.user.username}'
+    }
+    return render(request, 'center_panel/profiles/profile_detail.html', context)
+
+@login_required
+def edit_profile(request, pk):
+    """
+    Edit an existing user profile.
+    """
+    profile = get_object_or_404(Profile, pk=pk)
+    user = profile.user
+    
+    # Check if the current user is authorized to edit this profile
+    if request.user != user and not request.user.is_staff:
+        messages.error(request, "Vous n'êtes pas autorisé à modifier ce profil.")
+        return redirect('center_panel:profile_detail', pk=profile.pk)
+    
+    if request.method == 'POST':
+        user_form = UserForm(request.POST, instance=user)
+        profile_form = ProfileForm(request.POST, request.FILES, instance=profile)
+        
+        if user_form.is_valid() and profile_form.is_valid():
+            user = user_form.save()
+            profile = profile_form.save(commit=False)
+            profile.user = user
+            profile.save()
+            messages.success(request, 'Profil mis à jour avec succès.')
+            return redirect('center_panel:profile_detail', pk=profile.pk)
+    else:
+        user_form = UserForm(instance=user)
+        profile_form = ProfileForm(instance=profile)
+    
+    context = {
+        'user_form': user_form,
+        'profile_form': profile_form,
+        'profile': profile,
+        'title': f'Modifier le profil de {user.get_full_name() or user.username}'
+    }
+    return render(request, 'center_panel/profiles/profile_form.html', context)
+
+@login_required
+def delete_profile(request, pk):
+    """
+    Delete a user profile.
+    Only staff members can delete profiles.
+    """
+    if not request.user.is_staff:
+        messages.error(request, "Vous n'êtes pas autorisé à supprimer des profils.")
+        return redirect('center_panel:profiles')
+    
+    profile = get_object_or_404(Profile, pk=pk)
+    
+    if request.method == 'POST':
+        user = profile.user
+        user.delete()  # This will also delete the profile due to CASCADE
+        messages.success(request, 'Le profil a été supprimé avec succès.')
+        return redirect('center_panel:profiles')
+    
+    return render(request, 'center_panel/profiles/profile_confirm_delete.html', {'profile': profile})
 
 # Role CRUD Views
 @login_required
