@@ -3,10 +3,19 @@ from django.db.models import Q, Sum
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.conf import settings
-from django.http import JsonResponse, Http404
+from django.http import HttpResponse, JsonResponse, FileResponse, Http404
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+from django.conf import settings
 from django.contrib.auth.models import User
 import os
-from core.models import DocumentationCenter, Book, Member, Loan, Staff, ArchivalDocument, TrainingModule, Activity, TrainingSubject, TrainingModule, Lesson, Communique, Question, Answer, StaffTrainingRecord, Quiz, Category, Author, Role, Profile
+import io
+import tempfile
+import shutil
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4, letter
+from PIL import Image, ImageEnhance
+from core.models import DocumentationCenter, Book, Member, Loan, Staff, ArchivalDocument, TrainingModule, Activity, TrainingSubject, TrainingModule, Lesson, Communique, Question, Answer, StaffTrainingRecord, Quiz, Category, Author, Role, Profile, BookDigitization, DigitizedPage
 from .forms import BookForm, MemberForm, CreateLoanForm, StaffForm, ActivityForm, ArchiveForm, TrainingSubjectForm, TrainingModuleForm, LessonFormSet, CommuniqueForm, TrainingModuleForm, LessonForm, QuestionFormSet, CategoryForm, AuthorForm, RoleForm, UserForm, ProfileForm
 from django.db.models import Count
 from django.utils import timezone
@@ -1442,3 +1451,298 @@ def delete_role(request, pk):
         messages.success(request, 'Rôle supprimé avec succès.')
     
     return redirect('center_panel:roles')
+
+@login_required
+def nubo_dashboard(request):
+    """
+    Displays the Nubo dashboard, showing the digitization status of all physical books.
+    This is now the main entry point for the Nubo feature.
+    """
+    current_center = DocumentationCenter.objects.first()
+
+    # Get all physical books and ensure a digitization record exists for each one
+    physical_books = Book.objects.filter(documentation_center=current_center, is_digital=False)
+    for book in physical_books:
+        BookDigitization.objects.get_or_create(book=book)
+
+    # Get all digitization records to display on the dashboard
+    digitization_statuses = BookDigitization.objects.filter(
+        book__documentation_center=current_center
+    ).select_related('book').order_by('book__title')
+
+    context = {
+        'digitization_statuses': digitization_statuses,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/nubo_dashboard.html', context)
+
+
+@login_required
+def nubo_scan(request, book_id):
+    """
+    Handles the scanning interface for a specific book.
+    Displays the current scanning progress and allows uploading new scanned pages.
+    """
+    try:
+        book = Book.objects.get(id=book_id, is_digital=False)
+        digitization_process, created = BookDigitization.objects.get_or_create(book=book)
+    except Book.DoesNotExist:
+        messages.error(request, "Le livre demandé n'existe pas ou n'est pas un livre physique.")
+        return redirect('center_panel:nubo_dashboard')
+    
+    # Get all scanned pages for this book, ordered by page number
+    scanned_pages = DigitizedPage.objects.filter(
+        digitization_process=digitization_process
+    ).order_by('page_number')
+    
+    # Handle page upload form
+    if request.method == 'POST':
+        # Check if this is a file upload
+        if 'page_image' in request.FILES:
+            # Determine the next page number
+            next_page_number = digitization_process.last_scanned_page + 1
+            
+            # Create the new page
+            new_page = DigitizedPage(
+                digitization_process=digitization_process,
+                page_number=next_page_number,
+                image=request.FILES['page_image']
+            )
+            new_page.save()
+            
+            # Update the digitization process
+            digitization_process.last_scanned_page = next_page_number
+            if digitization_process.status == 'not_started':
+                digitization_process.status = 'in_progress'
+            digitization_process.save()
+            
+            messages.success(request, f"Page {next_page_number} ajoutée avec succès.")
+            return redirect('center_panel:nubo_scan', book_id=book_id)
+        
+        # Check if this is a status update
+        elif 'status' in request.POST:
+            new_status = request.POST.get('status')
+            if new_status in [choice[0] for choice in BookDigitization.DigitizationStatus.choices]:
+                digitization_process.status = new_status
+                digitization_process.save()
+                messages.success(request, "Statut de numérisation mis à jour.")
+            return redirect('center_panel:nubo_scan', book_id=book_id)
+    
+    # If the book doesn't have a pages count and we've scanned pages, update it
+    if (book.pages is None or book.pages == 0) and digitization_process.last_scanned_page > 0:
+        # If we're scanning, we should at least set the pages to what we've scanned so far
+        # This can be manually updated later if needed
+        book.pages = digitization_process.last_scanned_page
+        book.save()
+    
+    context = {
+        'book': book,
+        'digitization_process': digitization_process,
+        'scanned_pages': scanned_pages,
+        'total_pages': digitization_process.last_scanned_page,
+        'status_choices': BookDigitization.DigitizationStatus.choices,
+    }
+    return render(request, 'center_panel/nubo_scan.html', context)
+
+@login_required
+def nubo_view_book(request, book_id):
+    """
+    View a digitized book with page navigation.
+    Allows browsing through all scanned pages of a book.
+    """
+    try:
+        book = Book.objects.get(id=book_id)
+        digitization_process = BookDigitization.objects.get(book=book)
+    except (Book.DoesNotExist, BookDigitization.DoesNotExist):
+        messages.error(request, "Le livre demandé n'existe pas ou n'a pas été numérisé.")
+        return redirect('center_panel:nubo_dashboard')
+    
+    # Get all scanned pages for this book, ordered by page number
+    scanned_pages = DigitizedPage.objects.filter(
+        digitization_process=digitization_process
+    ).order_by('page_number')
+    
+    if not scanned_pages.exists():
+        messages.warning(request, "Ce livre n'a pas encore de pages numérisées.")
+        return redirect('center_panel:nubo_scan', book_id=book_id)
+    
+    # Get the current page number from the query string, default to 1
+    current_page_num = int(request.GET.get('page', 1))
+    
+    # Get the current page object, or the first page if the requested page doesn't exist
+    try:
+        current_page = scanned_pages.get(page_number=current_page_num)
+    except DigitizedPage.DoesNotExist:
+        current_page = scanned_pages.first()
+        current_page_num = current_page.page_number
+    
+    # Calculate previous and next page numbers for navigation
+    prev_page = scanned_pages.filter(page_number__lt=current_page_num).order_by('-page_number').first()
+    next_page = scanned_pages.filter(page_number__gt=current_page_num).order_by('page_number').first()
+    
+    context = {
+        'book': book,
+        'digitization_process': digitization_process,
+        'scanned_pages': scanned_pages,
+        'current_page': current_page,
+        'prev_page': prev_page,
+        'next_page': next_page,
+        'total_pages': digitization_process.last_scanned_page,
+    }
+    return render(request, 'center_panel/nubo_view_book.html', context)
+
+@login_required
+def nubo_download_book(request, book_id):
+    """
+    Generate and download a PDF containing all digitized pages of a book.
+    """
+    # Get the book and its digitization process
+    book = get_object_or_404(Book, pk=book_id)
+    try:
+        digitization_process = BookDigitization.objects.get(book=book)
+    except BookDigitization.DoesNotExist:
+        messages.error(request, "Processus de numérisation introuvable pour ce livre.")
+        return redirect('center_panel:nubo_dashboard')
+    
+    # Check if there are any scanned pages
+    if digitization_process.last_scanned_page == 0:
+        messages.error(request, "Ce livre n'a pas encore de pages numérisées.")
+        return redirect('center_panel:nubo_scan', book_id=book.id)
+    
+    # Get all scanned pages in order
+    scanned_pages = DigitizedPage.objects.filter(digitization_process=digitization_process).order_by('page_number')
+    
+    if not scanned_pages:
+        messages.error(request, "Aucune page numérisée trouvée pour ce livre.")
+        return redirect('center_panel:nubo_scan', book_id=book.id)
+    
+    # Create a PDF file in memory
+    buffer = io.BytesIO()
+    
+    # Create the PDF object using the BytesIO buffer
+    p = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+    
+    # Create a temporary directory for processed images
+    temp_dir = tempfile.mkdtemp(prefix='nubo_pdf_')
+    temp_files = []
+    
+    try:
+        # Add each scanned page to the PDF
+        for page in scanned_pages:
+            if os.path.exists(page.image.path):
+                try:
+                    # Open the image
+                    img = Image.open(page.image.path)
+                    
+                    # Convert to grayscale
+                    img = img.convert('L')
+                    
+                    # Apply sharpening filter
+                    enhancer = ImageEnhance.Sharpness(img)
+                    img = enhancer.enhance(1.5)  # Increase sharpness by 50%
+                    
+                    # Save the processed image to a temporary file
+                    temp_img_path = os.path.join(temp_dir, f"page_{page.page_number}_processed.jpg")
+                    img.save(temp_img_path, quality=85, optimize=True)
+                    temp_files.append(temp_img_path)
+                    
+                    # Calculate scaling to fit full width while maintaining aspect ratio
+                    img_width, img_height = img.size
+                    ratio = width / img_width  # Full width
+                    new_width = width
+                    new_height = img_height * ratio
+                    
+                    # Calculate position to center vertically
+                    x_pos = 0  # Left align
+                    y_pos = max(0, (height - new_height) / 2)  # Center vertically if possible
+                    
+                    # Draw the processed image on the PDF
+                    p.drawImage(temp_img_path, x_pos, y_pos, width=new_width, height=new_height)
+                    
+                    # Add page number at the bottom
+                    p.setFont("Helvetica", 10)
+                    p.drawString(width/2 - 20, 30, f"Page {page.page_number}")
+                    
+                    # Add a new page for the next image
+                    p.showPage()
+                except Exception as e:
+                    # Skip problematic images
+                    continue
+    
+        # Save the PDF
+        p.save()
+        
+        # Move to the beginning of the BytesIO buffer
+        buffer.seek(0)
+        
+        # Create a filename for the PDF
+        filename = f"{book.title.replace(' ', '_')}_numerise.pdf"
+        
+        # Return the PDF as a downloadable file
+        return FileResponse(buffer, as_attachment=True, filename=filename, content_type='application/pdf')
+    except Exception as e:
+        # Handle any errors
+        messages.error(request, f"Erreur lors de la génération du PDF: {str(e)}")
+        return redirect('center_panel:nubo_view_book', book_id=book.id)
+    finally:
+        # Clean up temporary files
+        for temp_file in temp_files:
+            if os.path.exists(temp_file):
+                try:
+                    os.remove(temp_file)
+                except:
+                    pass
+        
+        # Remove the temporary directory
+        if os.path.exists(temp_dir):
+            try:
+                shutil.rmtree(temp_dir)
+            except:
+                pass
+
+
+@login_required
+def nubo_delete_page(request, page_id):
+    """
+    Delete a digitized page and update the page numbers of subsequent pages.
+    """
+    # Get the page to delete
+    page = get_object_or_404(DigitizedPage, pk=page_id)
+    digitization_process = page.digitization_process
+    book_id = digitization_process.book.id
+    deleted_page_number = page.page_number
+    
+    # Delete the page image file from storage
+    if page.image and os.path.exists(page.image.path):
+        try:
+            os.remove(page.image.path)
+        except Exception as e:
+            # Log the error but continue with deletion
+            print(f"Error deleting image file: {e}")
+    
+    # Delete the page from the database
+    page.delete()
+    
+    # Update page numbers for all subsequent pages
+    subsequent_pages = DigitizedPage.objects.filter(
+        digitization_process=digitization_process,
+        page_number__gt=deleted_page_number
+    ).order_by('page_number')
+    
+    for subsequent_page in subsequent_pages:
+        subsequent_page.page_number -= 1
+        subsequent_page.save()
+    
+    # Update the last_scanned_page count
+    if digitization_process.last_scanned_page > 0:
+        digitization_process.last_scanned_page -= 1
+        
+        # If we deleted the last page and there are no more pages, reset status to not_started
+        if digitization_process.last_scanned_page == 0:
+            digitization_process.status = 'not_started'
+            
+        digitization_process.save()
+    
+    messages.success(request, f"Page {deleted_page_number} supprimée avec succès.")
+    return redirect('center_panel:nubo_scan', book_id=book_id)

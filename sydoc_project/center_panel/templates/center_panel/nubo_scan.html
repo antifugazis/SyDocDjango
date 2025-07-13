@@ -1,0 +1,198 @@
+{% extends 'center_panel/base.html' %}
+{% load static %}
+
+{% block title %}Numérisation : {{ book.title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Header Section -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Numérisation : {{ book.title }}</h1>
+                <p class="text-sm text-gray-500">par {{ book.authors.all|join:", " }}</p>
+            </div>
+            <div class="flex space-x-4">
+                {% if digitization_process.last_scanned_page > 0 %}
+                <a href="{% url 'center_panel:nubo_view_book' book_id=book.id %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    Visualiser le livre
+                </a>
+                {% endif %}
+                <a href="{% url 'center_panel:nubo_dashboard' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Retour au tableau de bord
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Left Column: Scan & Upload -->
+        <div>
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-800">Scanner la Prochaine Page</h2>
+                </div>
+                <div class="p-6">
+                    <!-- Upload Form -->
+                    <form method="post" enctype="multipart/form-data" class="space-y-6">
+                        {% csrf_token %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">
+                                Page {{ digitization_process.last_scanned_page|add:"1" }}
+                            </label>
+                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                <div class="space-y-1 text-center">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    <div class="flex text-sm text-gray-600">
+                                        <label for="page_image" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                            <span>Télécharger un fichier</span>
+                                            <input id="page_image" name="page_image" type="file" accept="image/*" class="sr-only" required>
+                                        </label>
+                                        <p class="pl-1">ou glisser-déposer</p>
+                                    </div>
+                                    <p class="text-xs text-gray-500">
+                                        PNG, JPG, GIF jusqu'à 10MB
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Télécharger la Page
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Instructions Box -->
+                    <div class="mt-8 bg-blue-50 rounded-lg p-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-blue-700">
+                                    Placez le livre sous l'appareil photo et assurez-vous que la page est bien éclairée et cadrée.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Progress & Management -->
+        <div>
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-800">Détails et Progression</h2>
+                </div>
+                <div class="p-6">
+                    <!-- Book Details -->
+                    <div class="flex items-start mb-6">
+                        {% if book.cover_image %}
+                        <div class="flex-shrink-0">
+                            <img src="{{ book.cover_image.url }}" alt="Couverture de {{ book.title }}" class="h-32 w-24 object-cover rounded-md shadow-sm">
+                        </div>
+                        {% endif %}
+                        <div class="ml-4">
+                            <h3 class="text-lg font-medium text-gray-900">{{ book.title }}</h3>
+                            <p class="text-sm text-gray-500">par {{ book.authors.all|join:", " }}</p>
+                            <div class="mt-2 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                                {% if digitization_process.status == 'not_started' %}bg-gray-100 text-gray-800
+                                {% elif digitization_process.status == 'in_progress' %}bg-blue-100 text-blue-800
+                                {% elif digitization_process.status == 'completed' %}bg-green-100 text-green-800
+                                {% elif digitization_process.status == 'published' %}bg-purple-100 text-purple-800
+                                {% endif %}">
+                                {% for status_code, status_label in status_choices %}{% if digitization_process.status == status_code %}{{ status_label }}{% endif %}{% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm font-medium text-gray-700">Progression</span>
+                            <span class="text-sm font-medium text-gray-700">{{ digitization_process.last_scanned_page }} page{% if digitization_process.last_scanned_page != 1 %}s{% endif %} numérisée{% if digitization_process.last_scanned_page != 1 %}s{% endif %}{% if book.pages %} sur {{ book.pages }}{% endif %}</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            {% if book.pages and book.pages > 0 %}
+                                <div class="bg-blue-600 h-2.5 rounded-full" style="width: {% widthratio digitization_process.last_scanned_page book.pages 100 %}%"></div>
+                            {% else %}
+                                <div class="bg-blue-600 h-2.5 rounded-full" style="width: {% if digitization_process.last_scanned_page > 0 %}100{% else %}0{% endif %}%"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Status Update Form -->
+                    <form method="post" class="mb-6">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Statut de numérisation</label>
+                            <select name="status" id="status" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm rounded-md">
+                                {% for status_value, status_label in status_choices %}
+                                <option value="{{ status_value }}" {% if digitization_process.status == status_value %}selected{% endif %}>
+                                    {{ status_label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            Mettre à jour le Statut
+                        </button>
+                    </form>
+
+                    <!-- Scanned Pages Gallery -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Pages Déjà Numérisées</h3>
+                        
+                        {% if scanned_pages %}
+                        <div class="grid grid-cols-3 gap-2 max-h-60 overflow-y-auto p-1">
+                            {% for page in scanned_pages %}
+                            <div class="relative group rounded-md overflow-hidden bg-gray-100">
+                                <a href="{{ page.image.url }}" target="_blank" class="block">
+                                    <img src="{{ page.image.url }}" alt="Page {{ page.page_number }}" class="object-cover w-full h-24">
+                                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity flex items-center justify-center">
+                                        <span class="px-2 py-1 bg-black bg-opacity-75 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                                            Page {{ page.page_number }}
+                                        </span>
+                                    </div>
+                                </a>
+                                <div class="absolute top-0 right-0 p-1">
+                                    <a href="{% url 'center_panel:nubo_delete_page' page_id=page.id %}" 
+                                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette page? Les numéros de page suivants seront réorganisés.');"
+                                       class="bg-red-500 hover:bg-red-600 text-white rounded-full p-1 opacity-70 hover:opacity-100 transition-opacity">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-6 bg-gray-50 rounded-lg border border-gray-200">
+                            <svg class="mx-auto h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">Aucune page numérisée</h3>
+                            <p class="mt-1 text-xs text-gray-500">Commencez à numériser des pages pour cet ouvrage.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

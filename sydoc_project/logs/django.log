@@ -24,3 +24,295 @@ INFO 2025-07-13 04:19:41,054 <string> Test log entry from shell
 WARNING 2025-07-13 04:19:41,054 <string> This is a warning log entry
 ERROR 2025-07-13 04:19:41,054 <string> This is an error log entry
 INFO 2025-07-13 04:19:45,447 basehttp "GET /center/admin/logs/ HTTP/1.1" 200 83972
+INFO 2025-07-13 14:52:37,179 basehttp "GET /center/activities/ HTTP/1.1" 200 89940
+INFO 2025-07-13 14:52:37,340 basehttp "GET /static/center_panel/js/dataTables.french.json HTTP/1.1" 200 1050
+INFO 2025-07-13 14:52:40,551 basehttp "GET /center/members/ HTTP/1.1" 200 83410
+INFO 2025-07-13 14:52:42,238 basehttp "GET /center/staff/ HTTP/1.1" 200 90079
+INFO 2025-07-13 15:09:36,724 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/models.py changed, reloading.
+INFO 2025-07-13 15:09:37,886 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:23:55,335 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/forms.py changed, reloading.
+INFO 2025-07-13 15:23:56,069 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:29:00,095 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/forms.py changed, reloading.
+INFO 2025-07-13 15:29:00,903 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:29:02,370 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/forms.py changed, reloading.
+INFO 2025-07-13 15:29:02,868 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:30:03,026 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 15:30:03,634 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:30:10,156 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 15:30:10,795 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:30:32,467 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 15:30:33,247 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:30:34,803 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 15:30:35,688 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:31:21,667 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/urls.py changed, reloading.
+INFO 2025-07-13 15:31:22,134 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:35:33,431 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/models.py changed, reloading.
+INFO 2025-07-13 15:35:34,240 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:35:35,460 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/models.py changed, reloading.
+INFO 2025-07-13 15:35:36,039 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:37:37,467 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 15:37:38,299 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:37:39,671 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 15:37:40,515 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:38:09,262 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 15:38:09,890 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:38:24,330 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/urls.py changed, reloading.
+INFO 2025-07-13 15:38:24,895 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:42:11,143 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/forms.py changed, reloading.
+INFO 2025-07-13 15:42:11,758 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:42:34,285 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/forms.py changed, reloading.
+INFO 2025-07-13 15:42:34,690 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:43:39,708 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/urls.py changed, reloading.
+INFO 2025-07-13 15:43:40,238 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:43:59,708 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/urls.py changed, reloading.
+INFO 2025-07-13 15:44:00,168 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:44:12,381 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/urls.py changed, reloading.
+INFO 2025-07-13 15:44:12,827 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:44:24,034 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/urls.py changed, reloading.
+INFO 2025-07-13 15:44:24,488 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:44:50,862 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 15:44:51,256 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:49:52,190 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/urls.py changed, reloading.
+INFO 2025-07-13 15:49:52,613 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:50:07,031 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 15:50:07,444 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:50:24,042 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/forms.py changed, reloading.
+INFO 2025-07-13 15:50:24,496 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 15:52:09,805 basehttp "GET /center/nubo/ HTTP/1.1" 200 87053
+ERROR 2025-07-13 15:52:14,758 log Internal Server Error: /center/nubo/scan/2/
+Traceback (most recent call last):
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py", line 1485, in nubo_scan
+    scanned_pages = DigitizedPage.objects.filter(
+NameError: name 'DigitizedPage' is not defined
+ERROR 2025-07-13 15:52:14,759 basehttp "GET /center/nubo/scan/2/ HTTP/1.1" 500 71757
+ERROR 2025-07-13 16:00:33,011 log Internal Server Error: /center/nubo/scan/2/
+Traceback (most recent call last):
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py", line 1485, in nubo_scan
+    scanned_pages = DigitizedPage.objects.filter(
+NameError: name 'DigitizedPage' is not defined
+ERROR 2025-07-13 16:00:33,012 basehttp "GET /center/nubo/scan/2/ HTTP/1.1" 500 71757
+INFO 2025-07-13 16:00:33,850 basehttp "GET /center/nubo/ HTTP/1.1" 200 87053
+ERROR 2025-07-13 16:00:41,219 log Internal Server Error: /center/nubo/scan/2/
+Traceback (most recent call last):
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py", line 1485, in nubo_scan
+    scanned_pages = DigitizedPage.objects.filter(
+NameError: name 'DigitizedPage' is not defined
+ERROR 2025-07-13 16:00:41,220 basehttp "GET /center/nubo/scan/2/ HTTP/1.1" 500 71757
+INFO 2025-07-13 16:01:02,977 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 16:01:03,634 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:02:32,191 basehttp "GET /center/nubo/scan/2/ HTTP/1.1" 200 90935
+INFO 2025-07-13 16:08:32,825 basehttp "POST /center/nubo/scan/2/ HTTP/1.1" 302 0
+INFO 2025-07-13 16:08:32,845 basehttp "GET /center/nubo/scan/2/ HTTP/1.1" 200 92759
+INFO 2025-07-13 16:13:37,448 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 16:13:38,260 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:14:00,976 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/urls.py changed, reloading.
+INFO 2025-07-13 16:14:01,641 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:16:07,360 basehttp "GET /center/nubo/scan/2/ HTTP/1.1" 200 90926
+INFO 2025-07-13 16:16:17,558 basehttp "POST /center/nubo/scan/2/ HTTP/1.1" 302 0
+INFO 2025-07-13 16:16:17,580 basehttp "GET /center/nubo/scan/2/ HTTP/1.1" 200 93023
+INFO 2025-07-13 16:16:17,608 basehttp "GET /nubo_scans/WhatsApp_Image_2025-07-11_at_16.58.361.jpeg HTTP/1.1" 200 141585
+INFO 2025-07-13 16:16:23,225 basehttp "POST /center/nubo/scan/2/ HTTP/1.1" 302 0
+INFO 2025-07-13 16:16:23,244 basehttp "GET /center/nubo/scan/2/ HTTP/1.1" 200 93921
+INFO 2025-07-13 16:16:23,265 basehttp "GET /nubo_scans/clacklogo.png HTTP/1.1" 200 409276
+INFO 2025-07-13 16:16:23,285 basehttp "GET /nubo_scans/WhatsApp_Image_2025-07-11_at_16.58.361.jpeg HTTP/1.1" 304 0
+INFO 2025-07-13 16:16:26,118 basehttp "POST /center/nubo/scan/2/ HTTP/1.1" 302 0
+INFO 2025-07-13 16:16:26,137 basehttp "GET /center/nubo/scan/2/ HTTP/1.1" 200 93928
+INFO 2025-07-13 16:16:26,185 basehttp "GET /nubo_scans/WhatsApp_Image_2025-07-11_at_16.58.361.jpeg HTTP/1.1" 304 0
+INFO 2025-07-13 16:16:26,186 basehttp "GET /nubo_scans/clacklogo.png HTTP/1.1" 304 0
+INFO 2025-07-13 16:16:31,816 basehttp "GET /center/nubo/ HTTP/1.1" 200 87048
+INFO 2025-07-13 16:16:34,879 basehttp "GET /center/nubo/scan/2/ HTTP/1.1" 200 92104
+INFO 2025-07-13 16:16:34,917 basehttp "GET /nubo_scans/WhatsApp_Image_2025-07-11_at_16.58.361.jpeg HTTP/1.1" 304 0
+INFO 2025-07-13 16:16:34,918 basehttp "GET /nubo_scans/clacklogo.png HTTP/1.1" 304 0
+INFO 2025-07-13 16:18:42,345 basehttp "GET /center/nubo/ HTTP/1.1" 200 87048
+INFO 2025-07-13 16:23:01,944 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:30:38,531 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:33:21,765 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/models.py changed, reloading.
+INFO 2025-07-13 16:33:22,397 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:33:36,009 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/models.py changed, reloading.
+INFO 2025-07-13 16:33:36,657 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:34:04,303 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/models.py changed, reloading.
+INFO 2025-07-13 16:34:04,838 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:34:36,976 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/models.py changed, reloading.
+INFO 2025-07-13 16:34:38,236 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:35:02,665 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:35:11,026 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/models.py changed, reloading.
+INFO 2025-07-13 16:35:15,096 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:35:40,981 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:36:08,751 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:37:35,556 basehttp "GET /center/nubo/ HTTP/1.1" 200 87048
+INFO 2025-07-13 16:37:48,510 basehttp "GET /center/nubo/scan/2/ HTTP/1.1" 200 92104
+INFO 2025-07-13 16:37:48,558 basehttp "GET /nubo_scans/clacklogo.png HTTP/1.1" 304 0
+INFO 2025-07-13 16:37:48,559 basehttp "GET /nubo_scans/WhatsApp_Image_2025-07-11_at_16.58.361.jpeg HTTP/1.1" 304 0
+INFO 2025-07-13 16:38:20,529 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/urls.py changed, reloading.
+INFO 2025-07-13 16:38:20,946 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:38:52,375 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 16:38:52,891 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:41:41,779 basehttp "GET /center/nubo/scan/2/ HTTP/1.1" 200 93079
+INFO 2025-07-13 16:41:41,828 basehttp "GET /nubo_scans/WhatsApp_Image_2025-07-11_at_16.58.361.jpeg HTTP/1.1" 304 0
+INFO 2025-07-13 16:41:41,828 basehttp "GET /nubo_scans/clacklogo.png HTTP/1.1" 304 0
+INFO 2025-07-13 16:41:42,568 basehttp "GET /center/nubo/ HTTP/1.1" 200 88728
+INFO 2025-07-13 16:41:44,881 basehttp "GET /center/nubo/view/2/ HTTP/1.1" 200 90837
+INFO 2025-07-13 16:41:47,110 basehttp "GET /center/nubo/view/2/?page=2 HTTP/1.1" 200 90810
+INFO 2025-07-13 16:43:00,311 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/urls.py changed, reloading.
+INFO 2025-07-13 16:43:00,886 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:44:04,877 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 16:44:10,124 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:44:23,498 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 16:44:30,522 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:45:03,570 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 16:45:04,551 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:47:11,159 basehttp "GET /center/nubo/view/2/?page=2 HTTP/1.1" 200 91495
+INFO 2025-07-13 16:47:11,247 basehttp "GET /nubo_scans/WhatsApp_Image_2025-07-11_at_16.58.361.jpeg HTTP/1.1" 304 0
+INFO 2025-07-13 16:47:11,247 basehttp "GET /nubo_scans/clacklogo.png HTTP/1.1" 304 0
+ERROR 2025-07-13 16:47:13,376 log Internal Server Error: /center/nubo/download/2/
+Traceback (most recent call last):
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "/Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py", line 1611, in nubo_download_book
+    scanned_pages = DigitizedPage.objects.filter(book_digitization=digitization_process).order_by('page_number')
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/db/models/query.py", line 1436, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/db/models/query.py", line 1454, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/db/models/query.py", line 1461, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/db/models/sql/query.py", line 1546, in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/db/models/sql/query.py", line 1577, in _add_q
+    child_clause, needed_inner = self.build_filter(
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/db/models/sql/query.py", line 1427, in build_filter
+    lookups, parts, reffed_expression = self.solve_lookup_type(arg, summarize)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/db/models/sql/query.py", line 1237, in solve_lookup_type
+    _, field, _, lookup_parts = self.names_to_path(lookup_splitted, self.get_meta())
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/db/models/sql/query.py", line 1725, in names_to_path
+    raise FieldError(
+django.core.exceptions.FieldError: Cannot resolve keyword 'book_digitization' into field. Choices are: digitization_process, digitization_process_id, id, image, page_number, scanned_at
+ERROR 2025-07-13 16:47:13,379 basehttp "GET /center/nubo/download/2/ HTTP/1.1" 500 116223
+INFO 2025-07-13 16:47:41,327 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 16:47:42,161 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:49:12,947 basehttp "GET /center/nubo/download/2/ HTTP/1.1" 200 856285
+INFO 2025-07-13 16:51:24,364 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 16:51:24,928 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:51:35,454 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 16:51:35,944 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:51:45,384 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 16:51:46,001 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:52:11,662 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 16:52:12,113 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:52:34,501 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 16:52:34,998 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:53:42,319 basehttp "GET /center/nubo/download/2/ HTTP/1.1" 200 307187
+INFO 2025-07-13 16:53:52,537 basehttp "GET /center/nubo/view/2/?page=2 HTTP/1.1" 200 91495
+INFO 2025-07-13 16:53:54,864 basehttp "GET /center/nubo/view/2/ HTTP/1.1" 200 91522
+INFO 2025-07-13 16:53:55,748 basehttp "GET /center/nubo/ HTTP/1.1" 200 89403
+INFO 2025-07-13 16:53:58,996 basehttp "GET /center/nubo/scan/2/ HTTP/1.1" 200 93079
+INFO 2025-07-13 16:53:59,048 basehttp "GET /nubo_scans/WhatsApp_Image_2025-07-11_at_16.58.361.jpeg HTTP/1.1" 304 0
+INFO 2025-07-13 16:53:59,048 basehttp "GET /nubo_scans/clacklogo.png HTTP/1.1" 304 0
+INFO 2025-07-13 16:54:18,755 basehttp "POST /center/nubo/scan/2/ HTTP/1.1" 302 0
+INFO 2025-07-13 16:54:18,779 basehttp "GET /center/nubo/scan/2/ HTTP/1.1" 200 94905
+INFO 2025-07-13 16:55:04,968 basehttp "POST /center/nubo/scan/2/ HTTP/1.1" 302 0
+INFO 2025-07-13 16:55:04,991 basehttp "GET /center/nubo/scan/2/ HTTP/1.1" 200 95796
+INFO 2025-07-13 16:55:05,026 basehttp "GET /nubo_scans/topography.svg HTTP/1.1" 200 91567
+INFO 2025-07-13 16:55:06,713 basehttp "GET /nubo_scans/topography.svg HTTP/1.1" 304 0
+INFO 2025-07-13 16:55:28,859 basehttp "POST /center/nubo/scan/2/ HTTP/1.1" 302 0
+INFO 2025-07-13 16:55:28,877 basehttp "GET /center/nubo/scan/2/ HTTP/1.1" 200 96742
+INFO 2025-07-13 16:55:28,898 basehttp "GET /nubo_scans/CleanShot_2025-06-06_at_23.04.172x.png HTTP/1.1" 200 91764
+INFO 2025-07-13 16:55:28,923 basehttp "GET /nubo_scans/topography.svg HTTP/1.1" 304 0
+INFO 2025-07-13 16:55:30,516 basehttp "GET /nubo_scans/CleanShot_2025-06-06_at_23.04.172x.png HTTP/1.1" 304 0
+INFO 2025-07-13 16:55:35,658 basehttp "GET /center/nubo/view/2/ HTTP/1.1" 200 93188
+INFO 2025-07-13 16:55:35,706 basehttp "GET /nubo_scans/topography.svg HTTP/1.1" 304 0
+INFO 2025-07-13 16:55:35,706 basehttp "GET /nubo_scans/CleanShot_2025-06-06_at_23.04.172x.png HTTP/1.1" 304 0
+INFO 2025-07-13 16:55:38,024 basehttp "GET /center/nubo/view/2/?page=2 HTTP/1.1" 200 93886
+INFO 2025-07-13 16:55:38,073 basehttp "GET /nubo_scans/CleanShot_2025-06-06_at_23.04.172x.png HTTP/1.1" 304 0
+INFO 2025-07-13 16:55:38,073 basehttp "GET /nubo_scans/topography.svg HTTP/1.1" 304 0
+INFO 2025-07-13 16:55:39,575 basehttp "GET /center/nubo/view/2/?page=3 HTTP/1.1" 200 93887
+INFO 2025-07-13 16:55:39,614 basehttp "GET /nubo_scans/CleanShot_2025-06-06_at_23.04.172x.png HTTP/1.1" 304 0
+INFO 2025-07-13 16:55:41,164 basehttp "GET /center/nubo/view/2/?page=4 HTTP/1.1" 200 93186
+INFO 2025-07-13 16:55:41,242 basehttp "GET /nubo_scans/topography.svg HTTP/1.1" 304 0
+INFO 2025-07-13 16:55:41,244 basehttp "GET /nubo_scans/CleanShot_2025-06-06_at_23.04.172x.png HTTP/1.1" 304 0
+INFO 2025-07-13 16:55:44,451 basehttp "GET /center/nubo/download/2/ HTTP/1.1" 200 372921
+INFO 2025-07-13 16:56:30,766 basehttp "GET /center/nubo/view/2/?page=3 HTTP/1.1" 200 93887
+INFO 2025-07-13 16:56:31,584 basehttp "GET /center/nubo/view/2/?page=2 HTTP/1.1" 200 93886
+INFO 2025-07-13 16:56:32,149 basehttp "GET /center/nubo/view/2/?page=3 HTTP/1.1" 200 93887
+INFO 2025-07-13 16:56:33,033 basehttp "GET /center/nubo/view/2/?page=1 HTTP/1.1" 200 93188
+INFO 2025-07-13 16:56:33,075 basehttp "GET /nubo_scans/CleanShot_2025-06-06_at_23.04.172x.png HTTP/1.1" 304 0
+INFO 2025-07-13 16:56:33,075 basehttp "GET /nubo_scans/topography.svg HTTP/1.1" 304 0
+INFO 2025-07-13 16:56:35,966 basehttp "GET /center/nubo/view/2/?page=3 HTTP/1.1" 200 93887
+INFO 2025-07-13 16:56:36,915 basehttp "GET /center/nubo/view/2/?page=2 HTTP/1.1" 200 93886
+INFO 2025-07-13 16:58:59,719 basehttp "GET /center/books/add/ HTTP/1.1" 200 91302
+INFO 2025-07-13 16:59:35,766 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/urls.py changed, reloading.
+INFO 2025-07-13 16:59:36,295 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 16:59:59,991 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 17:00:01,013 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 17:12:37,655 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/urls.py changed, reloading.
+INFO 2025-07-13 17:12:38,493 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 17:13:04,377 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/urls.py changed, reloading.
+INFO 2025-07-13 17:13:04,793 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 17:13:54,554 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 17:13:55,074 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 17:14:08,559 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 17:14:09,041 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 17:16:41,361 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/urls.py changed, reloading.
+INFO 2025-07-13 17:16:42,333 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 17:17:40,541 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/urls.py changed, reloading.
+INFO 2025-07-13 17:17:40,938 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 17:19:07,061 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 17:19:07,573 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 17:19:53,133 basehttp "POST /center/books/add/ HTTP/1.1" 200 92004
+WARNING 2025-07-13 17:19:53,177 log Not Found: /clacklogo.png
+WARNING 2025-07-13 17:19:53,177 basehttp "GET /clacklogo.png HTTP/1.1" 404 3438
+INFO 2025-07-13 17:19:55,865 basehttp "POST /center/books/add/ HTTP/1.1" 200 91652
+INFO 2025-07-13 17:20:07,775 basehttp "POST /center/books/add/ HTTP/1.1" 200 91651
+INFO 2025-07-13 17:20:12,117 basehttp "POST /center/books/add/ HTTP/1.1" 200 91650
+INFO 2025-07-13 17:20:21,126 basehttp "POST /center/books/add/ HTTP/1.1" 200 91642
+INFO 2025-07-13 17:20:32,684 basehttp "POST /center/books/add/ HTTP/1.1" 302 0
+INFO 2025-07-13 17:20:32,729 basehttp "GET /center/books/ HTTP/1.1" 200 90938
+INFO 2025-07-13 17:20:32,762 basehttp "GET /books/covers/clacklogo.png HTTP/1.1" 200 409276
+INFO 2025-07-13 17:21:04,374 basehttp "GET /center/nubo/ HTTP/1.1" 200 89405
+INFO 2025-07-13 17:21:08,560 basehttp "GET /center/nubo/view/2/ HTTP/1.1" 200 100768
+INFO 2025-07-13 17:21:08,583 basehttp "GET /nubo_scans/topography.svg HTTP/1.1" 304 0
+INFO 2025-07-13 17:21:08,600 basehttp "GET /nubo_scans/WhatsApp_Image_2025-07-11_at_16.58.361.jpeg HTTP/1.1" 304 0
+INFO 2025-07-13 17:21:08,601 basehttp "GET /nubo_scans/CleanShot_2025-06-06_at_23.04.172x.png HTTP/1.1" 304 0
+INFO 2025-07-13 17:21:08,601 basehttp "GET /nubo_scans/clacklogo.png HTTP/1.1" 304 0
+INFO 2025-07-13 17:21:10,470 basehttp "GET /center/nubo/ HTTP/1.1" 200 89405
+INFO 2025-07-13 17:21:12,579 basehttp "GET /center/nubo/scan/2/ HTTP/1.1" 200 94925
+INFO 2025-07-13 17:21:34,936 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/urls.py changed, reloading.
+INFO 2025-07-13 17:21:35,591 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 17:22:07,346 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/urls.py changed, reloading.
+INFO 2025-07-13 17:22:07,765 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 17:22:45,277 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/center_panel/views.py changed, reloading.
+INFO 2025-07-13 17:22:45,746 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 17:24:03,144 basehttp "GET /center/nubo/scan/2/ HTTP/1.1" 200 98481
+INFO 2025-07-13 17:24:03,190 basehttp "GET /nubo_scans/CleanShot_2025-06-06_at_23.04.172x.png HTTP/1.1" 304 0
+INFO 2025-07-13 17:24:03,191 basehttp "GET /nubo_scans/topography.svg HTTP/1.1" 304 0
+INFO 2025-07-13 17:24:07,081 basehttp "GET /center/nubo/delete-page/2/ HTTP/1.1" 302 0
+INFO 2025-07-13 17:24:07,103 basehttp "GET /center/nubo/scan/2/ HTTP/1.1" 200 98515
+INFO 2025-07-13 17:24:22,003 basehttp "GET /center/nubo/delete-page/3/ HTTP/1.1" 302 0
+INFO 2025-07-13 17:24:22,025 basehttp "GET /center/nubo/scan/2/ HTTP/1.1" 200 96728
+INFO 2025-07-13 17:24:41,436 basehttp "GET /center/dashboard/ HTTP/1.1" 200 125148
+INFO 2025-07-13 17:24:47,042 basehttp "GET /center/books/ HTTP/1.1" 200 88980
+INFO 2025-07-13 17:24:47,066 basehttp "GET /books/covers/clacklogo.png HTTP/1.1" 304 0

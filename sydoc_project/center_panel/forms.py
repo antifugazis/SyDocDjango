@@ -4,7 +4,7 @@ from django import forms
 from django.forms.models import modelformset_factory, inlineformset_factory
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
-from core.models import Book, Author, Category, Member, Loan, Staff, Activity, ArchivalDocument, TrainingSubject, TrainingModule, Lesson, Question, Answer, Communique, Activity, Role, Profile
+from core.models import Book, Author, Category, Member, Loan, Staff, Activity, ArchivalDocument, TrainingSubject, TrainingModule, Lesson, Question, Answer, Communique, Activity, Role, Profile, BookDigitization, DigitizedPage
 
 class BookForm(forms.ModelForm):
     class Meta:

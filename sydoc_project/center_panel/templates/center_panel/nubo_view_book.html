@@ -1,0 +1,212 @@
+{% extends 'center_panel/base.html' %}
+{% load static %}
+
+{% block title %}Visualisation : {{ book.title }}{% endblock %}
+
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Header Section -->
+    <div class="mb-8">
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex flex-wrap gap-2">
+                <a href="{% url 'center_panel:nubo_dashboard' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Retour au tableau de bord
+                </a>
+                <a href="{% url 'center_panel:nubo_scan' book_id=book.id %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Scanner des pages
+                </a>
+                <a href="{% url 'center_panel:nubo_download_book' book_id=book.id %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    Télécharger en PDF
+                </a>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Visualisation : {{ book.title }}</h1>
+                <p class="text-sm text-gray-500">par {{ book.authors.all|join:", " }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <!-- Left Sidebar: Book Info & Page Thumbnails -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-800">Détails du Livre</h2>
+                </div>
+                <div class="p-6">
+                    <!-- Book Details -->
+                    <div class="flex flex-col items-center mb-6">
+                        {% if book.cover_image %}
+                        <div class="mb-4">
+                            <img src="{{ book.cover_image.url }}" alt="Couverture de {{ book.title }}" class="h-48 w-32 object-cover rounded-md shadow-sm">
+                        </div>
+                        {% endif %}
+                        <div class="text-center">
+                            <h3 class="text-lg font-medium text-gray-900">{{ book.title }}</h3>
+                            <p class="text-sm text-gray-500">par {{ book.authors.all|join:", " }}</p>
+                            <div class="mt-2 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                                {% if digitization_process.status == 'not_started' %}bg-gray-100 text-gray-800
+                                {% elif digitization_process.status == 'in_progress' %}bg-blue-100 text-blue-800
+                                {% elif digitization_process.status == 'completed' %}bg-green-100 text-green-800
+                                {% elif digitization_process.status == 'published' %}bg-purple-100 text-purple-800
+                                {% endif %}">
+                                {% for status_code, status_label in digitization_process.DigitizationStatus.choices %}
+                                    {% if digitization_process.status == status_code %}{{ status_label }}{% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm font-medium text-gray-700">Progression</span>
+                            <span class="text-sm font-medium text-gray-700">{{ digitization_process.last_scanned_page }} page{% if digitization_process.last_scanned_page != 1 %}s{% endif %} numérisée{% if digitization_process.last_scanned_page != 1 %}s{% endif %}{% if book.pages %} sur {{ book.pages }}{% endif %}</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            {% if book.pages and book.pages > 0 %}
+                                <div class="bg-blue-600 h-2.5 rounded-full" style="width: {% widthratio digitization_process.last_scanned_page book.pages 100 %}%"></div>
+                            {% else %}
+                                <div class="bg-blue-600 h-2.5 rounded-full" style="width: {% if digitization_process.last_scanned_page > 0 %}100{% else %}0{% endif %}%"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page Thumbnails -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-800">Pages</h2>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-3 gap-2 max-h-96 overflow-y-auto p-1">
+                        {% for page in scanned_pages %}
+                        <div class="relative group rounded-md overflow-hidden bg-gray-100 border border-gray-200 {% if page.page_number == current_page.page_number %}ring-2 ring-blue-500{% endif %}">
+                            <!-- Page Image with Link -->
+                            <a href="?page={{ page.page_number }}" class="block">
+                                <img src="{{ page.image.url }}" alt="Page {{ page.page_number }}" class="object-cover w-full h-24">
+                                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity flex items-center justify-center">
+                                    <span class="px-2 py-1 bg-black bg-opacity-75 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                                        Page {{ page.page_number }}
+                                    </span>
+                                </div>
+                            </a>
+                            
+                            <!-- Page Actions -->
+                            <div class="flex justify-between items-center p-1 bg-gray-50 border-t border-gray-200">
+                                <span class="text-xs font-medium text-gray-700">P.{{ page.page_number }}</span>
+                                <div class="flex space-x-1">
+                                    <!-- Replace Button -->
+                                    <a href="{% url 'center_panel:nubo_replace_page' page_id=page.id %}" class="p-1 text-blue-600 hover:text-blue-800" title="Remplacer cette page">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12"></path>
+                                        </svg>
+                                    </a>
+                                    
+                                    <!-- Delete Button -->
+                                    <a href="#" onclick="confirmDelete({{ page.id }}, {{ page.page_number }}); return false;" class="p-1 text-red-600 hover:text-red-800" title="Supprimer cette page">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Content: Current Page View -->
+        <div class="lg:col-span-3">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                    <h2 class="text-xl font-semibold text-gray-800">Page {{ current_page.page_number }}</h2>
+                    
+                    <!-- Page Navigation -->
+                    <div class="flex space-x-2">
+                        {% if prev_page %}
+                        <a href="?page={{ prev_page.page_number }}" class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                            Page précédente
+                        </a>
+                        {% else %}
+                        <button disabled class="inline-flex items-center px-3 py-1.5 border border-gray-200 shadow-sm text-sm font-medium rounded-md text-gray-400 bg-gray-50 cursor-not-allowed">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                            Page précédente
+                        </button>
+                        {% endif %}
+                        
+                        {% if next_page %}
+                        <a href="?page={{ next_page.page_number }}" class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Page suivante
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </a>
+                        {% else %}
+                        <button disabled class="inline-flex items-center px-3 py-1.5 border border-gray-200 shadow-sm text-sm font-medium rounded-md text-gray-400 bg-gray-50 cursor-not-allowed">
+                            Page suivante
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Current Page Image -->
+                <div class="p-6 flex justify-center">
+                    <div class="max-w-full overflow-hidden">
+                        <img src="{{ current_page.image.url }}" alt="Page {{ current_page.page_number }} de {{ book.title }}" class="max-w-full max-h-[800px] object-contain shadow-lg">
+                    </div>
+                </div>
+                
+                <!-- Page Navigation (Bottom) -->
+                <div class="p-6 border-t border-gray-200 flex justify-between">
+                    <div>
+                        {% if prev_page %}
+                        <a href="?page={{ prev_page.page_number }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                            Page {{ prev_page.page_number }}
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="text-center">
+                        <span class="text-sm text-gray-500">Page {{ current_page.page_number }} sur {{ total_pages }}</span>
+                    </div>
+                    <div>
+                        {% if next_page %}
+                        <a href="?page={{ next_page.page_number }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Page {{ next_page.page_number }}
+                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

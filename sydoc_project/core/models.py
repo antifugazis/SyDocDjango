@@ -938,3 +938,58 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
     instance.profile.save()
+
+class BookDigitization(models.Model):
+    """
+    Tracks the digitization process for a single physical book.
+    """
+    class DigitizationStatus(models.TextChoices):
+        NOT_STARTED = 'not_started', _('Non commencé')
+        IN_PROGRESS = 'in_progress', _('En cours')
+        COMPLETED = 'completed', _('Terminé')
+        PUBLISHED = 'published', _('Publié')
+
+    book = models.OneToOneField(
+        Book,
+        on_delete=models.CASCADE,
+        related_name='digitization_process',
+        limit_choices_to={'is_digital': False} # Only physical books can be digitized
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=DigitizationStatus.choices,
+        default=DigitizationStatus.NOT_STARTED
+    )
+    last_scanned_page = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _("Digitalisation de Livre")
+        verbose_name_plural = _("Digitalisations de Livres")
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"Digitization status for '{self.book.title}'"
+
+
+class DigitizedPage(models.Model):
+    """
+    Represents a single scanned page of a book from the Nubo app.
+    """
+    digitization_process = models.ForeignKey(
+        BookDigitization,
+        on_delete=models.CASCADE,
+        related_name='pages'
+    )
+    page_number = models.PositiveIntegerField()
+    image = models.ImageField(upload_to='nubo_scans/')
+    scanned_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = _("Page Digitalisée")
+        verbose_name_plural = _("Pages Digitalisées")
+        ordering = ['page_number']
+        unique_together = ('digitization_process', 'page_number')
+
+    def __str__(self):
+        return f"Page {self.page_number} for '{self.digitization_process.book.title}'"

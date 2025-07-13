@@ -1,0 +1,44 @@
+pi/6 : sin = 1/2, cos = sqrt(3)/2, tan = sqrt(3)/3
+pi/4 : sin = sqrt(2)/2, cos = sqrt(2)/2, tan = 1
+pi/3 : sin = sqrt(3)/2, cos = 1/2, tan = sqrt(3)
+pi/2 : sin = 1, cos = 0, tan = non defini
+2pi/3 : sin = sqrt(3)/2, cos = -1/2, tan = -sqrt(3)
+3pi/4 : sin = sqrt(2)/2, cos = -sqrt(2)/2, tan = -1
+5pi/6 : sin = 1/2, cos = -sqrt(3)/2, tan = -sqrt(3)/3
+pi : sin = 0, cos = -1, tan = 0
+7pi/6 : sin = -1/2, cos = -sqrt(3)/2, tan = sqrt(3)/3
+5pi/4 : sin = -sqrt(2)/2, cos = -sqrt(2)/2, tan = 1
+4pi/3 : sin = -sqrt(3)/2, cos = -1/2, tan = sqrt(3)
+3pi/2 : sin = -1, cos = 0, tan = non defini
+5pi/3 : sin = -sqrt(3)/2, cos = 1/2, tan = -sqrt(3)
+7pi/4 : sin = -sqrt(2)/2, cos = sqrt(2)/2, tan = -1
+11pi/6 : sin = -1/2, cos = sqrt(3)/2, tan = -sqrt(3)/3
+2pi : sin = 0, cos = 1, tan = 0
+
+
+1) La relation entre les arcs opposes :
+Sin(-x) = -Sin x
+Cos(-x) = Cos x
+tg(-x) = -tg x
+cotg(-x) = -cotg x
+2) La relation entre les arcs supplementaires :
+Sin(pi - x) = Sin x
+Cos(pi - x) = -Cos x
+tg(pi - x) = -tg x
+cotg(pi - x) = -cotg x
+Image 2
+3) Les relations entre les arcs diametaux
+Sin(pi + x) = -Sin x
+Cos(pi + x) = -Cos x
+tg(pi + x) = tg x
+cotg(pi + x) = cotg x
+4) Les relations entre les arcs complementaires :
+Sin(pi/2 - x) = Cos x
+Cos(pi/2 - x) = Sin x
+tg(pi/2 - x) = cotg x
+cotg(pi/2 - x) = tg x
+5) Les relations entre les arcs differents de pi/2
+Sin(pi/2 + x) = Cos x
+Cos(pi/2 + x) = -Sin x
+tg(pi/2 + x) = -cotg x
+cotg(pi/2 + x) = -tg x

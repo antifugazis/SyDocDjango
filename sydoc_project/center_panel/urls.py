@@ -103,6 +103,13 @@ urlpatterns = [
     path('profiles/<int:pk>/edit/', views.edit_profile, name='edit_profile'),
     path('profiles/<int:pk>/delete/', views.delete_profile, name='delete_profile'),
     
-    # System Logs (admin only)
+    # Nubo Digitization Features
+    path('nubo/', views.nubo_dashboard, name='nubo_dashboard'),
+    path('nubo/scan/<int:book_id>/', views.nubo_scan, name='nubo_scan'),
+    path('nubo/view/<int:book_id>/', views.nubo_view_book, name='nubo_view_book'),
+    path('nubo/download/<int:book_id>/', views.nubo_download_book, name='nubo_download_book'),
+    path('nubo/delete-page/<int:page_id>/', views.nubo_delete_page, name='nubo_delete_page'),
+    
+    # Admin Features
     path('admin/logs/', log_views.view_logs, name='logs'),
 ]
