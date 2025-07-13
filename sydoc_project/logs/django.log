@@ -469,3 +469,23 @@ INFO 2025-07-13 18:55:20,686 basehttp "GET /center/dashboard/ HTTP/1.1" 200 1265
 INFO 2025-07-13 18:55:22,799 basehttp "GET /center/admin/ HTTP/1.1" 200 109849
 INFO 2025-07-13 20:01:54,478 basehttp "GET /center/admin/ HTTP/1.1" 200 136859
 INFO 2025-07-13 21:02:26,647 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/sydoc_project/settings.py changed, reloading.
+INFO 2025-07-13 21:32:45,520 autoreload Watching for file changes with StatReloader
+INFO 2025-07-13 21:44:11,383 basehttp "GET /admin/ HTTP/1.1" 302 0
+INFO 2025-07-13 21:44:11,540 basehttp "GET /admin/login/?next=/admin/ HTTP/1.1" 200 4259
+INFO 2025-07-13 21:44:11,667 basehttp - Broken pipe from ('127.0.0.1', 56794)
+INFO 2025-07-13 21:44:11,669 basehttp "GET /static/admin/css/login.css HTTP/1.1" 200 958
+INFO 2025-07-13 21:44:21,346 basehttp "POST /admin/login/?next=/admin/ HTTP/1.1" 302 0
+INFO 2025-07-13 21:44:21,462 basehttp "GET /admin/ HTTP/1.1" 200 13999
+INFO 2025-07-13 21:44:26,860 basehttp "GET /admin/core/documentationcenter/ HTTP/1.1" 200 14947
+INFO 2025-07-13 21:44:26,975 basehttp - Broken pipe from ('127.0.0.1', 56814)
+INFO 2025-07-13 21:44:26,976 basehttp - Broken pipe from ('127.0.0.1', 56785)
+INFO 2025-07-13 21:44:27,017 basehttp "GET /admin/jsi18n/ HTTP/1.1" 200 8621
+INFO 2025-07-13 21:44:34,934 basehttp "GET /admin/core/digitalizationrequest/ HTTP/1.1" 200 15652
+INFO 2025-07-13 21:44:36,243 basehttp "GET /admin/jsi18n/ HTTP/1.1" 200 8621
+WARNING 2025-07-13 22:13:39,743 log Not Found: /center/
+WARNING 2025-07-13 22:13:39,743 basehttp "GET /center/ HTTP/1.1" 404 16425
+WARNING 2025-07-13 22:13:43,259 log Not Found: /center/logs
+WARNING 2025-07-13 22:13:43,259 basehttp "GET /center/logs HTTP/1.1" 404 16442
+INFO 2025-07-13 22:13:48,107 basehttp "GET /center/dashboard/ HTTP/1.1" 302 0
+INFO 2025-07-13 22:13:48,565 basehttp "GET /admin/ HTTP/1.1" 200 14201
+INFO 2025-07-13 22:13:49,117 basehttp "GET /static/admin/img/icon-no.svg HTTP/1.1" 200 560
