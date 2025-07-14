@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-68gqnv1@q8y5v8v@_7bvs4=9pcsl06m$13mlft4)r^=p*8sbqk"
 
 # SECURITY WARNING: don't run with debug turned on in production!)
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['178.156.189.115', 'localhost', '127.0.0.1', 'sydoc.nexpns.net', 'www.sydoc.nexpns.net', 'https://sydoc.nexpns.net', 'https://www.sydoc.nexpns.net']
 CSRF_TRUSTED_ORIGINS = ['https://sydoc.nexpns.net', 'https://www.sydoc.nexpns.net']
