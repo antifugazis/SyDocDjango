@@ -798,6 +798,17 @@
                     </div>
                 </div>
                 
+                <!-- Admin Panel (Only for superusers) -->
+                {% if user.is_superuser %}
+                <a href="{% url 'center_panel:admin_panel' %}" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'admin_panel' %}text-indigo-600 bg-indigo-50{% else %}text-gray-700{% endif %} flex items-center border-b border-gray-100 py-1">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Administration
+                </a>
+                {% endif %}
+                
                 <!-- Logout Button -->
                 <a href="{% url 'logout' %}" class="block px-3 py-2 mt-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50 transition-colors duration-200 flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -880,6 +891,26 @@
             </div>
         </div>
     </footer>
+    <script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+    <script>
+      function addDarkmodeWidget() {
+        new Darkmode(options).showWidget();
+      }
+      window.addEventListener('load', addDarkmodeWidget);
+      const options = {
+        bottom: '100px', // default: '32px'
+        right: '32px', // default: '32px'
+        left: 'unset', // default: 'unset'
+        time: '0.5s', // default: '0.3s'
+        mixColor: '#fff', // default: '#fff'
+        backgroundColor: '#fff',  // default: '#fff'
+        buttonColorDark: '#100f2c',  // default: '#100f2c'
+        buttonColorLight: '#fff', // default: '#fff'
+        saveInCookies: false, // default: true,
+        label: '🌓', // default: ''
+        autoMatchOsTheme: true // default: true
+      }
+    </script>
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -888,38 +919,12 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // Hide DataTables errors globally
+        if (window.jQuery && window.jQuery.fn && window.jQuery.fn.dataTable) {
+            window.jQuery.fn.dataTable.ext.errMode = 'none';
+        }
         // Initialize DataTables on tables with the 'data-datatable' attribute
         document.addEventListener('DOMContentLoaded', function() {
-            // Mobile menu toggle
-            const mobileMenuButton = document.getElementById('mobile-menu-button');
-            const mobileMenu = document.getElementById('mobile-menu');
-            const menuClosedIcon = document.getElementById('menu-closed-icon');
-            const menuOpenIcon = document.getElementById('menu-open-icon');
-            
-            if (mobileMenuButton && mobileMenu) {
-                mobileMenuButton.addEventListener('click', function() {
-                    // Toggle mobile menu visibility
-                    mobileMenu.classList.toggle('hidden');
-                    
-                    // Toggle menu icons
-                    if (menuClosedIcon && menuOpenIcon) {
-                        menuClosedIcon.classList.toggle('hidden');
-                        menuOpenIcon.classList.toggle('hidden');
-                    }
-                });
-                
-                // Close menu when clicking outside
-                document.addEventListener('click', function(event) {
-                    if (!mobileMenuButton.contains(event.target) && 
-                        !mobileMenu.contains(event.target) && 
-                        !mobileMenu.classList.contains('hidden')) {
-                        mobileMenu.classList.add('hidden');
-                        menuClosedIcon.classList.remove('hidden');
-                        menuOpenIcon.classList.add('hidden');
-                    }
-                });
-            }
-            
             // Initialize DataTables
             const tables = document.querySelectorAll('table[data-datatable]');
             tables.forEach(table => {
@@ -982,6 +987,17 @@
                         menuOpenIcon.classList.toggle('hidden');
                     }
                 });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!mobileMenuButton.contains(event.target) && 
+                        !mobileMenu.contains(event.target) && 
+                        !mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                        menuClosedIcon.classList.remove('hidden');
+                        menuOpenIcon.classList.add('hidden');
+                    }
+                });
             }
             
             // Mobile dropdowns
@@ -997,7 +1013,6 @@
                     
                     // Toggle the dropdown visibility
                     dropdownContent.classList.toggle('hidden');
-                    dropdownContent.classList.toggle('show');
                     
                     // Rotate the dropdown icon when open
                     if (dropdownIcon) {
@@ -1012,7 +1027,6 @@
                             
                             if (!otherContent.classList.contains('hidden')) {
                                 otherContent.classList.add('hidden');
-                                otherContent.classList.remove('show');
                                 if (otherIcon) {
                                     otherIcon.classList.remove('rotate-180');
                                 }

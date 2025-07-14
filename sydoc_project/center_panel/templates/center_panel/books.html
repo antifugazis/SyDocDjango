@@ -43,7 +43,7 @@
                         {% endif %}
                     </td>
                     <td class="px-6 py-4">
-                        <div class="text-sm font-medium text-gray-900">{{ book.title }}</div>
+                        <a href="{% url 'center_panel:book_detail' book.id %}" class="text-sm font-medium text-indigo-600 hover:text-indigo-900">{{ book.title }}</a>
                         <div class="text-sm text-gray-500">{{ book.isbn|default:"N/A" }}</div>
                     </td>
                     <td class="px-6 py-4">
@@ -61,7 +61,7 @@
                         <div class="text-sm text-gray-500">{{ book.category|default:"Non catégorisé" }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-500">{{ book.quantity|default:"1" }}</div>
+                        <div class="text-sm text-gray-500">{{ book.total_quantity }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         {% if book.is_archived %}
@@ -76,12 +76,9 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div class="flex space-x-2">
-                            <a href="{% url 'center_panel:edit_book' book.id %}" class="text-yellow-600 hover:text-yellow-900 bg-yellow-50 hover:bg-yellow-100 px-3 py-1 rounded-md text-sm font-medium">
-                                Modifier
-                            </a>
-                            <a href="{% url 'center_panel:delete_book' book.id %}" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-md text-sm font-medium">
-                                Supprimer
-                            </a>
+                            <a href="{% url 'center_panel:book_detail' book.id %}" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">Voir les détails</a>
+                            <a href="{% url 'center_panel:edit_book' book.id %}" class="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 px-3 py-1 rounded-full text-sm font-medium">Modifier</a>
+                            <a href="{% url 'center_panel:delete_book' book.id %}" class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded-full text-sm font-medium">Supprimer</a>
                         </div>
                     </td>
                 </tr>

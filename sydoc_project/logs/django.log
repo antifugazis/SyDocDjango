@@ -489,3 +489,123 @@ WARNING 2025-07-13 22:13:43,259 basehttp "GET /center/logs HTTP/1.1" 404 16442
 INFO 2025-07-13 22:13:48,107 basehttp "GET /center/dashboard/ HTTP/1.1" 302 0
 INFO 2025-07-13 22:13:48,565 basehttp "GET /admin/ HTTP/1.1" 200 14201
 INFO 2025-07-13 22:13:49,117 basehttp "GET /static/admin/img/icon-no.svg HTTP/1.1" 200 560
+INFO 2025-07-14 03:00:36,330 autoreload Watching for file changes with StatReloader
+INFO 2025-07-14 03:00:37,735 basehttp "GET / HTTP/1.1" 200 84950
+INFO 2025-07-14 03:21:02,630 basehttp "GET / HTTP/1.1" 200 84950
+INFO 2025-07-14 03:21:54,087 basehttp "GET / HTTP/1.1" 200 85487
+INFO 2025-07-14 03:21:55,139 basehttp "GET / HTTP/1.1" 200 85487
+INFO 2025-07-14 03:21:58,028 basehttp "GET / HTTP/1.1" 200 85487
+INFO 2025-07-14 03:22:03,416 basehttp "GET / HTTP/1.1" 200 85487
+INFO 2025-07-14 03:22:03,847 basehttp "GET / HTTP/1.1" 200 85487
+INFO 2025-07-14 03:22:04,346 basehttp "GET / HTTP/1.1" 200 85487
+INFO 2025-07-14 03:22:04,453 basehttp "GET / HTTP/1.1" 200 85487
+INFO 2025-07-14 03:22:09,349 basehttp "GET / HTTP/1.1" 200 85488
+INFO 2025-07-14 03:22:10,245 basehttp "GET / HTTP/1.1" 200 85488
+INFO 2025-07-14 03:28:53,516 basehttp "GET / HTTP/1.1" 200 85488
+INFO 2025-07-14 03:29:27,067 basehttp "GET / HTTP/1.1" 200 85530
+INFO 2025-07-14 03:29:29,623 basehttp "GET / HTTP/1.1" 200 85530
+INFO 2025-07-14 03:29:30,348 basehttp "GET / HTTP/1.1" 200 85530
+INFO 2025-07-14 03:29:57,042 basehttp "GET / HTTP/1.1" 200 85495
+INFO 2025-07-14 03:30:07,620 basehttp "GET / HTTP/1.1" 200 85494
+INFO 2025-07-14 03:30:13,228 basehttp "GET / HTTP/1.1" 200 85494
+INFO 2025-07-14 03:30:18,364 basehttp "GET / HTTP/1.1" 200 85495
+INFO 2025-07-14 03:30:23,248 basehttp "GET / HTTP/1.1" 200 85495
+INFO 2025-07-14 04:18:29,437 basehttp "GET /center/dashboard/ HTTP/1.1" 302 0
+INFO 2025-07-14 04:18:29,515 basehttp "GET /admin/ HTTP/1.1" 200 14201
+INFO 2025-07-14 04:18:29,582 basehttp "GET /static/admin/img/icon-no.svg HTTP/1.1" 200 560
+INFO 2025-07-14 04:18:29,582 basehttp "GET /static/admin/img/icon-addlink.svg HTTP/1.1" 200 331
+INFO 2025-07-14 04:18:29,583 basehttp "GET /static/admin/img/icon-changelink.svg HTTP/1.1" 200 380
+INFO 2025-07-14 04:18:31,325 basehttp "GET / HTTP/1.1" 200 85495
+INFO 2025-07-14 04:18:34,212 basehttp "GET /center/trainings/ HTTP/1.1" 200 85265
+INFO 2025-07-14 04:18:34,314 basehttp "GET /static/center_panel/js/dataTables.french.json HTTP/1.1" 304 0
+INFO 2025-07-14 04:19:10,735 basehttp "GET /center/admin/ HTTP/1.1" 302 0
+INFO 2025-07-14 04:19:10,764 basehttp "GET /admin/ HTTP/1.1" 200 14172
+INFO 2025-07-14 04:19:14,848 basehttp "GET /admin/core/documentationcenter/add/ HTTP/1.1" 200 33093
+INFO 2025-07-14 04:19:14,888 basehttp "GET /static/admin/img/icon-viewlink.svg HTTP/1.1" 200 581
+INFO 2025-07-14 04:19:14,892 basehttp "GET /static/admin/img/icon-deletelink.svg HTTP/1.1" 200 392
+INFO 2025-07-14 04:19:14,893 basehttp "GET /static/admin/js/collapse.js HTTP/1.1" 304 0
+INFO 2025-07-14 04:19:14,895 basehttp - Broken pipe from ('127.0.0.1', 51098)
+INFO 2025-07-14 04:19:14,896 basehttp - Broken pipe from ('127.0.0.1', 51099)
+INFO 2025-07-14 04:19:14,902 basehttp "GET /admin/jsi18n/ HTTP/1.1" 200 8621
+INFO 2025-07-14 04:19:15,049 basehttp "GET /static/admin/img/icon-calendar.svg HTTP/1.1" 200 1086
+INFO 2025-07-14 04:20:14,066 basehttp "POST /admin/core/documentationcenter/add/ HTTP/1.1" 200 33479
+INFO 2025-07-14 04:20:14,099 basehttp "GET /admin/jsi18n/ HTTP/1.1" 200 8621
+INFO 2025-07-14 04:58:16,352 basehttp "GET / HTTP/1.1" 200 85495
+INFO 2025-07-14 04:58:19,706 basehttp "GET /logout/ HTTP/1.1" 302 0
+INFO 2025-07-14 04:58:19,749 basehttp "GET / HTTP/1.1" 200 81150
+INFO 2025-07-14 04:58:19,749 basehttp "GET / HTTP/1.1" 200 81150
+INFO 2025-07-14 04:58:21,768 basehttp "GET /login/ HTTP/1.1" 200 1970
+INFO 2025-07-14 04:58:25,508 basehttp "POST /login/ HTTP/1.1" 302 0
+INFO 2025-07-14 04:58:25,518 basehttp "GET /center/dashboard/ HTTP/1.1" 302 0
+INFO 2025-07-14 04:58:25,549 basehttp "GET /admin/ HTTP/1.1" 200 14201
+INFO 2025-07-14 04:58:36,430 basehttp "GET /admin/core/department/add/?_to_field=id&_popup=1 HTTP/1.1" 200 4480
+INFO 2025-07-14 04:58:36,464 basehttp "GET /admin/jsi18n/ HTTP/1.1" 200 8621
+INFO 2025-07-14 04:58:42,738 basehttp "POST /admin/core/department/add/?_to_field=id&_popup=1 HTTP/1.1" 200 340
+INFO 2025-07-14 04:58:42,755 basehttp "GET /static/admin/js/popup_response.js HTTP/1.1" 200 551
+INFO 2025-07-14 04:58:47,437 basehttp "GET /admin/core/arrondissement/add/?_to_field=id&_popup=1 HTTP/1.1" 200 6206
+INFO 2025-07-14 04:58:47,477 basehttp "GET /admin/jsi18n/ HTTP/1.1" 200 8621
+INFO 2025-07-14 04:59:22,835 basehttp "GET /admin/core/department/1/change/?_to_field=id&_popup=1 HTTP/1.1" 200 4466
+INFO 2025-07-14 04:59:22,863 basehttp "GET /admin/jsi18n/ HTTP/1.1" 200 8621
+INFO 2025-07-14 04:59:22,879 basehttp - Broken pipe from ('127.0.0.1', 53924)
+WARNING 2025-07-14 04:59:22,920 log Not Found: /favicon.ico
+INFO 2025-07-14 04:59:22,921 basehttp - Broken pipe from ('127.0.0.1', 53808)
+INFO 2025-07-14 04:59:25,589 basehttp "POST /admin/core/department/1/change/?_to_field=id&_popup=1 HTTP/1.1" 200 421
+INFO 2025-07-14 04:59:47,799 basehttp "GET /admin/core/arrondissement/add/?_to_field=id&_popup=1 HTTP/1.1" 200 6209
+INFO 2025-07-14 04:59:47,851 basehttp "GET /admin/jsi18n/ HTTP/1.1" 200 8621
+INFO 2025-07-14 04:59:55,223 basehttp "POST /admin/core/arrondissement/add/?_to_field=id&_popup=1 HTTP/1.1" 200 362
+INFO 2025-07-14 04:59:57,993 basehttp "GET /admin/core/commune/add/?_to_field=id&_popup=1 HTTP/1.1" 200 6241
+INFO 2025-07-14 04:59:58,029 basehttp "GET /admin/jsi18n/ HTTP/1.1" 200 8621
+INFO 2025-07-14 05:00:04,158 basehttp "POST /admin/core/commune/add/?_to_field=id&_popup=1 HTTP/1.1" 200 368
+WARNING 2025-07-14 05:00:08,321 log Forbidden (CSRF token from POST incorrect.): /admin/core/documentationcenter/add/
+WARNING 2025-07-14 05:00:08,322 basehttp "POST /admin/core/documentationcenter/add/ HTTP/1.1" 403 2541
+WARNING 2025-07-14 05:00:18,614 log Forbidden (CSRF token from POST incorrect.): /admin/core/documentationcenter/add/
+WARNING 2025-07-14 05:00:18,615 basehttp "POST /admin/core/documentationcenter/add/ HTTP/1.1" 403 2541
+WARNING 2025-07-14 05:00:19,949 log Forbidden (CSRF token from POST incorrect.): /admin/core/documentationcenter/add/
+WARNING 2025-07-14 05:00:19,949 basehttp "POST /admin/core/documentationcenter/add/ HTTP/1.1" 403 2541
+WARNING 2025-07-14 05:00:22,166 log Forbidden (CSRF token from POST incorrect.): /admin/core/documentationcenter/add/
+WARNING 2025-07-14 05:00:22,166 basehttp "POST /admin/core/documentationcenter/add/ HTTP/1.1" 403 2541
+WARNING 2025-07-14 05:00:23,781 log Forbidden (CSRF token from POST incorrect.): /admin/core/documentationcenter/add/
+WARNING 2025-07-14 05:00:23,781 basehttp "POST /admin/core/documentationcenter/add/ HTTP/1.1" 403 2541
+INFO 2025-07-14 05:00:26,004 basehttp "GET /admin/core/documentationcenter/add/ HTTP/1.1" 200 33240
+INFO 2025-07-14 05:00:26,031 basehttp "GET /admin/jsi18n/ HTTP/1.1" 200 8621
+INFO 2025-07-14 05:00:59,150 basehttp "POST /admin/core/documentationcenter/add/ HTTP/1.1" 200 34188
+INFO 2025-07-14 05:00:59,180 basehttp "GET /admin/jsi18n/ HTTP/1.1" 200 8621
+INFO 2025-07-14 05:01:08,822 basehttp "POST /admin/core/documentationcenter/add/ HTTP/1.1" 302 0
+INFO 2025-07-14 05:01:08,864 basehttp "GET /admin/core/documentationcenter/ HTTP/1.1" 200 18525
+INFO 2025-07-14 05:01:08,893 basehttp "GET /admin/jsi18n/ HTTP/1.1" 200 8621
+INFO 2025-07-14 05:01:08,897 basehttp "GET /static/admin/img/icon-yes.svg HTTP/1.1" 200 436
+INFO 2025-07-14 05:01:08,898 basehttp "GET /static/admin/img/search.svg HTTP/1.1" 200 458
+INFO 2025-07-14 05:01:08,920 basehttp "GET /static/admin/img/tooltag-add.svg HTTP/1.1" 200 331
+INFO 2025-07-14 05:01:08,920 basehttp "GET /static/admin/img/sorting-icons.svg HTTP/1.1" 200 1097
+WARNING 2025-07-14 05:01:17,041 log Not Found: /admin/center/dashbaord/
+WARNING 2025-07-14 05:01:17,041 basehttp "GET /admin/center/dashbaord/ HTTP/1.1" 404 7919
+WARNING 2025-07-14 05:01:23,720 log Not Found: /admin/center/dashboard/
+WARNING 2025-07-14 05:01:23,721 basehttp "GET /admin/center/dashboard/ HTTP/1.1" 404 7919
+INFO 2025-07-14 05:01:26,754 basehttp "GET /center/dashboard/ HTTP/1.1" 200 125535
+INFO 2025-07-14 05:34:18,049 basehttp "GET /center/dashboard/ HTTP/1.1" 200 126803
+INFO 2025-07-14 05:34:43,115 basehttp "GET /center/books/ HTTP/1.1" 200 84983
+INFO 2025-07-14 05:34:46,105 basehttp "GET /center/books/add/ HTTP/1.1" 200 93133
+INFO 2025-07-14 05:35:07,416 basehttp "GET /center/authors/ HTTP/1.1" 200 89882
+INFO 2025-07-14 05:35:09,737 basehttp "GET /center/authors/add/ HTTP/1.1" 200 88126
+INFO 2025-07-14 05:35:44,714 basehttp "POST /center/authors/add/ HTTP/1.1" 302 0
+INFO 2025-07-14 05:35:44,740 basehttp "GET /center/authors/ HTTP/1.1" 200 92260
+INFO 2025-07-14 05:35:49,556 basehttp "GET /center/categories/ HTTP/1.1" 200 90823
+INFO 2025-07-14 05:35:50,936 basehttp "GET /center/categories/add/ HTTP/1.1" 200 86622
+INFO 2025-07-14 05:35:57,425 basehttp "POST /center/categories/add/ HTTP/1.1" 302 0
+INFO 2025-07-14 05:35:57,444 basehttp "GET /center/categories/ HTTP/1.1" 200 93243
+INFO 2025-07-14 05:36:05,671 basehttp "GET /center/books/ HTTP/1.1" 200 85176
+INFO 2025-07-14 05:36:06,747 basehttp "GET /center/books/add/ HTTP/1.1" 200 93865
+INFO 2025-07-14 05:36:25,617 basehttp "POST /center/books/add/ HTTP/1.1" 200 94098
+INFO 2025-07-14 05:36:29,588 basehttp "POST /center/books/add/ HTTP/1.1" 302 0
+INFO 2025-07-14 05:36:29,611 basehttp "GET /center/books/ HTTP/1.1" 200 91219
+INFO 2025-07-14 05:40:27,145 basehttp "GET /center/books/ HTTP/1.1" 200 90801
+INFO 2025-07-14 05:40:28,867 basehttp "GET /center/books/1/ HTTP/1.1" 200 91581
+INFO 2025-07-14 05:40:30,663 basehttp "GET /center/books/ HTTP/1.1" 200 90801
+INFO 2025-07-14 05:41:56,709 basehttp "GET /center/books/ HTTP/1.1" 200 89272
+INFO 2025-07-14 05:42:29,705 basehttp "GET /center/books/ HTTP/1.1" 200 89484
+INFO 2025-07-14 05:42:45,346 basehttp "GET /center/books/ HTTP/1.1" 200 89422
+INFO 2025-07-14 05:43:03,333 basehttp "GET /center/books/ HTTP/1.1" 200 89422
+INFO 2025-07-14 05:43:04,380 basehttp "GET /center/books/ HTTP/1.1" 200 89422
+INFO 2025-07-14 05:43:24,792 basehttp "GET /center/books/ HTTP/1.1" 200 89431
+INFO 2025-07-14 05:43:48,076 basehttp "GET /center/books/ HTTP/1.1" 200 89469
+INFO 2025-07-14 05:44:05,412 basehttp "GET /center/books/ HTTP/1.1" 200 89432
