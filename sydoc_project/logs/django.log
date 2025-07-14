@@ -613,3 +613,15 @@ INFO 2025-07-14 06:00:28,637 autoreload /Users/morti/Documents/Projects/SyDocDja
 INFO 2025-07-14 06:00:29,422 autoreload Watching for file changes with StatReloader
 INFO 2025-07-14 06:00:33,841 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/sydoc_project/settings.py changed, reloading.
 INFO 2025-07-14 06:00:34,307 autoreload Watching for file changes with StatReloader
+INFO 2025-07-14 06:04:30,319 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/sydoc_project/settings.py changed, reloading.
+INFO 2025-07-14 06:04:31,001 autoreload Watching for file changes with StatReloader
+INFO 2025-07-14 06:04:32,348 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/sydoc_project/settings.py changed, reloading.
+INFO 2025-07-14 06:04:32,766 autoreload Watching for file changes with StatReloader
+INFO 2025-07-14 06:04:34,084 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/sydoc_project/settings.py changed, reloading.
+INFO 2025-07-14 06:04:34,595 autoreload Watching for file changes with StatReloader
+INFO 2025-07-14 06:04:36,051 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/sydoc_project/settings.py changed, reloading.
+INFO 2025-07-14 06:04:36,484 autoreload Watching for file changes with StatReloader
+INFO 2025-07-14 06:04:51,993 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/sydoc_project/settings.py changed, reloading.
+INFO 2025-07-14 06:04:52,415 autoreload Watching for file changes with StatReloader
+INFO 2025-07-14 06:04:53,706 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/sydoc_project/settings.py changed, reloading.
+INFO 2025-07-14 06:04:54,139 autoreload Watching for file changes with StatReloader
