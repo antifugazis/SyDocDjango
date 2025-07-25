@@ -1,0 +1,23 @@
+Bonjour,
+
+VÉRIFICATION DE SÉCURITÉ SYDOC
+=============================
+
+Bonjour,
+
+Pour sécuriser votre compte, veuillez utiliser le code de vérification suivant :
+
+Code de vérification : {{ otp_code }}
+
+* Ce code est valable pendant {{ expiry_minutes }} minutes.
+* Ne partagez jamais ce code avec qui que ce soit.
+* Même l'équipe SYDOC ne vous demandera jamais ce code.
+
+Si vous n'avez pas demandé ce code, veuillez ignorer cet email ou nous contacter immédiatement si vous pensez qu'il s'agit d'une activité suspecte.
+
+Cordialement,
+L'équipe SYDOC
+
+--
+© {% now "Y" %} SYDOC. Tous droits réservés.
+Cet email a été envoyé automatiquement, merci de ne pas y répondre.

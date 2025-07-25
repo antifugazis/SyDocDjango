@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion par email - SYDOC</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e9eef3 100%);
+            min-height: 100vh;
+        }
+        .bg-login {
+            background: linear-gradient(135deg, rgba(30, 64, 175, 0.85), rgba(59, 130, 246, 0.85)),
+                        url('https://images.pexels.com/photos/416405/pexels-photo-416405.jpeg');
+            background-size: cover;
+            background-position: center;
+            border-radius: 1.5rem 0 0 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .bg-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-5 md:p-8">
+    <div class="w-full max-w-6xl bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row min-h-[450px] md:min-h-[600px] backdrop-blur-sm bg-opacity-90 my-8 md:my-0">
+        <!-- Left Column with Background Image -->
+        <div class="bg-login md:w-5/12 p-6 md:p-8 flex flex-col justify-between text-white relative overflow-hidden hidden md:flex">
+            <div class="text-3xl font-bold flex items-center">
+                <i class="fas fa-file-alt mr-3"></i>
+                <span>SYDOC</span>
+            </div>
+            <div class="relative z-10">
+                <h2 class="text-2xl font-bold mb-2">Bienvenue sur SYDOC</h2>
+                <p class="text-blue-100">Gérez votre centre de documentation en toute simplicité</p>
+            </div>
+            <div class="relative z-10">
+                <p class="text-sm text-blue-100 opacity-90">
+                    <i class="fas fa-lock mr-1"></i> Connexion sécurisée
+                </p>
+            </div>
+        </div>
+
+        <!-- Right Column with Login Form -->
+        <div class="w-full md:w-7/12 flex items-center justify-center p-8 md:p-12 relative py-12">
+            <div class="w-full max-w-md">
+                <div class="text-center mb-8">
+                    <div class="flex items-center justify-center space-x-3 mb-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-envelope text-blue-500 text-xl"></i>
+                        </div>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800">Connexion par email</h2>
+                    <p class="text-gray-600 mt-2">Entrez votre adresse email pour recevoir un code de vérification</p>
+                </div>
+
+                <!-- Email Input Form -->
+                <form id="otpForm" class="space-y-6">
+                    {% csrf_token %}
+                    <!-- Email Section (initially visible) -->
+                    <div id="emailSection">
+                        <div class="space-y-2">
+                            <label for="email" class="block text-sm font-medium text-gray-700">Adresse email</label>
+                            <input type="email" id="email" name="email" required
+                                class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                placeholder="votre@email.com">
+                        </div>
+                        <button type="button" id="requestOtpBtn" class="w-full mt-4 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors duration-200">
+                            Recevoir le code
+                        </button>
+                    </div>
+
+                    <!-- OTP Section (initially hidden) -->
+                    <div id="otpSection" class="hidden">
+                        <p class="text-sm text-gray-600 mb-4">
+                            Un code a été envoyé à <span id="maskedEmail" class="font-medium"></span>
+                        </p>
+                        <div class="space-y-2">
+                            <label for="otp" class="block text-sm font-medium text-gray-700">Code de vérification</label>
+                            <input type="text" id="otp" name="otp" maxlength="6" pattern="\d{6}" 
+                                class="appearance-none block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-center text-xl tracking-widest"
+                                placeholder="000000" aria-required="true">
+                            <div id="otpError" class="text-red-500 text-xs mt-1 hidden">Veuillez entrer un code à 6 chiffres</div>
+                        </div>
+                        <button type="submit" class="w-full mt-4 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors duration-200">
+                            Se connecter
+                        </button>
+                        <div class="mt-4 text-center">
+                            <button type="button" id="resendOtp" class="text-sm text-blue-500 hover:text-blue-600">
+                                Renvoyer le code
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="mt-6 text-center">
+                    <a href="{% url 'login' %}" class="text-sm text-gray-600 hover:text-gray-800">
+                        ← Retour à la connexion par mot de passe
+                    </a>
+                </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM fully loaded and parsed');
+    
+    const otpForm = document.getElementById('otpForm');
+    const emailSection = document.getElementById('emailSection');
+    const otpSection = document.getElementById('otpSection');
+    const emailInput = document.getElementById('email');
+    const otpInput = document.getElementById('otp');
+    const resendOtpBtn = document.getElementById('resendOtp');
+    const requestOtpBtn = document.getElementById('requestOtpBtn');
+    const maskedEmailSpan = document.getElementById('maskedEmail');
+    const otpError = document.getElementById('otpError');
+    
+    let isEmailSubmitted = false;
+    let resendTimeout = null;
+    let currentEmail = '';
+    
+    // Show error message function
+    function showError(message, element = null) {
+        if (element) {
+            element.classList.add('border-red-500');
+            const errorDiv = element.nextElementSibling;
+            if (errorDiv && errorDiv.classList.contains('text-red-500')) {
+                errorDiv.textContent = message;
+                errorDiv.classList.remove('hidden');
+            }
+        }
+        console.error(message);
+    }
+    
+    // Clear error function
+    function clearError(element) {
+        if (element) {
+            element.classList.remove('border-red-500');
+            const errorDiv = element.nextElementSibling;
+            if (errorDiv && errorDiv.classList.contains('text-red-500')) {
+                errorDiv.classList.add('hidden');
+            }
+        }
+    }
+
+    // Handle OTP request button click
+    requestOtpBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        const email = emailInput.value.trim();
+        
+        // Basic email validation
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            showError('Veuillez entrer une adresse email valide', emailInput);
+            return;
+        }
+        
+        // Show loading state
+        requestOtpBtn.disabled = true;
+        const originalBtnText = requestOtpBtn.innerHTML;
+        requestOtpBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Envoi en cours...';
+        
+        // Submit email to get OTP
+        const params = new URLSearchParams();
+        params.append('email', email);
+        params.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        
+        fetch('{% url "core:otp_send" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: params,
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                isEmailSubmitted = true;
+                currentEmail = email;
+                emailSection.classList.add('hidden');
+                otpSection.classList.remove('hidden');
+                maskedEmailSpan.textContent = data.masked_email || maskEmail(email);
+                otpInput.focus();
+                startResendCountdown();
+            } else {
+                showError(data.error || 'Une erreur est survenue. Veuillez réessayer.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError('Une erreur est survenue. Veuillez réessayer.');
+        })
+        .finally(() => {
+            requestOtpBtn.disabled = false;
+            requestOtpBtn.innerHTML = originalBtnText;
+        });
+    });
+    
+    // Handle form submission
+    otpForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!isEmailSubmitted) {
+            // This should never happen as the form is hidden until email is submitted
+            return;
+        }
+        
+        const otp = otpInput.value.trim();
+        
+        // Clear any previous errors
+        clearError(otpInput);
+        
+        // Basic OTP validation
+        if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
+            showError('Veuillez entrer un code à 6 chiffres', otpInput);
+            return;
+        }
+        
+        // Show loading state
+        const submitBtn = otpForm.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Vérification...';
+        
+        // Submit OTP for verification
+        console.log('Submitting OTP:', otp);
+        
+        // Create URL encoded form data with CSRF token
+        const params = new URLSearchParams();
+        params.append('otp', otp);
+        params.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        
+        fetch('{% url "core:otp_verify" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: params,
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message before redirect
+                submitBtn.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Connexion réussie!';
+                submitBtn.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+                submitBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+                
+                // Redirect after a short delay
+                setTimeout(() => {
+                    window.location.href = data.redirect_url || '/';
+                }, 1000);
+            } else {
+                showError(data.error || 'Code invalide. Veuillez réessayer.', otpInput);
+                otpInput.select();
+                
+                // Handle session expiration
+                if (data.session_expired) {
+                    // Clear form and show email section again
+                    isEmailSubmitted = false;
+                    emailSection.classList.remove('hidden');
+                    otpSection.classList.add('hidden');
+                    emailInput.focus();
+                    
+                    // Show error message at the top
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded';
+                    errorDiv.innerHTML = `
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-circle text-red-500 mt-1"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-red-700">${data.error || 'Session expirée. Veuillez réessayer.'}</p>
+                            </div>
+                        </div>
+                    `;
+                    otpForm.prepend(errorDiv);
+                    
+                    // Remove error message after 5 seconds
+                    setTimeout(() => {
+                        errorDiv.remove();
+                    }, 5000);
+                }
+            }
+            
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError('Une erreur est survenue. Veuillez réessayer.', otpInput);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        });
+    });
+    
+    // Handle resend OTP
+    resendOtpBtn.addEventListener('click', function() {
+        if (resendOtpBtn.disabled) return;
+        
+        // Disable the button and show loading state
+        resendOtpBtn.disabled = true;
+        const originalText = resendOtpBtn.innerHTML;
+        resendOtpBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Envoi...';
+        
+        // Create URL encoded form data for resend request
+        const params = new URLSearchParams();
+        params.append('email', currentEmail);
+        params.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        
+        fetch('{% url "core:otp_resend" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: params,
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reset the OTP input
+                otpInput.value = '';
+                otpInput.focus();
+                
+                // Show success message
+                const successMsg = document.createElement('div');
+                successMsg.className = 'text-green-600 text-sm mb-4';
+                successMsg.textContent = 'Nouveau code envoyé avec succès !';
+                
+                // Insert before the OTP input
+                otpInput.parentNode.insertBefore(successMsg, otpInput);
+                
+                // Remove the message after 3 seconds
+                setTimeout(() => {
+                    successMsg.remove();
+                }, 3000);
+                
+                // Start countdown
+                startResendCountdown();
+            } else {
+                showError(data.error || 'Impossible de renvoyer le code. Veuillez réessayer.');
+                resendOtpBtn.disabled = false;
+                resendOtpBtn.innerHTML = originalText;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError('Une erreur est survenue. Veuillez réessayer.');
+            resendOtpBtn.disabled = false;
+            resendOtpBtn.innerHTML = originalText;
+        });
+    });
+    
+    // Countdown for resend button
+    function startResendCountdown() {
+        let seconds = 60;
+        resendOtpBtn.disabled = true;
+        resendOtpBtn.classList.add('text-gray-400');
+        
+        const countdown = setInterval(() => {
+            resendOtpBtn.innerHTML = `Renvoyer le code (${seconds}s)`;
+            seconds--;
+            
+            if (seconds < 0) {
+                clearInterval(countdown);
+                resendOtpBtn.disabled = false;
+                resendOtpBtn.classList.remove('text-gray-400');
+                resendOtpBtn.innerHTML = 'Renvoyer le code';
+            }
+        }, 1000);
+    }
+    
+    // Mask email for display (e.g., t**t@example.com)
+    function maskEmail(email) {
+        if (!email) return '';
+        const [username, domain] = email.split('@');
+        if (!username || !domain) return email;
+        
+        const firstChar = username[0];
+        const lastChar = username[username.length - 1];
+        const maskedUsername = firstChar + '*'.repeat(3) + (username.length > 1 ? lastChar : '');
+        
+        return maskedUsername + '@' + domain;
+    }
+    
+    // Auto-advance OTP input
+    otpInput.addEventListener('input', function(e) {
+        // Only allow numbers
+        this.value = this.value.replace(/[^0-9]/g, '');
+        
+        // Clear any error when typing
+        clearError(this);
+        
+        // Auto-submit when 6 digits are entered
+        if (this.value.length === 6) {
+            // Find the submit button and trigger a click instead of form submit
+            const submitBtn = otpForm.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.click();
+            }
+        }
+    });
+    
+    // Handle backspace to move to previous input (if needed)
+    otpInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Backspace' && this.value.length === 0) {
+            e.preventDefault();
+            const inputs = Array.from(document.querySelectorAll('input[type="text"]'));
+            const index = inputs.indexOf(this);
+            if (index > 0) {
+                inputs[index - 1].focus();
+            }
+        }
+    });
+
+});
+</script>
+</body>
+</html>

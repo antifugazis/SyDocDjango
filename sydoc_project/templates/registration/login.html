@@ -1,34 +1,275 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion</title>
+    <title>Connexion - SYDOC</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e9eef3 100%);
+            min-height: 100vh;
+        }
+        .bg-login {
+            background: linear-gradient(135deg, rgba(30, 64, 175, 0.85), rgba(59, 130, 246, 0.85)),
+                        url('https://images.pexels.com/photos/416405/pexels-photo-416405.jpeg');
+            background-size: cover;
+            background-position: center;
+            border-radius: 1.5rem 0 0 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .bg-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(30, 64, 175, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
+            z-index: 1;
+        }
+        .login-container {
+            height: 90vh;
+            max-height: 900px;
+            width: 95%;
+            max-width: 1100px;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+        .login-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.2);
+        }
+        .input-icon {
+            padding-left: 2.75rem;
+            transition: all 0.3s ease;
+        }
+        .icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6B7280;
+            transition: all 0.3s ease;
+        }
+        input:focus + .icon {
+            color: #3B82F6;
+            transform: translateY(-50%) scale(1.1);
+        }
+        input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            border-color: #3B82F6;
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
+        }
+        .btn-login:active {
+            transform: translateY(0);
+        }
+        .btn-login::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%, -50%);
+            transform-origin: 50% 50%;
+        }
+        .btn-login:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(40, 40);
+                opacity: 0;
+            }
+        }
+
+    </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
-    <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
-        <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Connectez-vous à SYDOC</h2>
-        <form method="post" class="space-y-4">
-            {% csrf_token %}
-            <div>
-                <label for="id_username" class="block text-sm font-medium text-gray-700">Nom d'utilisateur :</label>
-                <input type="text" name="username" id="id_username" autocomplete="username" required
-                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+<body class="min-h-screen flex items-center justify-center p-5 md:p-8">
+    <div class="w-full max-w-6xl bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row min-h-[450px] md:min-h-[600px] backdrop-blur-sm bg-opacity-90 my-8 md:my-0">
+        <!-- Left Column with Background Image -->
+        <div class="bg-login md:w-5/12 p-6 md:p-8 flex flex-col justify-between text-white relative overflow-hidden hidden md:flex">
+            <div class="text-3xl font-bold flex items-center">
+                <i class="fas fa-file-alt mr-3"></i>
+                <span>SYDOC</span>
             </div>
-            <div>
-                <label for="id_password" class="block text-sm font-medium text-gray-700">Mot de passe :</label>
-                <input type="password" name="password" id="id_password" autocomplete="current-password" required
-                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <div class="mb-16 relative z-10">
+                <div>
+                    <h1 class="text-5xl font-bold mb-6 leading-tight">Bienvenue sur <span class="text-blue-200">SYDOC</span></h1>
+                    <p class="text-xl opacity-90 max-w-md">Votre solution complète de gestion de documents en toute simplicité</p>
+                </div>
             </div>
-            {% if form.errors %}
-                <p class="text-red-500 text-sm">Votre nom d'utilisateur ou mot de passe est incorrect. Veuillez réessayer.</p>
-            {% endif %}
-            <button type="submit"
-                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Se connecter
-            </button>
-        </form>
+            <div class="text-sm opacity-80">
+                <p> 2025 SYDOC. Tous droits réservés.</p>
+            </div>
+        </div>
+
+        <!-- Right Column with Login Form -->
+        <div class="w-full md:w-7/12 flex items-center justify-center p-8 md:p-12 relative py-12">
+            <div class="w-full max-w-md">
+                <div class="text-center mb-8">
+                    <div class="flex items-center justify-center space-x-3 mb-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-lock text-blue-500 text-xl"></i>
+                        </div>
+                        <!-- SYDOC Logo for mobile -->
+                        <div class="md:hidden">
+                            <div class="flex items-center">
+                                <span class="text-2xl font-bold text-blue-500">SYDOC</span>
+                            </div>
+                        </div>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800">Connexion</h2>
+                    <p class="text-gray-500 mt-1">Entrez vos identifiants pour accéder à votre compte</p>
+                </div>
+                
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <!-- Email Field -->
+                    <div class="space-y-2 mb-6">
+                        <label for="id_username" class="block text-sm font-medium text-gray-700 mb-1.5">Adresse email</label>
+                        <div class="relative">
+                            <i class="fas fa-envelope icon"></i>
+                            <input type="text" 
+                                   name="username" 
+                                   id="id_username" 
+                                   autocomplete="username" 
+                                   placeholder="votre.email@example.com"
+                                   required
+                                   class="w-full px-4 py-3 pl-12 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                        </div>
+                    </div>
+                    
+                    <!-- Password Field -->
+                    <div class="space-y-2 mb-2">
+                        <div class="flex justify-between items-center mb-1">
+                            <label for="id_password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
+                            <a href="{% url 'core:otp_login' %}" class="text-xs text-blue-500 hover:text-blue-600 transition-colors duration-200">
+                                Se connecter par email
+                            </a>
+                        </div>
+                        <div class="relative">
+                            <i class="fas fa-lock icon"></i>
+                            <div class="relative">
+                                <input type="password" 
+                                       name="password" 
+                                       id="id_password" 
+                                       autocomplete="current-password" 
+                                       placeholder="••••••••"
+                                       required
+                                       class="w-full px-4 py-3 pl-12 pr-12 border border-gray-200 bg-gray-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                                <button type="button" 
+                                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                                        onclick="togglePassword()"
+                                        aria-label="Afficher le mot de passe">
+                                    <i class="far fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="flex items-center justify-between mb-8">
+                        <div class="flex items-center">
+                            <div class="relative flex items-center">
+                                <input id="remember_me" name="remember_me" type="checkbox" 
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition duration-200">
+                                <label for="remember_me" class="ml-2 block text-sm text-gray-600 cursor-pointer">
+                                    Se souvenir de moi
+                                </label>
+                            </div>
+                        </div>
+                        <div class="text-sm">
+                            <a href="#" class="font-medium text-blue-500 hover:text-blue-600 transition-colors duration-200">
+                                Mot de passe oublié ?
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Error Messages -->
+                    {% if form.errors %}
+                        <div class="bg-red-50 border-l-4 border-red-500 p-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-exclamation-circle text-red-500"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-red-700">
+                                        Votre nom d'utilisateur ou mot de passe est incorrect. Veuillez réessayer.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Submit Button -->
+                    <div class="flex flex-col space-y-4 mb-6">
+                        <button type="submit" 
+                                class="w-full flex justify-center items-center py-4 px-6 rounded-xl text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200">
+                            <span>Se connecter</span>
+                            <i class="fas fa-arrow-right ml-3 transition-transform duration-200 group-hover:translate-x-1"></i>
+                        </button>
+                        
+                        <div class="relative flex items-center my-4">
+                            <div class="flex-grow border-t border-gray-300"></div>
+                            <span class="flex-shrink mx-4 text-gray-500 text-sm">OU</span>
+                            <div class="flex-grow border-t border-gray-300"></div>
+                        </div>
+                        
+                        <a href="{% url 'core:otp_login' %}" 
+                           class="w-full flex justify-center items-center py-4 px-6 rounded-xl text-base font-semibold text-blue-600 bg-white border-2 border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-200 transition-all duration-200">
+                            <i class="fas fa-envelope mr-3"></i>
+                            <span>Se connecter par email</span>
+                        </a>
+                    </div>
+                    
+
+
+
+                </form>
+            </div>
+        </div>
     </div>
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('id_password');
+            const icon = document.querySelector('#id_password + button i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+    </script>
 </body>
 </html>

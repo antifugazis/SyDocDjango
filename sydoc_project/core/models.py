@@ -8,11 +8,141 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.contrib.contenttypes.fields import GenericForeignKey  
 from django.contrib.contenttypes.models import ContentType
+from django.utils import timezone
+from django.core.cache import cache
+from django.conf import settings
+import random
+import string
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Create your models here.
 # sydoc_project/core/models.py
 
 # Basic Geographical Models
+class OTP(models.Model):
+    """
+    Model to store OTP (One-Time Password) for email login
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='otp_codes', verbose_name=_('Utilisateur'))
+    otp = models.CharField(max_length=6, verbose_name=_('Code OTP'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('Créé le'))
+    expires_at = models.DateTimeField(verbose_name=_('Expire le'))
+    is_used = models.BooleanField(default=False, verbose_name=_('Utilisé'))
+    
+    class Meta:
+        verbose_name = _('Code OTP')
+        verbose_name_plural = _('Codes OTP')
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"OTP for {self.user.email} - Expires: {self.expires_at}"
+    
+    def is_valid(self):
+        """Check if the OTP is still valid"""
+        return not self.is_used and timezone.now() < self.expires_at
+    
+    def mark_as_used(self):
+        """Mark the OTP as used"""
+        self.is_used = True
+        self.save()
+    
+    @classmethod
+    def generate_otp(cls, length=6):
+        """Generate a random numeric OTP"""
+        return ''.join(random.choices(string.digits, k=length))
+    
+    @classmethod
+    def create_otp_for_user(cls, user, expiry_minutes=3):
+        """Create a new OTP for a user"""
+        # Invalidate any existing OTPs for this user
+        cls.objects.filter(user=user, is_used=False).update(is_used=True)
+        
+        # Create new OTP
+        otp = cls.generate_otp()
+        expires_at = timezone.now() + timezone.timedelta(minutes=expiry_minutes)
+        
+        # Store in database
+        otp_obj = cls.objects.create(
+            user=user,
+            otp=otp,
+            expires_at=expires_at
+        )
+        
+        # Also store in cache for faster validation
+        cache_key = f'otp_{user.id}'
+        cache_data = {
+            'code': otp_obj.otp,  # Use the actual OTP code from the object
+            'email': user.email,
+            'timestamp': timezone.now().isoformat()
+        }
+        logger.info(f"Storing OTP in cache with key: {cache_key}, data: {cache_data}")
+        cache.set(cache_key, cache_data, timeout=expiry_minutes * 60)  # Convert to seconds
+        
+        return otp_obj
+    
+    @classmethod
+    def validate_otp(cls, user, otp_code):
+        """
+        Validate an OTP for a user.
+        Returns:
+            tuple: (is_valid: bool, error_message: str)
+        """
+        if not user or not otp_code:
+            logger.warning(f'Invalid OTP validation attempt - missing user or code: user={user}, code={otp_code}')
+            return False, 'Code ou utilisateur manquant.'
+            
+        # Clean the OTP code
+        otp_code = str(otp_code).strip()
+        if not otp_code.isdigit() or len(otp_code) != 6:
+            return False, 'Le code doit contenir exactement 6 chiffres.'
+            
+        # First check cache for faster validation
+        cache_key = f'otp_{user.id}'
+        cached_otp = cache.get(cache_key)
+        logger.info(f"Validating OTP for user {user.id}: cached_otp={cached_otp is not None}, code={otp_code}")
+        
+        # Check if OTP exists in database
+        otp_obj = cls.objects.filter(
+            user=user,
+            is_used=False
+        ).order_by('-created_at').first()
+        
+        logger.info(f"OTP from DB: {otp_obj.otp if otp_obj else None}, expires_at={otp_obj.expires_at if otp_obj else None}")
+        
+        # If no OTP found in DB or cache, reject
+        if not otp_obj and not cached_otp:
+            logger.warning(f'No OTP found for user: {user.id}')
+            return False, 'Code invalide ou expiré.'
+            
+        # Check if OTP is expired
+        if otp_obj and otp_obj.expires_at < timezone.now():
+            logger.warning(f'Expired OTP for user: {user.id}, expires_at={otp_obj.expires_at}, now={timezone.now()}')
+            return False, 'Le code a expiré. Veuillez en demander un nouveau.'
+            
+        # Check if OTP matches
+        db_match = otp_obj and otp_obj.otp == otp_code
+        cache_match = cached_otp and cached_otp.get('code') == otp_code
+        
+        logger.info(f"OTP validation: db_match={db_match}, cache_match={cache_match}")
+        
+        if not db_match and not cache_match:
+            logger.warning(f'OTP code mismatch for user {user.id}')
+            return False, 'Code incorrect. Veuillez réessayer.'
+            
+        # Mark as used and clean up
+        try:
+            if otp_obj:
+                otp_obj.mark_as_used()
+            cache.delete(cache_key)
+            logger.info(f'Successfully validated OTP for user: {user.id}')
+            return True, ''
+        except Exception as e:
+            logger.error(f'Error marking OTP as used: {str(e)}', exc_info=True)
+            return False, 'Erreur lors de la validation du code. Veuillez réessayer.'
+
+
 class Department(models.Model):
     """
     Represents a geographical department.

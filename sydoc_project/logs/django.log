@@ -628,3 +628,449 @@ INFO 2025-07-14 06:04:54,139 autoreload Watching for file changes with StatReloa
 INFO 2025-07-14 06:07:20,370 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/sydoc_project/settings.py changed, reloading.
 INFO 2025-07-14 06:07:21,277 autoreload Watching for file changes with StatReloader
 INFO 2025-07-14 06:10:31,806 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/sydoc_project/settings.py changed, reloading.
+INFO 2025-07-25 01:33:24,941 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 01:33:41,995 basehttp "GET / HTTP/1.1" 200 79577
+WARNING 2025-07-25 01:33:48,421 log Not Found: /favicon.ico
+WARNING 2025-07-25 01:33:48,422 basehttp "GET /favicon.ico HTTP/1.1" 404 3430
+INFO 2025-07-25 01:33:56,044 basehttp "GET /login/ HTTP/1.1" 200 6014
+INFO 2025-07-25 01:34:06,473 basehttp "POST /login/ HTTP/1.1" 302 0
+INFO 2025-07-25 01:34:06,537 basehttp "GET /center/dashboard/ HTTP/1.1" 200 126186
+INFO 2025-07-25 01:34:07,657 basehttp "GET / HTTP/1.1" 200 85097
+INFO 2025-07-25 01:34:10,389 basehttp "GET /logout/ HTTP/1.1" 302 0
+INFO 2025-07-25 01:34:10,411 basehttp "GET / HTTP/1.1" 200 79577
+INFO 2025-07-25 01:35:14,283 basehttp "GET /login/ HTTP/1.1" 200 6014
+INFO 2025-07-25 01:36:49,497 basehttp "GET /login/ HTTP/1.1" 200 6516
+INFO 2025-07-25 01:38:43,912 basehttp "GET /login/ HTTP/1.1" 200 6842
+INFO 2025-07-25 01:40:54,370 basehttp "GET /login/ HTTP/1.1" 200 7329
+INFO 2025-07-25 01:43:08,374 basehttp "GET /login/ HTTP/1.1" 200 7343
+INFO 2025-07-25 01:45:51,970 basehttp "GET /login/ HTTP/1.1" 200 7299
+INFO 2025-07-25 01:51:58,316 basehttp "GET /login/ HTTP/1.1" 200 13198
+INFO 2025-07-25 01:54:17,765 basehttp "GET /login/ HTTP/1.1" 200 10884
+INFO 2025-07-25 01:55:17,933 basehttp "GET /login/ HTTP/1.1" 200 10509
+INFO 2025-07-25 01:56:18,497 basehttp "GET /login/ HTTP/1.1" 200 10509
+INFO 2025-07-25 01:56:21,603 basehttp "GET /login/ HTTP/1.1" 200 10509
+INFO 2025-07-25 01:58:32,454 basehttp "GET /login/ HTTP/1.1" 200 10509
+INFO 2025-07-25 02:02:28,324 basehttp "GET /login/ HTTP/1.1" 200 10849
+INFO 2025-07-25 02:03:02,548 basehttp "GET /login/ HTTP/1.1" 200 10927
+INFO 2025-07-25 02:04:29,183 basehttp "GET /login/ HTTP/1.1" 200 10927
+INFO 2025-07-25 02:05:48,194 basehttp "GET /login/ HTTP/1.1" 200 11186
+INFO 2025-07-25 02:05:48,945 basehttp "GET /login/ HTTP/1.1" 200 11186
+INFO 2025-07-25 02:08:00,876 basehttp "GET /login/ HTTP/1.1" 200 11002
+INFO 2025-07-25 02:08:31,266 basehttp "GET /login/ HTTP/1.1" 200 11004
+INFO 2025-07-25 02:08:32,019 basehttp "GET /login/ HTTP/1.1" 200 11004
+INFO 2025-07-25 02:08:46,542 basehttp "GET /login/ HTTP/1.1" 200 11018
+INFO 2025-07-25 02:08:47,405 basehttp "GET /login/ HTTP/1.1" 200 11018
+INFO 2025-07-25 02:09:19,142 basehttp "GET /login/ HTTP/1.1" 200 11024
+INFO 2025-07-25 02:09:20,197 basehttp "GET /login/ HTTP/1.1" 200 11024
+INFO 2025-07-25 02:09:45,032 basehttp "GET /login/ HTTP/1.1" 200 11024
+INFO 2025-07-25 02:10:06,853 basehttp "GET /login/ HTTP/1.1" 200 11024
+INFO 2025-07-25 02:10:07,839 basehttp "GET /login/ HTTP/1.1" 200 11024
+INFO 2025-07-25 02:10:10,338 basehttp "GET /login/ HTTP/1.1" 200 11024
+INFO 2025-07-25 02:12:43,151 basehttp "GET /login/ HTTP/1.1" 200 11024
+INFO 2025-07-25 03:39:56,470 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 03:39:56,818 basehttp "GET /login/ HTTP/1.1" 200 18489
+INFO 2025-07-25 03:39:57,015 basehttp "GET /login/ HTTP/1.1" 200 18489
+INFO 2025-07-25 03:42:43,133 basehttp "GET /login/ HTTP/1.1" 200 11024
+INFO 2025-07-25 03:43:28,350 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 03:43:29,081 autoreload Watching for file changes with StatReloader
+ERROR 2025-07-25 03:43:59,228 log Internal Server Error: /login/
+Traceback (most recent call last):
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/base.py", line 175, in render
+    return self._render(context)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/defaulttags.py", line 471, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/urls/base.py", line 88, in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/urls/resolvers.py", line 828, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'otp_login' not found. 'otp_login' is not a valid view function or pattern name.
+ERROR 2025-07-25 03:43:59,231 basehttp "GET /login/ HTTP/1.1" 500 118525
+ERROR 2025-07-25 03:44:04,270 log Internal Server Error: /login/
+Traceback (most recent call last):
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/base.py", line 175, in render
+    return self._render(context)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/defaulttags.py", line 471, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/urls/base.py", line 88, in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/urls/resolvers.py", line 828, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'otp_login' not found. 'otp_login' is not a valid view function or pattern name.
+ERROR 2025-07-25 03:44:04,271 basehttp "GET /login/ HTTP/1.1" 500 118525
+INFO 2025-07-25 03:44:22,400 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/urls.py changed, reloading.
+INFO 2025-07-25 03:44:23,040 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 03:44:41,545 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 03:44:42,228 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 03:45:00,808 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/sydoc_project/settings.py changed, reloading.
+INFO 2025-07-25 03:45:01,409 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 03:51:59,675 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/models.py changed, reloading.
+INFO 2025-07-25 03:52:00,317 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 03:52:54,507 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 03:52:54,922 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 03:56:04,153 basehttp "GET /login/ HTTP/1.1" 200 12452
+ERROR 2025-07-25 03:56:05,433 log Internal Server Error: /login/otp/
+Traceback (most recent call last):
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/base.py", line 175, in render
+    return self._render(context)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/loader_tags.py", line 132, in render
+    compiled_parent = self.get_parent(context)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/loader_tags.py", line 129, in get_parent
+    return self.find_template(parent, context)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/loader_tags.py", line 107, in find_template
+    template, origin = context.template.engine.find_template(
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/engine.py", line 161, in find_template
+    raise TemplateDoesNotExist(name, tried=tried)
+django.template.exceptions.TemplateDoesNotExist: base.html
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/views/generic/base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py", line 45, in get
+    return render(request, 'core/otp_login.html')
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/backends/django.py", line 63, in render
+    reraise(exc, self.backend)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/backends/django.py", line 84, in reraise
+    raise new from exc
+django.template.exceptions.TemplateDoesNotExist: base.html
+ERROR 2025-07-25 03:56:05,435 basehttp "GET /login/otp/ HTTP/1.1" 500 139291
+ERROR 2025-07-25 04:00:13,341 log Internal Server Error: /login/otp/
+Traceback (most recent call last):
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/base.py", line 175, in render
+    return self._render(context)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/loader_tags.py", line 132, in render
+    compiled_parent = self.get_parent(context)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/loader_tags.py", line 129, in get_parent
+    return self.find_template(parent, context)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/loader_tags.py", line 107, in find_template
+    template, origin = context.template.engine.find_template(
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/engine.py", line 161, in find_template
+    raise TemplateDoesNotExist(name, tried=tried)
+django.template.exceptions.TemplateDoesNotExist: base.html
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/views/generic/base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py", line 45, in get
+    return render(request, 'core/otp_login.html')
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/backends/django.py", line 63, in render
+    reraise(exc, self.backend)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/template/backends/django.py", line 84, in reraise
+    raise new from exc
+django.template.exceptions.TemplateDoesNotExist: base.html
+ERROR 2025-07-25 04:00:13,342 basehttp "GET /login/otp/ HTTP/1.1" 500 139291
+INFO 2025-07-25 04:03:34,296 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:03:37,533 basehttp "GET /login/otp/ HTTP/1.1" 200 10215
+INFO 2025-07-25 04:04:19,904 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:04:21,206 basehttp "GET /login/otp/ HTTP/1.1" 200 10215
+INFO 2025-07-25 04:04:32,676 basehttp "GET /login/ HTTP/1.1" 200 12452
+INFO 2025-07-25 04:04:38,471 basehttp "GET /login/otp/ HTTP/1.1" 200 10215
+INFO 2025-07-25 04:06:18,256 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 04:06:18,855 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:06:26,296 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/urls.py changed, reloading.
+INFO 2025-07-25 04:06:26,879 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:06:52,638 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 04:06:53,331 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:08:47,525 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/models.py changed, reloading.
+INFO 2025-07-25 04:08:48,321 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:09:26,357 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 04:09:26,881 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:10:09,873 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 04:10:10,483 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:10:45,308 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 04:10:45,968 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:11:51,300 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 04:11:51,900 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:12:08,459 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 04:12:08,932 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:12:23,500 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 04:12:23,915 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:14:26,234 basehttp "GET /login/otp/ HTTP/1.1" 200 11774
+INFO 2025-07-25 04:14:37,385 basehttp "GET /login/otp/ HTTP/1.1" 200 11774
+INFO 2025-07-25 04:14:38,433 basehttp "GET /login/ HTTP/1.1" 200 12452
+INFO 2025-07-25 04:14:39,777 basehttp "GET /login/otp/ HTTP/1.1" 200 11774
+INFO 2025-07-25 04:17:46,874 basehttp "GET /login/otp/ HTTP/1.1" 200 15810
+WARNING 2025-07-25 04:17:48,402 log Bad Request: /login/otp/send/
+WARNING 2025-07-25 04:17:48,403 basehttp "POST /login/otp/send/ HTTP/1.1" 400 139
+WARNING 2025-07-25 04:20:40,136 log Not Found: /admin
+WARNING 2025-07-25 04:20:40,137 basehttp "GET /admin HTTP/1.1" 404 4126
+WARNING 2025-07-25 04:20:42,481 log Not Found: /admin
+WARNING 2025-07-25 04:20:42,482 basehttp "GET /admin HTTP/1.1" 404 4126
+INFO 2025-07-25 04:20:47,488 basehttp "GET /admin/ HTTP/1.1" 302 0
+INFO 2025-07-25 04:20:47,523 basehttp "GET /admin/login/?next=/admin/ HTTP/1.1" 200 4259
+INFO 2025-07-25 04:20:47,586 basehttp "GET /static/admin/css/login.css HTTP/1.1" 200 958
+INFO 2025-07-25 04:20:47,589 basehttp "GET /static/admin/css/dark_mode.css HTTP/1.1" 200 2929
+INFO 2025-07-25 04:20:47,590 basehttp "GET /static/admin/css/base.css HTTP/1.1" 200 21207
+INFO 2025-07-25 04:20:47,592 basehttp "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 200 2694
+INFO 2025-07-25 04:20:47,592 basehttp "GET /static/admin/js/theme.js HTTP/1.1" 200 1943
+INFO 2025-07-25 04:20:47,593 basehttp "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 200 3063
+INFO 2025-07-25 04:20:47,594 basehttp "GET /static/admin/css/responsive.css HTTP/1.1" 200 18533
+INFO 2025-07-25 04:20:51,982 basehttp "POST /admin/login/?next=/admin/ HTTP/1.1" 302 0
+INFO 2025-07-25 04:20:52,022 basehttp "GET /admin/ HTTP/1.1" 200 15545
+INFO 2025-07-25 04:20:52,058 basehttp "GET /static/admin/css/dashboard.css HTTP/1.1" 200 441
+INFO 2025-07-25 04:20:52,072 basehttp "GET /static/admin/img/icon-changelink.svg HTTP/1.1" 200 380
+INFO 2025-07-25 04:20:52,073 basehttp "GET /static/admin/img/icon-addlink.svg HTTP/1.1" 200 331
+INFO 2025-07-25 04:20:55,154 basehttp "GET /admin/auth/user/ HTTP/1.1" 200 16554
+INFO 2025-07-25 04:20:55,191 basehttp "GET /static/admin/css/changelists.css HTTP/1.1" 200 6566
+INFO 2025-07-25 04:20:55,199 basehttp "GET /static/admin/js/jquery.init.js HTTP/1.1" 200 347
+INFO 2025-07-25 04:20:55,201 basehttp "GET /static/admin/js/admin/RelatedObjectLookups.js HTTP/1.1" 200 8943
+INFO 2025-07-25 04:20:55,203 basehttp "GET /static/admin/js/core.js HTTP/1.1" 200 5682
+INFO 2025-07-25 04:20:55,205 basehttp "GET /static/admin/js/actions.js HTTP/1.1" 200 7872
+INFO 2025-07-25 04:20:55,210 basehttp "GET /static/admin/js/urlify.js HTTP/1.1" 200 7887
+INFO 2025-07-25 04:20:55,212 basehttp "GET /static/admin/js/prepopulate.js HTTP/1.1" 200 1531
+INFO 2025-07-25 04:20:55,212 basehttp "GET /static/admin/js/filters.js HTTP/1.1" 200 978
+INFO 2025-07-25 04:20:55,218 basehttp "GET /admin/jsi18n/ HTTP/1.1" 200 8621
+INFO 2025-07-25 04:20:55,223 basehttp "GET /static/admin/js/vendor/xregexp/xregexp.js HTTP/1.1" 200 232381
+INFO 2025-07-25 04:20:55,224 basehttp "GET /static/admin/js/vendor/jquery/jquery.js HTTP/1.1" 200 292458
+INFO 2025-07-25 04:20:55,227 basehttp "GET /static/admin/img/icon-yes.svg HTTP/1.1" 200 436
+INFO 2025-07-25 04:20:55,228 basehttp "GET /static/admin/img/search.svg HTTP/1.1" 200 458
+INFO 2025-07-25 04:20:55,258 basehttp "GET /static/admin/img/tooltag-add.svg HTTP/1.1" 200 331
+INFO 2025-07-25 04:20:55,259 basehttp "GET /static/admin/img/sorting-icons.svg HTTP/1.1" 200 1097
+INFO 2025-07-25 04:21:03,169 basehttp "GET /admin/auth/user/1/change/ HTTP/1.1" 200 35107
+INFO 2025-07-25 04:21:03,211 basehttp "GET /static/admin/css/forms.css HTTP/1.1" 200 9047
+INFO 2025-07-25 04:21:03,211 basehttp "GET /static/admin/js/calendar.js HTTP/1.1" 200 8466
+INFO 2025-07-25 04:21:03,215 basehttp "GET /static/admin/js/admin/DateTimeShortcuts.js HTTP/1.1" 200 19319
+INFO 2025-07-25 04:21:03,222 basehttp "GET /static/admin/js/SelectBox.js HTTP/1.1" 200 4530
+INFO 2025-07-25 04:21:03,223 basehttp "GET /admin/jsi18n/ HTTP/1.1" 200 8621
+INFO 2025-07-25 04:21:03,225 basehttp "GET /static/admin/js/SelectFilter2.js HTTP/1.1" 200 15292
+INFO 2025-07-25 04:21:03,225 basehttp "GET /static/admin/js/prepopulate_init.js HTTP/1.1" 200 586
+INFO 2025-07-25 04:21:03,225 basehttp "GET /static/admin/js/change_form.js HTTP/1.1" 200 606
+INFO 2025-07-25 04:21:03,244 basehttp "GET /static/admin/css/widgets.css HTTP/1.1" 200 11900
+INFO 2025-07-25 04:21:03,303 basehttp "GET /static/admin/img/icon-unknown.svg HTTP/1.1" 200 655
+INFO 2025-07-25 04:21:03,307 basehttp "GET /static/admin/img/selector-icons.svg HTTP/1.1" 200 3291
+INFO 2025-07-25 04:21:03,307 basehttp "GET /static/admin/img/icon-unknown-alt.svg HTTP/1.1" 200 655
+INFO 2025-07-25 04:21:03,309 basehttp "GET /static/admin/img/icon-calendar.svg HTTP/1.1" 200 1086
+INFO 2025-07-25 04:21:03,310 basehttp "GET /static/admin/img/icon-clock.svg HTTP/1.1" 200 677
+INFO 2025-07-25 04:21:16,626 basehttp "POST /admin/auth/user/1/change/ HTTP/1.1" 302 0
+INFO 2025-07-25 04:21:16,653 basehttp "GET /admin/auth/user/ HTTP/1.1" 200 16790
+INFO 2025-07-25 04:21:16,708 basehttp "GET /admin/jsi18n/ HTTP/1.1" 200 8621
+INFO 2025-07-25 04:23:22,635 basehttp "GET /login/otp/ HTTP/1.1" 200 15810
+INFO 2025-07-25 04:23:26,841 basehttp "POST /login/otp/send/ HTTP/1.1" 200 162
+INFO 2025-07-25 04:25:49,922 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/sydoc_project/settings.py changed, reloading.
+INFO 2025-07-25 04:25:50,523 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:33:01,030 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/sydoc_project/settings.py changed, reloading.
+INFO 2025-07-25 04:33:01,680 autoreload Watching for file changes with StatReloader
+WARNING 2025-07-25 04:34:13,007 log Not Found: /l
+WARNING 2025-07-25 04:34:13,007 basehttp "GET /l HTTP/1.1" 404 4110
+INFO 2025-07-25 04:34:14,607 basehttp "GET / HTTP/1.1" 200 85097
+INFO 2025-07-25 04:34:21,300 basehttp "GET /logout/ HTTP/1.1" 302 0
+INFO 2025-07-25 04:34:21,314 basehttp "GET / HTTP/1.1" 200 79577
+INFO 2025-07-25 04:34:22,688 basehttp "GET /login/ HTTP/1.1" 200 12452
+INFO 2025-07-25 04:34:24,551 basehttp "GET /login/otp/ HTTP/1.1" 200 15810
+INFO 2025-07-25 04:34:27,892 basehttp "POST /login/otp/send/ HTTP/1.1" 200 162
+INFO 2025-07-25 04:34:35,249 basehttp "GET /login/otp/?csrfmiddlewaretoken=bEfXW8rH0qxk0LHxAiK0WW8RbSd4ZRHdUOJregIxyn2m8CoUIL3LlJ46XciBYPQl&email=mortimerjyvor%40gmail.com&otp=123456 HTTP/1.1" 200 15810
+ERROR 2025-07-25 04:34:35,281 log Internal Server Error: /login/otp/verify/
+Traceback (most recent call last):
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/views/generic/base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py", line 221, in post
+    if not OTP.validate_otp(user, otp_code):
+  File "/Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/models.py", line 97, in validate_otp
+    logger.warning(f'OTP code mismatch for user {user.id}')
+NameError: name 'logger' is not defined
+INFO 2025-07-25 04:34:35,283 basehttp - Broken pipe from ('127.0.0.1', 52197)
+INFO 2025-07-25 04:34:46,100 basehttp "GET /login/ HTTP/1.1" 200 12452
+INFO 2025-07-25 04:34:47,254 basehttp "GET /login/otp/ HTTP/1.1" 200 15810
+INFO 2025-07-25 04:34:49,773 basehttp "POST /login/otp/send/ HTTP/1.1" 200 162
+INFO 2025-07-25 04:35:20,738 basehttp "GET /login/ HTTP/1.1" 200 12452
+INFO 2025-07-25 04:35:22,196 basehttp "GET /login/otp/ HTTP/1.1" 200 15810
+INFO 2025-07-25 04:35:26,427 basehttp "POST /login/otp/send/ HTTP/1.1" 200 162
+INFO 2025-07-25 04:36:57,654 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/models.py changed, reloading.
+INFO 2025-07-25 04:36:58,361 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:37:36,489 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 04:37:37,090 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:38:59,521 basehttp "GET /login/otp/ HTTP/1.1" 200 17789
+INFO 2025-07-25 04:39:01,964 basehttp "POST /login/otp/send/ HTTP/1.1" 200 162
+INFO 2025-07-25 04:39:30,266 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:39:34,059 basehttp "GET /login/ HTTP/1.1" 200 12452
+INFO 2025-07-25 04:39:36,353 basehttp "GET /login/otp/ HTTP/1.1" 200 17789
+INFO 2025-07-25 04:39:42,352 basehttp "POST /login/otp/send/ HTTP/1.1" 200 162
+INFO 2025-07-25 04:41:45,752 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/models.py changed, reloading.
+INFO 2025-07-25 04:41:46,438 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:42:06,108 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 04:42:06,691 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:44:52,339 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/models.py changed, reloading.
+INFO 2025-07-25 04:44:53,209 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:45:10,949 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/models.py changed, reloading.
+INFO 2025-07-25 04:45:11,462 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:45:30,098 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 04:45:30,499 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:46:46,226 basehttp "GET /login/ HTTP/1.1" 200 12452
+INFO 2025-07-25 04:46:46,884 basehttp "GET /login/ HTTP/1.1" 200 12452
+INFO 2025-07-25 04:46:47,879 basehttp "GET /login/otp/ HTTP/1.1" 200 17789
+INFO 2025-07-25 04:46:54,873 basehttp "POST /login/otp/send/ HTTP/1.1" 200 162
+INFO 2025-07-25 04:47:47,976 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 04:47:48,643 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:48:01,122 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 04:48:01,585 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:48:28,416 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 04:48:28,904 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:48:40,414 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/urls.py changed, reloading.
+INFO 2025-07-25 04:48:40,885 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:48:56,428 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 04:48:56,854 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:49:30,724 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/models.py changed, reloading.
+INFO 2025-07-25 04:49:31,658 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:49:54,394 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/models.py changed, reloading.
+INFO 2025-07-25 04:49:54,898 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:50:12,496 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/models.py changed, reloading.
+INFO 2025-07-25 04:50:13,196 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:50:59,331 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 04:50:59,764 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:51:29,541 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 04:51:30,153 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:51:33,905 basehttp "GET /login/ HTTP/1.1" 200 12452
+INFO 2025-07-25 04:51:35,068 basehttp "GET /login/otp/ HTTP/1.1" 200 17854
+ERROR 2025-07-25 04:51:38,309 log Internal Server Error: /login/otp/send/
+Traceback (most recent call last):
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/views/generic/base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py", line 102, in post
+    logger.info(f"OTP request for email: {mask_email(email)}")
+NameError: name 'mask_email' is not defined
+ERROR 2025-07-25 04:51:38,310 basehttp "POST /login/otp/send/ HTTP/1.1" 500 76234
+ERROR 2025-07-25 04:51:39,863 log Internal Server Error: /login/otp/send/
+Traceback (most recent call last):
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/morti/.pyenv/versions/3.9.5/lib/python3.9/site-packages/django/views/generic/base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py", line 102, in post
+    logger.info(f"OTP request for email: {mask_email(email)}")
+NameError: name 'mask_email' is not defined
+ERROR 2025-07-25 04:51:39,864 basehttp "POST /login/otp/send/ HTTP/1.1" 500 76234
+INFO 2025-07-25 04:53:00,926 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 04:53:01,636 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:53:17,324 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 04:53:17,918 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:53:36,817 basehttp "GET /login/otp/ HTTP/1.1" 200 17854
+INFO 2025-07-25 04:53:37,421 basehttp "GET /login/ HTTP/1.1" 200 12452
+INFO 2025-07-25 04:53:38,878 basehttp "GET /login/otp/ HTTP/1.1" 200 17854
+INFO 2025-07-25 04:53:43,800 basehttp "POST /login/otp/send/ HTTP/1.1" 200 162
+INFO 2025-07-25 04:53:53,765 basehttp "GET /login/otp/?csrfmiddlewaretoken=kjLLmo2BXNDEFUY7q9BksSbsWxZkTQtE3tffEwjrvK8GNLFuyCU5RF7HIR4RSOCM&email=mortimerjyvor%40gmail.com&otp=244827 HTTP/1.1" 200 17854
+INFO 2025-07-25 04:54:03,442 basehttp "POST /login/otp/send/ HTTP/1.1" 200 162
+INFO 2025-07-25 04:54:12,575 basehttp - Broken pipe from ('127.0.0.1', 53802)
+INFO 2025-07-25 04:54:12,578 basehttp "GET /login/otp/?csrfmiddlewaretoken=2q5hZCkMREItFLnfrfLYsUw7Rf2DVAflLAzLhKBCpBdvNC4CzI4JRHsmDz7aUyot&email=mortimerjyvor%40gmail.com&otp=005222 HTTP/1.1" 200 17854
+INFO 2025-07-25 04:56:18,139 autoreload /Users/morti/Documents/Projects/SyDocDjango/sydoc_project/core/views.py changed, reloading.
+INFO 2025-07-25 04:56:18,932 autoreload Watching for file changes with StatReloader
+INFO 2025-07-25 04:57:09,953 basehttp "GET /login/otp/?csrfmiddlewaretoken=kjLLmo2BXNDEFUY7q9BksSbsWxZkTQtE3tffEwjrvK8GNLFuyCU5RF7HIR4RSOCM&email=mortimerjyvor%40gmail.com&otp=244827 HTTP/1.1" 200 18791
+INFO 2025-07-25 04:57:10,975 basehttp "GET /login/otp/ HTTP/1.1" 200 18791
+INFO 2025-07-25 04:57:12,062 basehttp "GET /login/ HTTP/1.1" 200 12452
+INFO 2025-07-25 04:57:13,260 basehttp "GET /login/otp/ HTTP/1.1" 200 18791
+INFO 2025-07-25 04:57:18,222 basehttp "POST /login/otp/send/ HTTP/1.1" 200 162
+INFO 2025-07-25 04:57:28,819 basehttp "POST /login/otp/verify/ HTTP/1.1" 200 76
+INFO 2025-07-25 04:57:29,873 basehttp "GET / HTTP/1.1" 200 85097
+INFO 2025-07-25 04:57:39,109 basehttp "GET /logout/ HTTP/1.1" 302 0
+INFO 2025-07-25 04:57:39,121 basehttp "GET / HTTP/1.1" 200 79577
+INFO 2025-07-25 04:57:40,672 basehttp "GET /login/ HTTP/1.1" 200 12452
+INFO 2025-07-25 04:58:00,990 basehttp "GET /login/otp/ HTTP/1.1" 200 18791
+INFO 2025-07-25 04:58:12,628 basehttp "POST /login/otp/send/ HTTP/1.1" 200 162
+INFO 2025-07-25 04:58:23,009 basehttp "POST /login/otp/verify/ HTTP/1.1" 200 76
+INFO 2025-07-25 04:58:24,035 basehttp "GET / HTTP/1.1" 200 85097
+INFO 2025-07-25 04:58:27,444 basehttp "GET /center/dashboard/ HTTP/1.1" 200 126186
+INFO 2025-07-25 05:04:49,501 basehttp "GET /logout/ HTTP/1.1" 302 0
+INFO 2025-07-25 05:04:49,560 basehttp "GET / HTTP/1.1" 200 79577
+INFO 2025-07-25 05:04:50,547 basehttp "GET /login/ HTTP/1.1" 200 12452
+INFO 2025-07-25 05:04:51,813 basehttp "GET /login/otp/ HTTP/1.1" 200 18791
+INFO 2025-07-25 05:04:58,365 basehttp "POST /login/otp/send/ HTTP/1.1" 200 162
+INFO 2025-07-25 05:05:11,997 basehttp "GET /login/ HTTP/1.1" 200 12452
+INFO 2025-07-25 05:05:31,870 basehttp "GET /login/otp/ HTTP/1.1" 200 18791
+INFO 2025-07-25 05:05:38,561 basehttp "POST /login/otp/send/ HTTP/1.1" 200 162
+INFO 2025-07-25 05:05:54,752 basehttp "POST /login/otp/verify/ HTTP/1.1" 200 76
+INFO 2025-07-25 05:05:55,777 basehttp "GET / HTTP/1.1" 200 85097
+INFO 2025-07-25 05:05:58,828 basehttp "GET /center/dashboard/ HTTP/1.1" 200 126186

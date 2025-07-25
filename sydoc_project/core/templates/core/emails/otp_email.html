@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Votre code de vérification SYDOC</title>
+    <style type="text/css">
+        /* Base styles */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #4a4a4a;
+            background-color: #f7f9fc;
+        }
+        
+        /* Container */
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Header */
+        .email-header {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            padding: 30px 20px;
+            text-align: center;
+            color: white;
+        }
+        
+        .email-header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        /* Content */
+        .email-content {
+            padding: 30px;
+        }
+        
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #1f2937;
+        }
+        
+        .otp-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .otp-code {
+            display: inline-block;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            padding: 20px 40px;
+            background: #f0f4ff;
+            border-radius: 10px;
+            color: #2563eb;
+            border: 2px dashed #bfdbfe;
+            margin: 10px 0;
+        }
+        
+        .expiry-note {
+            color: #6b7280;
+            font-size: 14px;
+            margin: 15px 0;
+        }
+        
+        .security-note {
+            padding: 15px;
+            background-color: #fef2f2;
+            border-left: 4px solid #ef4444;
+            border-radius: 4px;
+            margin: 25px 0;
+            font-size: 14px;
+            color: #7f1d1d;
+        }
+        
+        /* Footer */
+        .email-footer {
+            background-color: #f9fafb;
+            padding: 20px 30px;
+            text-align: center;
+            font-size: 13px;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .logo {
+            max-width: 150px;
+            margin-bottom: 15px;
+        }
+        
+        .social-links {
+            margin: 15px 0;
+        }
+        
+        .social-links a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: #6b7280;
+        }
+        
+        .social-links a:hover {
+            color: #2563eb;
+        }
+        
+        /* Responsive */
+        @media screen and (max-width: 600px) {
+            .email-content, .email-footer {
+                padding: 20px;
+            }
+            
+            .otp-code {
+                font-size: 24px;
+                padding: 15px 30px;
+            }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #4a4a4a; background-color: #f7f9fc;">
+    <div class="email-container" style="max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+        <!-- Header -->
+        <div class="email-header" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); padding: 30px 20px; text-align: center; color: white;">
+            <h1 style="margin: 0; font-size: 24px; font-weight: 600;">Vérification de sécurité</h1>
+            <p style="margin: 10px 0 0; opacity: 0.9; font-size: 16px;">Code de vérification à usage unique</p>
+        </div>
+        
+        <!-- Content -->
+        <div class="email-content" style="padding: 30px;">
+            <p class="greeting" style="font-size: 18px; margin-bottom: 20px; color: #1f2937;">Bonjour,</p>
+            
+            <p>Pour sécuriser votre compte, veuillez utiliser le code de vérification suivant :</p>
+            
+            <div class="otp-container" style="text-align: center; margin: 30px 0;">
+                <div class="otp-code" style="display: inline-block; font-size: 32px; font-weight: 700; letter-spacing: 4px; padding: 20px 40px; background: #f0f4ff; border-radius: 10px; color: #2563eb; border: 2px dashed #bfdbfe; margin: 10px 0;">
+                    {{ otp_code }}
+                </div>
+                <p class="expiry-note" style="color: #6b7280; font-size: 14px; margin: 15px 0;">
+                    Ce code expirera dans <strong>{{ expiry_minutes }} minutes</strong>.
+                </p>
+            </div>
+            
+            <div class="security-note" style="padding: 15px; background-color: #fef2f2; border-left: 4px solid #ef4444; border-radius: 4px; margin: 25px 0; font-size: 14px; color: #7f1d1d;">
+                <strong>Important :</strong> Ne partagez jamais ce code avec qui que ce soit, même avec les membres de l'équipe SYDOC.
+            </div>
+            
+            <p>Si vous n'avez pas demandé ce code, veuillez ignorer cet email ou nous contacter immédiatement si vous pensez qu'il s'agit d'une activité suspecte.</p>
+        </div>
+        
+        <!-- Footer -->
+        <div class="email-footer" style="background-color: #f9fafb; padding: 20px 30px; text-align: center; font-size: 13px; color: #6b7280; border-top: 1px solid #e5e7eb;">
+            <div class="social-links" style="margin: 15px 0;">
+                <a href="https://twitter.com/sydoc" style="margin: 0 10px; text-decoration: none; color: #6b7280;">Twitter</a>
+                <a href="https://facebook.com/sydoc" style="margin: 0 10px; text-decoration: none; color: #6b7280;">Facebook</a>
+                <a href="https://linkedin.com/company/sydoc" style="margin: 0 10px; text-decoration: none; color: #6b7280;">LinkedIn</a>
+            </div>
+            <p>© {% now "Y" %} SYDOC. Tous droits réservés.</p>
+            <p style="font-size: 12px; color: #9ca3af; margin: 10px 0 0;">
+                Cet email a été envoyé à titre informatif. Veuillez ne pas y répondre.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
