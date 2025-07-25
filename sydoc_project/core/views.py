@@ -17,6 +17,7 @@ from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth import REDIRECT_FIELD_NAME
 
 
 def mask_email(email):
@@ -28,6 +29,7 @@ def mask_email(email):
     masked_username = username[0] + '*' * (len(username) - 1)
     return f"{masked_username}@{domain}"
 from django.views import View
+from django.contrib.auth.views import LoginView
 
 # Local application imports
 from .forms import UserUpdateForm, ProfileUpdateForm
@@ -93,95 +95,6 @@ def send_otp_email(email, otp):
         logger.error(f'Failed to send OTP email to {mask_email(email) if email else "unknown"}: {str(e)}', exc_info=True)
         return False
 
-class OTPLoginView(View):
-    """Handle OTP-based login requests with rate limiting and better error handling"""
-    
-    def get(self, request):
-        # Clear any existing OTP session data
-        for key in ['otp_user_id', 'otp_email', 'otp_created_at', 'otp_last_resend', 'otp_resend_count']:
-            if key in request.session:
-                del request.session[key]
-        
-        # Set a fresh CSRF token to ensure it's available
-        request.META["CSRF_COOKIE_USED"] = True
-                
-        return render(request, 'core/otp_login.html')
-    
-    def post(self, request):
-        email = request.POST.get('email', '').strip().lower()
-        logger.info(f"OTP request for email: {mask_email(email)}")
-        
-        # Basic validation
-        if not email or '@' not in email:
-            logger.warning(f"Invalid email format: {mask_email(email)}")
-            return JsonResponse({
-                'success': False,
-                'error': 'Veuillez fournir une adresse email valide.'
-            }, status=400)
-            
-        # Check rate limiting
-        cache_key = f'otp_attempts_{email}'
-        attempts = cache.get(cache_key, 0)
-        max_attempts = 5
-        
-        if attempts >= max_attempts:
-            return JsonResponse({
-                'success': False,
-                'error': 'Trop de tentatives. Veuillez réessayer plus tard.'
-            }, status=429)
-        
-        try:
-            user = User.objects.get(email=email, is_active=True)
-            
-            # Generate and store OTP
-            try:
-                otp = OTP.create_otp_for_user(user)
-                logger.info(f'Generated OTP for user {user.id}')
-            except Exception as e:
-                logger.error(f'Error generating OTP for user {user.id}: {str(e)}', exc_info=True)
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Erreur lors de la génération du code. Veuillez réessayer.'
-                }, status=500)
-            
-            # Send OTP via email
-            if not send_otp_email(user.email, otp):
-                # Increment failed attempts
-                cache.set(cache_key, attempts + 1, timeout=3600)  # 1 hour cooldown
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Erreur lors de l\'envoi du code. Veuillez réessayer.'
-                }, status=500)
-            
-            # Store OTP info in session
-            request.session['otp_user_id'] = user.id
-            request.session['otp_email'] = user.email
-            request.session['otp_created_at'] = timezone.now().isoformat()
-            request.session['otp_last_resend'] = None
-            request.session['otp_resend_count'] = 0
-            
-            # Ensure session is saved immediately
-            request.session.save()
-            logger.info(f"Session data saved with user_id={user.id}, session_key={request.session.session_key}")
-            
-            # Mask email for display
-            masked_email = mask_email(email)
-            
-            return JsonResponse({
-                'success': True,
-                'message': f'Un code de vérification a été envoyé à {masked_email}',
-                'masked_email': masked_email
-            })
-            
-        except User.DoesNotExist:
-            # Increment failed attempts for non-existent users too (security measure)
-            cache.set(cache_key, attempts + 1, timeout=3600)
-            logger.warning(f'Login attempt for non-existent email: {email}')
-            return JsonResponse({
-                'success': False,
-                'error': 'Si un compte existe avec cette adresse email, un code de vérification vous a été envoyé.'
-            }, status=400)
-    
     def _clear_otp_session(self, request):
         """Clear OTP-related session data"""
         session_keys = ['otp_user_id', 'otp_email', 'otp_created_at']
@@ -208,84 +121,9 @@ class OTPVerifyView(View):
                 'success': False,
                 'error': 'Session expirée. Veuillez redémarrer le processus de connexion.',
                 'debug_info': {'user_id': user_id is not None, 'email': email is not None}
-            }, status=400)
-            
-        # Validate OTP format
-        if not otp_code or not otp_code.isdigit() or len(otp_code) != 6:
-            return JsonResponse({
-                'success': False,
-                'error': 'Format de code invalide. Le code doit contenir 6 chiffres.'
-            }, status=400)
-            
-        # Check rate limiting
-        cache_key = f'otp_verify_attempts_{user_id}'
-        attempts = cache.get(cache_key, 0)
-        max_attempts = 5
-        
-        if attempts >= max_attempts:
-            logger.warning(f'Too many OTP verification attempts for user {user_id}')
-            return JsonResponse({
-                'success': False,
-                'error': 'Trop de tentatives échouées. Veuillez demander un nouveau code.'
-            }, status=429)
-            
-        try:
-            user = User.objects.get(id=user_id, email=email, is_active=True)
-            
-            # Validate OTP using the enhanced model method
-            is_valid, error_message = OTP.validate_otp(user, otp_code)
-            if not is_valid:
-                # Increment failed attempts
-                attempts += 1
-                cache.set(cache_key, attempts, timeout=3600)  # 1 hour cooldown
-                logger.warning(f'Invalid OTP attempt {attempts}/{max_attempts} for user {user_id}: {error_message}')
-                
-                # Calculate remaining attempts
-                remaining_attempts = max(0, max_attempts - attempts)
-                
-                # If no more attempts left, clear the session for security
-                if remaining_attempts <= 0:
-                    request.session.flush()
-                    return JsonResponse({
-                        'success': False,
-                        'error': 'Trop de tentatives échouées. Veuillez redémarrer le processus de connexion.',
-                        'session_expired': True
-                    }, status=429)
-                    
-                return JsonResponse({
-                    'success': False,
-                    'error': f'{error_message} Il vous reste {remaining_attempts} essai(s).',
-                    'remaining_attempts': remaining_attempts
-                }, status=400)
-            
-            # Clear any rate limiting on successful verification
-            cache.delete(cache_key)
-            
-            # Log the user in
-            login(request, user)
-            logger.info(f'User {user_id} logged in successfully via OTP')
-            
-            # Clear all OTP-related session data
-            session_keys = ['otp_user_id', 'otp_email', 'otp_created_at']
-            for key in session_keys:
-                if key in request.session:
-                    del request.session[key]
-            
-            # Set session to expire after 2 weeks instead of browser close
-            request.session.set_expiry(60 * 60 * 24 * 14)  # 14 days in seconds
-            
-            return JsonResponse({
-                'success': True,
-                'redirect_url': '/',  # Redirect to home page after login
-                'message': 'Connexion réussie!'
             })
-            
-        except User.DoesNotExist:
-            logger.error(f'User not found during OTP verification: id={user_id}, email={email}')
-            return JsonResponse({
-                'success': False,
-                'error': 'Erreur lors de la vérification. Veuillez réessayer.'
-            }, status=400)
+
+# OTPVerifyView has been removed as part of the migration to two-factor authentication only
 
 def resend_otp(request):
     """Handle OTP resend requests with rate limiting and cooldown"""
@@ -473,3 +311,103 @@ def edit_profile(request):
     }
 
     return render(request, 'core/profile_edit.html', context)
+
+
+class TwoFactorLoginView(LoginView):
+    """
+    Custom login view that redirects to 2FA verification after successful username/password authentication
+    """
+    template_name = 'registration/login.html'
+    
+    def form_valid(self, form):
+        """Security check complete. Log the user in and send OTP for 2FA."""
+        # Get the user from the form
+        user = form.get_user()
+        
+        # Store user info in session for the 2FA step
+        self.request.session['2fa_user_id'] = user.id
+        
+        # Generate and send OTP
+        otp_obj = OTP.create_otp_for_user(user)
+        if not send_otp_email(user.email, otp_obj):
+            messages.error(self.request, _('Erreur lors de l\'envoi du code de vérification. Veuillez réessayer.'))
+            return self.form_invalid(form)
+        
+        # Store OTP info in session
+        self.request.session['otp_created_at'] = timezone.now().isoformat()
+        self.request.session['otp_email'] = user.email
+        self.request.session.modified = True
+        
+        # Redirect to 2FA verification page
+        logger.info(f'User {user.username} authenticated with password, redirecting to 2FA verification')
+        return redirect('core:verify_2fa')
+
+
+class TwoFactorVerifyView(View):
+    """
+    View for verifying 2FA codes after successful password authentication
+    """
+    
+    def get(self, request):
+        # Check if user has already authenticated with password
+        user_id = request.session.get('2fa_user_id')
+        if not user_id:
+            messages.error(request, _('Veuillez vous connecter avec votre nom d\'utilisateur et mot de passe d\'abord.'))
+            return redirect('login')
+        
+        try:
+            user = User.objects.get(id=user_id)
+            masked_email = mask_email(user.email)
+            
+            context = {
+                'masked_email': masked_email,
+                'title': _('Vérification en deux étapes')
+            }
+            return render(request, 'core/two_factor_verify.html', context)
+        except User.DoesNotExist:
+            # Clear session and redirect to login
+            self._clear_2fa_session(request)
+            messages.error(request, _('Session expirée. Veuillez vous reconnecter.'))
+            return redirect('login')
+    
+    def post(self, request):
+        # Get the OTP code from the form
+        otp_code = request.POST.get('otp')
+        user_id = request.session.get('2fa_user_id')
+        
+        if not user_id or not otp_code:
+            messages.error(request, _('Informations de vérification incomplètes.'))
+            return redirect('login')
+        
+        try:
+            user = User.objects.get(id=user_id)
+            
+            # Validate OTP
+            is_valid, error_message = OTP.validate_otp(user, otp_code)
+            
+            if is_valid:
+                # Clear 2FA session data
+                self._clear_2fa_session(request)
+                
+                # Log the user in
+                login(request, user)
+                
+                # Redirect to the appropriate page
+                redirect_to = request.session.get(REDIRECT_FIELD_NAME, settings.LOGIN_REDIRECT_URL)
+                logger.info(f'User {user.username} successfully verified 2FA, redirecting to {redirect_to}')
+                return redirect(redirect_to)
+            else:
+                messages.error(request, _(error_message))
+                return self.get(request)
+                
+        except User.DoesNotExist:
+            self._clear_2fa_session(request)
+            messages.error(request, _('Session expirée. Veuillez vous reconnecter.'))
+            return redirect('login')
+    
+    def _clear_2fa_session(self, request):
+        """Clear 2FA-related session data"""
+        for key in ['2fa_user_id', 'otp_email', 'otp_created_at']:
+            if key in request.session:
+                del request.session[key]
+        request.session.modified = True
