@@ -1,0 +1,44 @@
+.git
+.history
+.vscode/
+.DS_Store
+*.pyc
+*cpython-39.pyc
+*.log
+*.pyc
+*.log
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Django stuff
+*.sqlite3
+db.sqlite3 # Specifically for your current project's SQLite DB
+/media/ # User-uploaded media files
+/static_collected/ # Collected static files
+
+# Logs
+*.log
+logs/ # If you have a dedicated 'logs' directory
+
+# OS generated files
+.DS_Store # macOS
+.Trashes # macOS
+Thumbs.db # Windows
+ehthumbs.db # Windows
+Desktop.ini # Windows
+
+# VS Code specific (optional, but good practice)
+.vscode/
+*.code-workspace
+
+# Environment variables
+.env
