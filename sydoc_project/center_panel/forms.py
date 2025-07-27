@@ -3,29 +3,64 @@
 from django import forms
 from django.forms.models import modelformset_factory, inlineformset_factory
 from django.contrib.auth.models import User
+from core.models import LiteraryGenre, SubGenre, Theme, SousTheme
 from django.utils.translation import gettext_lazy as _
-from core.models import Book, Author, Category, Member, Loan, Staff, Activity, ArchivalDocument, TrainingSubject, TrainingModule, Lesson, Question, Answer, Communique, Activity, Role, Profile, BookDigitization, DigitizedPage
+from core.models import Book, Author, Member, Loan, Staff, Activity, ArchivalDocument, TrainingSubject, TrainingModule, Lesson, Question, Answer, Communique, Role, Profile, BookDigitization, DigitizedPage
 
 class BookForm(forms.ModelForm):
-    class Meta:
-        model = Book
-        # Define the fields you want in the form
-        fields = [
-            'title', 'authors', 'category', 'isbn', 'publication_date',
-            'description', 'quantity_available', 'total_quantity',
-            'is_digital', 'file_upload', 'cover_image', 'status'
-        ]
-        # Use widgets to customize the form fields, e.g., for a date picker
-        widgets = {
-            'publication_date': forms.DateInput(attrs={'type': 'date'}),
-            'description': forms.Textarea(attrs={'rows': 4}),
-        }
-
     def __init__(self, *args, **kwargs):
+        self.documentation_center = kwargs.pop('documentation_center', None)
         super().__init__(*args, **kwargs)
+        
         # Add Tailwind CSS classes to all form fields for consistent styling
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+        
+        # Limit choices to the current documentation center if provided
+        if self.documentation_center:
+            self.fields['literary_genre'].queryset = LiteraryGenre.objects.all()
+            self.fields['sub_genre'].queryset = SubGenre.objects.filter(genre__in=self.fields['literary_genre'].queryset)
+            self.fields['theme'].queryset = Theme.objects.all()
+            self.fields['sous_theme'].queryset = SousTheme.objects.filter(theme__in=self.fields['theme'].queryset)
+        
+        # Add empty labels for select fields
+        self.fields['literary_genre'].empty_label = 'Sélectionner un genre'
+        self.fields['sub_genre'].empty_label = 'Sélectionner un sous-genre (optionnel)'
+        self.fields['theme'].empty_label = 'Sélectionner un thème (optionnel)'
+        self.fields['sous_theme'].empty_label = 'Sélectionner un sous-thème (optionnel)'
+    
+    class Meta:
+        model = Book
+        fields = [
+            'title', 'isbn', 'publication_date', 'authors', 'description',
+            'literary_genre', 'sub_genre', 'theme', 'sous_theme',
+            'is_digital', 'file_upload', 'pages', 'quantity_available',
+            'total_quantity', 'acquisition_date', 'cover_image', 'price'
+        ]
+        widgets = {
+            'publication_date': forms.DateInput(attrs={'type': 'date'}),
+            'acquisition_date': forms.DateInput(attrs={'type': 'date'}),
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }
+        labels = {
+            'title': 'Titre du Livre',
+            'isbn': 'ISBN',
+            'publication_date': 'Date de Publication',
+            'authors': 'Auteur(s)',
+            'description': 'Description',
+            'literary_genre': 'Genre Littéraire',
+            'sub_genre': 'Sous-Genre',
+            'theme': 'Thème Principal',
+            'sous_theme': 'Sous-Thème',
+            'is_digital': 'Version Numérique',
+            'file_upload': 'Fichier Numérique (PDF, EPUB, etc.)',
+            'pages': 'Nombre de Pages',
+            'quantity_available': 'Quantité Disponible (Physique)',
+            'total_quantity': 'Quantité Totale (Physique)',
+            'acquisition_date': "Date d'Acquisition",
+            'cover_image': 'Image de Couverture',
+            'price': 'Prix (Gourdes)'
+        }
 
 class MemberForm(forms.ModelForm):
     class Meta:
@@ -317,18 +352,6 @@ class CommuniqueForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
 
-class CategoryForm(forms.ModelForm):
-    class Meta:
-        model = Category
-        fields = ['name', 'description']
-        labels = {
-            'name': 'Nom de la catégorie',
-            'description': 'Description',
-        }
-        widgets = {
-            'name': forms.TextInput(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'}),
-            'description': forms.Textarea(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm', 'rows': 3}),
-        }
 
 class AuthorForm(forms.ModelForm):
     class Meta:

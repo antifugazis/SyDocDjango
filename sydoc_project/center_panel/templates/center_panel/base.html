@@ -265,7 +265,7 @@
 
                     <!-- Bibliothèque Dropdown -->
                     <div class="relative group">
-                        <button class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name in 'books,book_detail,add_book,edit_book,delete_book,loans,add_loan,return_loan' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %} flex items-center">
+                        <button class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name in 'books,book_detail,add_book,edit_book,delete_book,loans,add_loan,return_loan,literary_genres,add_literary_genre,edit_literary_genre,delete_literary_genre,themes,add_theme,edit_theme,delete_theme' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %} flex items-center">
                             <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>
                             </svg>
@@ -291,11 +291,29 @@
                                 </a>
                                 <div class="border-t border-gray-100 my-1"></div>
                                 <span class="block px-4 py-1 text-xs font-medium text-gray-500 uppercase tracking-wider">Configuration</span>
-                                <a href="{% url 'center_panel:categories' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                <a href="{% url 'center_panel:literary_genres' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                                     </svg>
-                                    Catégories
+                                    Genres Littéraires
+                                </a>
+                                <a href="{% url 'center_panel:subgenres' %}" class="block px-4 py-2 pl-8 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                    Sous-Genres
+                                </a>
+                                <a href="{% url 'center_panel:themes' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                    </svg>
+                                    Thèmes
+                                </a>
+                                <a href="{% url 'center_panel:subthemes' %}" class="block px-4 py-2 pl-8 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                    Sous-Thèmes
                                 </a>
                                 <a href="{% url 'center_panel:authors' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -575,7 +593,7 @@
                 
                 <!-- Bibliothèque Dropdown -->
                 <div class="mobile-dropdown border-b border-gray-100 py-1">
-                    <button class="mobile-dropdown-toggle w-full px-3 py-2 rounded-md text-base font-medium text-left {% if request.resolver_match.url_name in 'books,book_detail,add_book,edit_book,delete_book,loans,add_loan,return_loan,categories,add_category,edit_category,authors,add_author,edit_author,roles,add_role,edit_role' %}text-indigo-600{% else %}text-gray-700{% endif %} flex items-center justify-between">
+                    <button class="mobile-dropdown-toggle w-full px-3 py-2 rounded-md text-base font-medium text-left {% if request.resolver_match.url_name in 'books,book_detail,add_book,edit_book,delete_book,loans,add_loan,return_loan,literary_genres,add_literary_genre,edit_literary_genre,delete_literary_genre,subgenres,add_subgenre,edit_subgenre,delete_subgenre,themes,add_theme,edit_theme,delete_theme,subthemes,add_subtheme,edit_subtheme,delete_subtheme,authors,add_author,edit_author,roles,add_role,edit_role' %}text-indigo-600{% else %}text-gray-700{% endif %} flex items-center justify-between">
                         <div class="flex items-center">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>
@@ -602,11 +620,29 @@
                         </a>
                         
                         <span class="block text-xs font-medium text-gray-500 uppercase tracking-wider px-3 mt-2">Configuration</span>
-                        <a href="{% url 'center_panel:categories' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                        <a href="{% url 'center_panel:literary_genres' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                             </svg>
-                            Catégories
+                            Genres Littéraires
+                        </a>
+                        <a href="{% url 'center_panel:subgenres' %}" class="block px-3 py-2 pl-8 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                            Sous-Genres
+                        </a>
+                        <a href="{% url 'center_panel:themes' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                            </svg>
+                            Thèmes
+                        </a>
+                        <a href="{% url 'center_panel:subthemes' %}" class="block px-3 py-2 pl-8 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                            Sous-Thèmes
                         </a>
                         <a href="{% url 'center_panel:authors' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

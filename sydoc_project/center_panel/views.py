@@ -15,8 +15,11 @@ import shutil
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, letter
 from PIL import Image, ImageEnhance
-from core.models import DocumentationCenter, Book, Member, Loan, Staff, ArchivalDocument, TrainingModule, Activity, TrainingSubject, TrainingModule, Lesson, Communique, Question, Answer, StaffTrainingRecord, Quiz, Category, Author, Role, Profile, BookDigitization, DigitizedPage
-from .forms import BookForm, MemberForm, CreateLoanForm, StaffForm, ActivityForm, ArchiveForm, TrainingSubjectForm, TrainingModuleForm, LessonFormSet, CommuniqueForm, TrainingModuleForm, LessonForm, QuestionFormSet, CategoryForm, AuthorForm, RoleForm, UserForm, ProfileForm
+from core.models import (DocumentationCenter, Book, Member, Loan, Staff, ArchivalDocument, 
+                        TrainingModule, Activity, TrainingSubject, TrainingModule, Lesson, Communique, 
+                        Question, Answer, StaffTrainingRecord, Quiz, Author, Role, Profile, LiteraryGenre, 
+                        BookDigitization, DigitizedPage, SubGenre, Theme, SousTheme)
+from .forms import BookForm, MemberForm, CreateLoanForm, StaffForm, ActivityForm, ArchiveForm, TrainingSubjectForm, TrainingModuleForm, LessonFormSet, CommuniqueForm, TrainingModuleForm, LessonForm, QuestionFormSet, AuthorForm, RoleForm, UserForm, ProfileForm
 from django.db.models import Count
 from django.utils import timezone
 from datetime import timedelta
@@ -141,24 +144,24 @@ def book_detail(request, pk):
 @login_required
 def add_book(request):
     current_center = DocumentationCenter.objects.first()
+    
     if request.method == 'POST':
-        # Pass the form data and any uploaded files
-        form = BookForm(request.POST, request.FILES)
+        form = BookForm(request.POST, request.FILES, documentation_center=current_center)
         if form.is_valid():
             book = form.save(commit=False)
             book.documentation_center = current_center
             book.save()
             form.save_m2m() # Needed to save ManyToMany relationships like 'authors'
-            messages.success(request, f"Le livre '{book.title}' a été ajouté avec succès.")
-            return redirect('center_panel:books')
+            messages.success(request, 'Le livre a été ajouté avec succès.')
+            return redirect('center_panel:book_list')
     else:
-        form = BookForm()
-        
-    context = {
+        form = BookForm(documentation_center=current_center)
+    
+    return render(request, 'center_panel/books/add_edit_book.html', {
         'form': form,
-        'current_center': current_center
-    }
-    return render(request, 'center_panel/admin/add_edit_book.html', context)
+        'current_center': current_center,
+        'is_edit': False,
+    })
 
 @login_required
 def edit_book(request, pk):
@@ -166,22 +169,20 @@ def edit_book(request, pk):
     book = get_object_or_404(Book, pk=pk, documentation_center=current_center)
     
     if request.method == 'POST':
-        form = BookForm(request.POST, request.FILES, instance=book)
+        form = BookForm(request.POST, request.FILES, instance=book, documentation_center=current_center)
         if form.is_valid():
             form.save()
-            messages.success(request, f"Le livre '{book.title}' a été mis à jour.")
-            return redirect('center_panel:books')
+            messages.success(request, 'Le livre a été mis à jour avec succès.')
+            return redirect('center_panel:book_list')
     else:
-        form = BookForm(instance=book)
-
-    context = {
+        form = BookForm(instance=book, documentation_center=current_center)
+    
+    return render(request, 'center_panel/books/add_edit_book.html', {
         'form': form,
-        'book': book, # Pass the book instance to the template
-        'current_center': current_center
-    }
-    # We can reuse the same template for both adding and editing
-    return render(request, 'center_panel/admin/add_edit_book.html', context)
-
+        'book': book,
+        'current_center': current_center,
+        'is_edit': True,
+    })
 
 @login_required
 def delete_book(request, pk):
@@ -1169,76 +1170,358 @@ def lesson_quiz_api(request, pk):
     
     return JsonResponse(survey_json)
 
-# Category CRUD Views
+# Literary Genre CRUD Views
 @login_required
-def category_list(request):
-    """Display all book categories."""
+def literary_genre_list(request):
+    """Display all literary genres."""
     current_center = DocumentationCenter.objects.first()
-    categories = Category.objects.all().order_by('name')
+    literary_genres = LiteraryGenre.objects.all().order_by('name')
     
     context = {
-        'categories': categories,
+        'literary_genres': literary_genres,
         'current_center': current_center,
     }
-    return render(request, 'center_panel/admin/category_list.html', context)
+    return render(request, 'center_panel/admin/literary_genre_list.html', context)
 
 @login_required
-def add_category(request):
-    """Add a new book category."""
+def add_literary_genre(request):
+    """Add a new literary genre."""
     current_center = DocumentationCenter.objects.first()
     
     if request.method == 'POST':
-        form = CategoryForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Catégorie ajoutée avec succès.')
-            return redirect('center_panel:categories')
-    else:
-        form = CategoryForm()
+        name = request.POST.get('name')
+        description = request.POST.get('description', '')
+        
+        # Basic validation
+        if not name:
+            messages.error(request, 'Le nom du genre est requis.')
+        else:
+            # Create the new genre
+            literary_genre = LiteraryGenre.objects.create(
+                name=name,
+                description=description
+            )
+            messages.success(request, 'Le genre a été ajouté avec succès.')
+            return redirect('center_panel:literary_genres')
     
     context = {
-        'form': form,
         'current_center': current_center,
-        'is_add': True,
+        'is_edit': False,
     }
-    return render(request, 'center_panel/admin/add_edit_category.html', context)
+    return render(request, 'center_panel/admin/add_edit_literary_genre.html', context)
 
 @login_required
-def edit_category(request, pk):
-    """Edit an existing book category."""
+def edit_literary_genre(request, pk):
+    """Edit an existing literary genre."""
     current_center = DocumentationCenter.objects.first()
-    category = get_object_or_404(Category, pk=pk)
+    literary_genre = get_object_or_404(LiteraryGenre, pk=pk)
     
     if request.method == 'POST':
-        form = CategoryForm(request.POST, instance=category)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Catégorie modifiée avec succès.')
-            return redirect('center_panel:categories')
-    else:
-        form = CategoryForm(instance=category)
+        name = request.POST.get('name')
+        description = request.POST.get('description', '')
+        
+        # Basic validation
+        if not name:
+            messages.error(request, 'Le nom du genre est requis.')
+        else:
+            # Update the genre
+            literary_genre.name = name
+            literary_genre.description = description
+            literary_genre.save()
+            
+            messages.success(request, 'Le genre a été modifié avec succès.')
+            return redirect('center_panel:literary_genres')
     
     context = {
-        'form': form,
-        'category': category,
+        'literary_genre': literary_genre,
         'current_center': current_center,
-        'is_add': False,
+        'is_edit': True,
     }
-    return render(request, 'center_panel/admin/add_edit_category.html', context)
+    return render(request, 'center_panel/admin/add_edit_literary_genre.html', context)
 
 @login_required
-def delete_category(request, pk):
-    """Delete a book category."""
-    category = get_object_or_404(Category, pk=pk)
+def delete_literary_genre(request, pk):
+    """Delete a literary genre."""
+    literary_genre = get_object_or_404(LiteraryGenre, pk=pk)
     
-    # Check if the category is associated with any books
-    if Book.objects.filter(category=category).exists():
-        messages.error(request, 'Impossible de supprimer cette catégorie car elle est associée à des livres.')
+    # Check if the genre is used by any books or sub-genres
+    if literary_genre.book_set.exists() or literary_genre.sous_genres.exists():
+        messages.error(request, 'Impossible de supprimer ce genre car il est associé à des livres ou des sous-genres.')
     else:
-        category.delete()
-        messages.success(request, 'Catégorie supprimée avec succès.')
+        literary_genre.delete()
+        messages.success(request, 'Le genre a été supprimé avec succès.')
     
-    return redirect('center_panel:categories')
+    return redirect('center_panel:literary_genres')
+
+# SubGenre CRUD Views
+@login_required
+def subgenre_list(request):
+    """Display all sub-genres."""
+    current_center = DocumentationCenter.objects.first()
+    subgenres = SubGenre.objects.select_related('genre').order_by('genre__name', 'name')
+    
+    context = {
+        'subgenres': subgenres,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/admin/subgenre_list.html', context)
+
+@login_required
+def add_subgenre(request):
+    """Add a new sub-genre."""
+    current_center = DocumentationCenter.objects.first()
+    
+    if request.method == 'POST':
+        genre_id = request.POST.get('genre')
+        name = request.POST.get('name')
+        description = request.POST.get('description', '')
+        
+        # Basic validation
+        if not genre_id or not name:
+            messages.error(request, 'Le genre et le nom sont requis.')
+        else:
+            try:
+                genre = LiteraryGenre.objects.get(pk=genre_id)
+                SubGenre.objects.create(
+                    genre=genre,
+                    name=name,
+                    description=description
+                )
+                messages.success(request, 'Sous-genre ajouté avec succès.')
+                return redirect('center_panel:subgenres')
+            except LiteraryGenre.DoesNotExist:
+                messages.error(request, 'Genre sélectionné invalide.')
+    
+    genres = LiteraryGenre.objects.all().order_by('name')
+    context = {
+        'genres': genres,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/admin/add_edit_subgenre.html', context)
+
+@login_required
+def edit_subgenre(request, pk):
+    """Edit an existing sub-genre."""
+    current_center = DocumentationCenter.objects.first()
+    subgenre = get_object_or_404(SubGenre, pk=pk)
+    
+    if request.method == 'POST':
+        genre_id = request.POST.get('genre')
+        name = request.POST.get('name')
+        description = request.POST.get('description', '')
+        
+        # Basic validation
+        if not genre_id or not name:
+            messages.error(request, 'Genre and name are required.')
+        else:
+            try:
+                genre = LiteraryGenre.objects.get(pk=genre_id)
+                subgenre.genre = genre
+                subgenre.name = name
+                subgenre.description = description
+                subgenre.save()
+                
+                messages.success(request, 'Sous-genre modifié avec succès.')
+                return redirect('center_panel:subgenres')
+            except LiteraryGenre.DoesNotExist:
+                messages.error(request, 'Genre sélectionné invalide.')
+    
+    genres = LiteraryGenre.objects.all().order_by('name')
+    context = {
+        'subgenre': subgenre,
+        'genres': genres,
+        'current_center': current_center,
+        'is_edit': True,
+    }
+    return render(request, 'center_panel/admin/add_edit_subgenre.html', context)
+
+@login_required
+def delete_subgenre(request, pk):
+    """Delete a sub-genre."""
+    subgenre = get_object_or_404(SubGenre, pk=pk)
+    
+    # Check if the sub-genre is used by any books
+    if subgenre.book_set.exists():
+        messages.error(request, 'Impossible de supprimer ce sous-genre car il est associé à des livres.')
+    else:
+        subgenre.delete()
+        messages.success(request, 'Sous-genre supprimé avec succès.')
+    
+    return redirect('center_panel:subgenres')
+
+# Theme CRUD Views
+@login_required
+def theme_list(request):
+    """Display all themes."""
+    current_center = DocumentationCenter.objects.first()
+    themes = Theme.objects.all().order_by('name')
+    
+    context = {
+        'themes': themes,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/admin/theme_list.html', context)
+
+@login_required
+def add_theme(request):
+    """Add a new theme."""
+    current_center = DocumentationCenter.objects.first()
+    
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        description = request.POST.get('description', '')
+        
+        if not name:
+            messages.error(request, 'Le nom est requis.')
+        else:
+            Theme.objects.create(
+                name=name,
+                description=description
+            )
+            messages.success(request, 'Thème ajouté avec succès.')
+            return redirect('center_panel:themes')
+    
+    context = {
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/admin/add_edit_theme.html', context)
+
+@login_required
+def edit_theme(request, pk):
+    """Edit an existing theme."""
+    current_center = DocumentationCenter.objects.first()
+    theme = get_object_or_404(Theme, pk=pk)
+    
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        description = request.POST.get('description', '')
+        
+        if not name:
+            messages.error(request, 'Le nom est requis.')
+        else:
+            theme.name = name
+            theme.description = description
+            theme.save()
+            
+            messages.success(request, 'Thème mis à jour avec succès.')
+            return redirect('center_panel:themes')
+    
+    context = {
+        'theme': theme,
+        'current_center': current_center,
+        'is_edit': True,
+    }
+    return render(request, 'center_panel/admin/add_edit_theme.html', context)
+
+@login_required
+def delete_theme(request, pk):
+    """Delete a theme."""
+    theme = get_object_or_404(Theme, pk=pk)
+    
+    # Check if theme is associated with any books
+    if theme.book_set.exists():
+        messages.error(request, 'Impossible de supprimer ce thème car il est associé à un ou plusieurs livres.')
+    else:
+        theme.delete()
+        messages.success(request, 'Thème supprimé avec succès.')
+    
+    return redirect('center_panel:themes')
+
+# SousTheme CRUD Views
+@login_required
+def subtheme_list(request):
+    """Display all sub-themes."""
+    current_center = DocumentationCenter.objects.first()
+    subthemes = SousTheme.objects.select_related('theme').order_by('theme__name', 'name')
+    
+    context = {
+        'subthemes': subthemes,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/admin/subtheme_list.html', context)
+
+@login_required
+def add_subtheme(request):
+    """Add a new sub-theme."""
+    current_center = DocumentationCenter.objects.first()
+    
+    if request.method == 'POST':
+        theme_id = request.POST.get('theme')
+        name = request.POST.get('name')
+        description = request.POST.get('description', '')
+        
+        # Basic validation
+        if not theme_id or not name:
+            messages.error(request, 'Le thème et le nom sont requis.')
+        else:
+            try:
+                theme = Theme.objects.get(pk=theme_id)
+                SousTheme.objects.create(
+                    theme=theme,
+                    name=name,
+                    description=description
+                )
+                messages.success(request, 'Sous-thème ajouté avec succès.')
+                return redirect('center_panel:subthemes')
+            except Theme.DoesNotExist:
+                messages.error(request, 'Thème sélectionné invalide.')
+    
+    themes = Theme.objects.all().order_by('name')
+    context = {
+        'themes': themes,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/admin/add_edit_subtheme.html', context)
+
+@login_required
+def edit_subtheme(request, pk):
+    """Edit an existing sub-theme."""
+    current_center = DocumentationCenter.objects.first()
+    subtheme = get_object_or_404(SousTheme, pk=pk)
+    
+    if request.method == 'POST':
+        theme_id = request.POST.get('theme')
+        name = request.POST.get('name')
+        description = request.POST.get('description', '')
+        
+        # Basic validation
+        if not theme_id or not name:
+            messages.error(request, 'Le thème et le nom sont requis.')
+        else:
+            try:
+                theme = Theme.objects.get(pk=theme_id)
+                subtheme.theme = theme
+                subtheme.name = name
+                subtheme.description = description
+                subtheme.save()
+                
+                messages.success(request, 'Sous-thème mis à jour avec succès.')
+                return redirect('center_panel:subthemes')
+            except Theme.DoesNotExist:
+                messages.error(request, 'Thème sélectionné invalide.')
+    
+    themes = Theme.objects.all().order_by('name')
+    context = {
+        'subtheme': subtheme,
+        'themes': themes,
+        'current_center': current_center,
+        'is_edit': True,
+    }
+    return render(request, 'center_panel/admin/add_edit_subtheme.html', context)
+
+@login_required
+def delete_subtheme(request, pk):
+    """Delete a sub-theme."""
+    subtheme = get_object_or_404(SousTheme, pk=pk)
+    
+    # Check if sub-theme is associated with any books
+    if subtheme.book_set.exists():
+        messages.error(request, 'Impossible de supprimer ce sous-thème car il est associé à un ou plusieurs livres.')
+    else:
+        subtheme.delete()
+        messages.success(request, 'Sous-thème supprimé avec succès.')
+    
+    return redirect('center_panel:subthemes')
 
 # Author CRUD Views
 @login_required
@@ -1284,7 +1567,7 @@ def edit_author(request, pk):
         form = AuthorForm(request.POST, instance=author)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Auteur modifié avec succès.')
+            messages.success(request, 'Author updated successfully.')
             return redirect('center_panel:authors')
     else:
         form = AuthorForm(instance=author)
@@ -1304,12 +1587,108 @@ def delete_author(request, pk):
     
     # Check if the author is associated with any books
     if author.book_set.exists():
-        messages.error(request, 'Impossible de supprimer cet auteur car il est associé à des livres.')
+        messages.error(request, 'Cannot delete this author as it is associated with books.')
     else:
         author.delete()
-        messages.success(request, 'Auteur supprimé avec succès.')
+        messages.success(request, 'Author deleted successfully.')
     
     return redirect('center_panel:authors')
+
+# Subgenre CRUD Views
+@login_required
+def subgenre_list(request):
+    """Display all sub-genres."""
+    current_center = DocumentationCenter.objects.first()
+    subgenres = SubGenre.objects.select_related('genre').order_by('genre__name', 'name')
+    
+    context = {
+        'subgenres': subgenres,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/admin/subgenre_list.html', context)
+
+@login_required
+def add_subgenre(request):
+    """Add a new sub-genre."""
+    current_center = DocumentationCenter.objects.first()
+    
+    if request.method == 'POST':
+        genre_id = request.POST.get('genre')
+        name = request.POST.get('name')
+        description = request.POST.get('description', '')
+        
+        # Basic validation
+        if not genre_id or not name:
+            messages.error(request, 'Genre and name are required.')
+        else:
+            try:
+                genre = LiteraryGenre.objects.get(pk=genre_id)
+                SubGenre.objects.create(
+                    genre=genre,
+                    name=name,
+                    description=description
+                )
+                messages.success(request, 'Sous-genre ajouté avec succès.')
+                return redirect('center_panel:subgenres')
+            except LiteraryGenre.DoesNotExist:
+                messages.error(request, 'Invalid genre selected.')
+    
+    genres = LiteraryGenre.objects.all().order_by('name')
+    context = {
+        'genres': genres,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/admin/add_edit_subgenre.html', context)
+
+@login_required
+def edit_subgenre(request, pk):
+    """Edit an existing sub-genre."""
+    current_center = DocumentationCenter.objects.first()
+    subgenre = get_object_or_404(SubGenre, pk=pk)
+    
+    if request.method == 'POST':
+        genre_id = request.POST.get('genre')
+        name = request.POST.get('name')
+        description = request.POST.get('description', '')
+        
+        # Basic validation
+        if not genre_id or not name:
+            messages.error(request, 'Le genre et le nom sont requis.')
+        else:
+            try:
+                genre = LiteraryGenre.objects.get(pk=genre_id)
+                subgenre.genre = genre
+                subgenre.name = name
+                subgenre.description = description
+                subgenre.save()
+                
+                messages.success(request, 'Sous-genre mis à jour avec succès.')
+                return redirect('center_panel:subgenres')
+            except LiteraryGenre.DoesNotExist:
+                messages.error(request, 'Genre sélectionné invalide.')
+    
+    genres = LiteraryGenre.objects.all().order_by('name')
+    context = {
+        'subgenre': subgenre,
+        'genres': genres,
+        'current_center': current_center,
+        'is_edit': True,
+    }
+    return render(request, 'center_panel/admin/add_edit_subgenre.html', context)
+
+@login_required
+def delete_subgenre(request, pk):
+    """Delete a sub-genre."""
+    subgenre = get_object_or_404(SubGenre, pk=pk)
+    
+    # Check if sub-genre is associated with any books
+    if subgenre.book_set.exists():
+        messages.error(request, 'Impossible de supprimer ce sous-genre car il est associé à un ou plusieurs livres.')
+    else:
+        subgenre.delete()
+        messages.success(request, 'Sous-genre supprimé avec succès.')
+    
+    return redirect('center_panel:subgenres')
 
 # Profile Management Views
 def profile_list(request):
@@ -1767,42 +2146,56 @@ def nubo_delete_page(request, page_id):
     """
     Delete a digitized page and update the page numbers of subsequent pages.
     """
-    # Get the page to delete
-    page = get_object_or_404(DigitizedPage, pk=page_id)
-    digitization_process = page.digitization_process
-    book_id = digitization_process.book.id
-    deleted_page_number = page.page_number
+    page = get_object_or_404(DigitizedPage, id=page_id)
+    book = page.book
+    page_number = page.page_number
     
-    # Delete the page image file from storage
-    if page.image and os.path.exists(page.image.path):
-        try:
-            os.remove(page.image.path)
-        except Exception as e:
-            # Log the error but continue with deletion
-            print(f"Error deleting image file: {e}")
+    # Delete the page file from storage
+    if os.path.exists(page.image.path):
+        os.remove(page.image.path)
     
     # Delete the page from the database
     page.delete()
     
-    # Update page numbers for all subsequent pages
+    # Update page numbers of subsequent pages
     subsequent_pages = DigitizedPage.objects.filter(
-        digitization_process=digitization_process,
-        page_number__gt=deleted_page_number
+        book=book,
+        page_number__gt=page_number
     ).order_by('page_number')
     
     for subsequent_page in subsequent_pages:
         subsequent_page.page_number -= 1
         subsequent_page.save()
     
-    # Update the last_scanned_page count
-    if digitization_process.last_scanned_page > 0:
-        digitization_process.last_scanned_page -= 1
-        
-        # If we deleted the last page and there are no more pages, reset status to not_started
-        if digitization_process.last_scanned_page == 0:
-            digitization_process.status = 'not_started'
-            
-        digitization_process.save()
+    messages.success(request, f"Page {page_number} a été supprimée avec succès.")
+    return redirect('center_panel:nubo_scan', book_id=book.id)
+
+
+def api_subgenres(request):
+    """
+    API endpoint to get sub-genres for a given genre.
+    """
+    from django.http import JsonResponse
+    from .models import SubGenre
     
-    messages.success(request, f"Page {deleted_page_number} supprimée avec succès.")
-    return redirect('center_panel:nubo_scan', book_id=book_id)
+    genre_id = request.GET.get('genre_id')
+    if not genre_id:
+        return JsonResponse([], safe=False)
+    
+    sub_genres = SubGenre.objects.filter(genre_id=genre_id).values('id', 'name')
+    return JsonResponse(list(sub_genres), safe=False)
+
+
+def api_subthemes(request):
+    """
+    API endpoint to get sub-themes for a given theme.
+    """
+    from django.http import JsonResponse
+    from .models import SousTheme
+    
+    theme_id = request.GET.get('theme_id')
+    if not theme_id:
+        return JsonResponse([], safe=False)
+    
+    sub_themes = SousTheme.objects.filter(theme_id=theme_id).values('id', 'name')
+    return JsonResponse(list(sub_themes), safe=False)

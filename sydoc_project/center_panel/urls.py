@@ -78,12 +78,32 @@ urlpatterns = [
 
     # API Endpoints
     path('api/lessons/<int:pk>/quiz/', views.lesson_quiz_api, name='lesson_quiz_api'),
+    path('api/subgenres/', views.api_subgenres, name='api_subgenres'),
+    path('api/subthemes/', views.api_subthemes, name='api_subthemes'),
     
-    # Category Management
-    path('categories/', views.category_list, name='categories'),
-    path('categories/add/', views.add_category, name='add_category'),
-    path('categories/<int:pk>/edit/', views.edit_category, name='edit_category'),
-    path('categories/<int:pk>/delete/', views.delete_category, name='delete_category'),
+    # Genre Management
+    path('literary-genres/', views.literary_genre_list, name='literary_genres'),
+    path('literary-genres/add/', views.add_literary_genre, name='add_literary_genre'),
+    path('literary-genres/<int:pk>/edit/', views.edit_literary_genre, name='edit_literary_genre'),
+    path('literary-genres/<int:pk>/delete/', views.delete_literary_genre, name='delete_literary_genre'),
+    
+    # Sub-Genre Management
+    path('sub-genres/', views.subgenre_list, name='subgenres'),
+    path('sub-genres/add/', views.add_subgenre, name='add_subgenre'),
+    path('sub-genres/<int:pk>/edit/', views.edit_subgenre, name='edit_subgenre'),
+    path('sub-genres/<int:pk>/delete/', views.delete_subgenre, name='delete_subgenre'),
+    
+    # Theme Management
+    path('themes/', views.theme_list, name='themes'),
+    path('themes/add/', views.add_theme, name='add_theme'),
+    path('themes/<int:pk>/edit/', views.edit_theme, name='edit_theme'),
+    path('themes/<int:pk>/delete/', views.delete_theme, name='delete_theme'),
+    
+    # Sub-Theme Management
+    path('sub-themes/', views.subtheme_list, name='subthemes'),
+    path('sub-themes/add/', views.add_subtheme, name='add_subtheme'),
+    path('sub-themes/<int:pk>/edit/', views.edit_subtheme, name='edit_subtheme'),
+    path('sub-themes/<int:pk>/delete/', views.delete_subtheme, name='delete_subtheme'),
     
     # Author Management
     path('authors/', views.author_list, name='authors'),

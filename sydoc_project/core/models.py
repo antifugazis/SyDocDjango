@@ -436,17 +436,74 @@ class StaffTrainingRecord(models.Model):
         super().save(*args, **kwargs)
 
 
-class Category(models.Model):
-    name = models.CharField(max_length=100, unique=True, verbose_name='Nom de la Catégorie')
+class LiteraryGenre(models.Model):
+    """
+    Modèle représentant un genre littéraire (ex: Roman, Poésie, Théâtre, etc.)
+    """
+    name = models.CharField(max_length=100, unique=True, verbose_name='Nom du Genre Littéraire')
     description = models.TextField(blank=True, verbose_name='Description')
-
+    
     class Meta:
-        verbose_name = 'Catégorie'
-        verbose_name_plural = 'Catégories'
+        verbose_name = 'Genre Littéraire'
+        verbose_name_plural = 'Genres Littéraires'
         ordering = ['name']
-
+    
     def __str__(self):
         return self.name
+
+
+class SubGenre(models.Model):
+    """
+    Modèle représentant un sous-genre littéraire (ex: Roman policier, Science-fiction, etc.)
+    """
+    genre = models.ForeignKey(LiteraryGenre, on_delete=models.CASCADE, related_name='sous_genres', 
+                            verbose_name='Genre Littéraire')
+    name = models.CharField(max_length=100, verbose_name='Nom du Sous-Genre')
+    description = models.TextField(blank=True, verbose_name='Description')
+    
+    class Meta:
+        verbose_name = 'Sous-Genre'
+        verbose_name_plural = 'Sous-Genres'
+        ordering = ['genre__name', 'name']
+        unique_together = ('genre', 'name')
+    
+    def __str__(self):
+        return f"{self.genre.name} - {self.name}"
+
+
+class Theme(models.Model):
+    """
+    Modèle représentant un thème principal d'un livre (ex: Amour, Aventure, Histoire, etc.)
+    """
+    name = models.CharField(max_length=100, unique=True, verbose_name='Nom du Thème')
+    description = models.TextField(blank=True, verbose_name='Description')
+    
+    class Meta:
+        verbose_name = 'Thème'
+        verbose_name_plural = 'Thèmes'
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
+
+
+class SousTheme(models.Model):
+    """
+    Modèle représentant un sous-thème d'un livre (ex: Amour maternel, Aventure spatiale, etc.)
+    """
+    theme = models.ForeignKey(Theme, on_delete=models.CASCADE, related_name='sous_themes', 
+                            verbose_name='Thème Principal')
+    name = models.CharField(max_length=100, verbose_name='Nom du Sous-Thème')
+    description = models.TextField(blank=True, verbose_name='Description')
+    
+    class Meta:
+        verbose_name = 'Sous-Thème'
+        verbose_name_plural = 'Sous-Thèmes'
+        ordering = ['theme__name', 'name']
+        unique_together = ('theme', 'name')
+    
+    def __str__(self):
+        return f"{self.theme.name} - {self.name}"
 
 
 class Author(models.Model):
@@ -481,7 +538,14 @@ class Book(models.Model):
     title = models.CharField(max_length=255, verbose_name='Titre')
     isbn = models.CharField(max_length=13, unique=True, blank=True, null=True, verbose_name='ISBN')
     publication_date = models.DateField(null=True, blank=True, verbose_name='Date de Publication')
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, verbose_name='Catégorie')
+    literary_genre = models.ForeignKey(LiteraryGenre, on_delete=models.SET_NULL, null=True, blank=True, 
+                                         verbose_name='Genre Littéraire')
+    sub_genre = models.ForeignKey(SubGenre, on_delete=models.SET_NULL, null=True, blank=True,
+                                    verbose_name='Sous-Genre')
+    theme = models.ForeignKey(Theme, on_delete=models.SET_NULL, null=True, blank=True,
+                                verbose_name='Thème Principal')
+    sous_theme = models.ForeignKey(SousTheme, on_delete=models.SET_NULL, null=True, blank=True,
+                                     verbose_name='Sous-Thème')
     authors = models.ManyToManyField(Author, related_name='books', verbose_name='Auteurs')
     description = models.TextField(blank=True, verbose_name='Description')
     is_digital = models.BooleanField(default=False, verbose_name='Est Numérique')

@@ -1,14 +1,39 @@
 # sydoc_project/core/admin.py
 
 from django.contrib import admin
-from .models import Department, Arrondissement, Commune, DocumentationCenter, Category, Author, Book, Member, Loan, Role, Staff, TrainingModule, Quiz, StaffTrainingRecord, ArchivalSeries, ArchivalDocument, Notification, DigitalizationRequest
+from .models import (Department, Arrondissement, Commune, DocumentationCenter, Author, Book, Member, Loan, Role, Staff, TrainingModule, Quiz, StaffTrainingRecord, ArchivalSeries, ArchivalDocument, Notification, DigitalizationRequest, LiteraryGenre, SubGenre, Theme, SousTheme)
 from django.utils.translation import gettext_lazy as _
 
 # Register your models here.
 admin.site.register(Department)
 admin.site.register(Arrondissement)
 admin.site.register(Commune)
-admin.site.register(Category)
+# Register new models
+@admin.register(LiteraryGenre)
+class LiteraryGenreAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name', 'description')
+    ordering = ('name',)
+
+@admin.register(SubGenre)
+class SubGenreAdmin(admin.ModelAdmin):
+    list_display = ('name', 'genre')
+    list_filter = ('genre',)
+    search_fields = ('name', 'description', 'genre__name')
+    ordering = ('genre__name', 'name')
+
+@admin.register(Theme)
+class ThemeAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name', 'description')
+    ordering = ('name',)
+
+@admin.register(SousTheme)
+class SousThemeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'theme')
+    list_filter = ('theme',)
+    search_fields = ('name', 'description', 'theme__name')
+    ordering = ('theme__name', 'name')
 
 @admin.register(Author)
 class AuthorAdmin(admin.ModelAdmin):
@@ -17,14 +42,17 @@ class AuthorAdmin(admin.ModelAdmin):
 
 @admin.register(Book)
 class BookAdmin(admin.ModelAdmin):
-    list_display = ('title', 'documentation_center', 'isbn', 'category', 'is_digital', 'quantity_available', 'total_quantity', 'status', 'acquisition_date')
-    list_filter = ('documentation_center', 'category', 'is_digital', 'status', 'acquisition_date')
+    list_display = ('title', 'documentation_center', 'isbn', 'literary_genre', 'sub_genre', 'theme', 'sous_theme', 'is_digital', 'quantity_available', 'total_quantity', 'status', 'acquisition_date')
+    list_filter = ('documentation_center', 'literary_genre', 'sub_genre', 'theme', 'sous_theme', 'is_digital', 'status', 'acquisition_date')
     search_fields = ('title', 'isbn', 'description')
     raw_id_fields = ('documentation_center',)
     filter_horizontal = ('authors',)
     fieldsets = (
         (_('Informations Générales'), {
-            'fields': ('documentation_center', 'title', 'isbn', 'publication_date', 'category', 'authors', 'description')
+            'fields': ('documentation_center', 'title', 'isbn', 'publication_date', 'authors', 'description')
+        }),
+        (_('Classification'), {
+            'fields': (('literary_genre', 'sub_genre'), ('theme', 'sous_theme'))
         }),
         (_('Détails Physiques/Numériques'), {
             'fields': ('is_digital', 'file_upload', 'pages', ('quantity_available', 'total_quantity'), 'cover_image', 'status')

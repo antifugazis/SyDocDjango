@@ -1,0 +1,84 @@
+{% extends 'center_panel/base.html' %}
+
+{% block title %}
+    {% if is_edit %}
+        Modifier le Thème
+    {% else %}
+        Ajouter un Thème
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-3xl mx-auto">
+        <!-- Page Header -->
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">
+                {% if is_edit %}
+                    Modifier le Thème : {{ theme.name }}
+                {% else %}
+                    Ajouter un Nouveau Thème
+                {% endif %}
+            </h1>
+            <p class="text-gray-600 mt-1">
+                {% if is_edit %}
+                    Mettre à jour les détails de ce thème.
+                {% else %}
+                    Créer un nouveau thème pour catégoriser les livres par sujet.
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- Form -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="p-4 mb-4 {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %} rounded-md">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <!-- Name Field -->
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700">
+                            Nom du Thème <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="name" id="name" 
+                               value="{% if is_edit %}{{ theme.name }}{% endif %}"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                               required>
+                    </div>
+                    
+                    <!-- Description Field -->
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700">
+                            Description
+                        </label>
+                        <textarea name="description" id="description" rows="3"
+                                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">{% if is_edit %}{{ theme.description }}{% endif %}</textarea>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="flex justify-end space-x-3 pt-5">
+                        <a href="{% url 'center_panel:themes' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Annuler
+                        </a>
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            {% if is_edit %}
+                                Mettre à jour
+                            {% else %}
+                                Créer
+                            {% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

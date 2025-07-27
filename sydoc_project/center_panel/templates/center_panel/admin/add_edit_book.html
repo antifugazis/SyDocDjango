@@ -2,6 +2,81 @@
 
 {% block title %}{% if form.instance.pk %}Modifier le livre: {{ form.instance.title }}{% else %}Ajouter un nouveau livre{% endif %}{% endblock %}
 
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get the genre and sub-genre select elements
+    const genreSelect = document.getElementById('id_genre_litteraire');
+    const subGenreSelect = document.getElementById('id_sous_genre');
+    const themeSelect = document.getElementById('id_theme');
+    const subThemeSelect = document.getElementById('id_sous_theme');
+    
+    // Function to load sub-genres based on the selected genre
+    function loadSubGenres(genreId) {
+        if (!genreId) {
+            subGenreSelect.innerHTML = '<option value="">Sélectionner un sous-genre (optionnel)</option>';
+            return;
+        }
+        
+        fetch(`/center/api/subgenres/?genre_id=${genreId}`)
+            .then(response => response.json())
+            .then(data => {
+                let options = '<option value="">Sélectionner un sous-genre (optionnel)</option>';
+                data.forEach(subGenre => {
+                    const selected = subGenre.id == subGenreSelect.dataset.selected ? 'selected' : '';
+                    options += `<option value="${subGenre.id}" ${selected}>${subGenre.name}</option>`;
+                });
+                subGenreSelect.innerHTML = options;
+            });
+    }
+    
+    // Function to load sub-themes based on the selected theme
+    function loadSubThemes(themeId) {
+        if (!themeId) {
+            subThemeSelect.innerHTML = '<option value="">Sélectionner un sous-thème (optionnel)</option>';
+            return;
+        }
+        
+        fetch(`/center/api/subthemes/?theme_id=${themeId}`)
+            .then(response => response.json())
+            .then(data => {
+                let options = '<option value="">Sélectionner un sous-thème (optionnel)</option>';
+                data.forEach(subTheme => {
+                    const selected = subTheme.id == subThemeSelect.dataset.selected ? 'selected' : '';
+                    options += `<option value="${subTheme.id}" ${selected}>${subTheme.name}</option>`;
+                });
+                subThemeSelect.innerHTML = options;
+            });
+    }
+    
+    // Add event listeners
+    if (genreSelect) {
+        // Load sub-genres when the page loads if a genre is already selected
+        if (genreSelect.value) {
+            loadSubGenres(genreSelect.value);
+        }
+        
+        // Load sub-genres when the genre changes
+        genreSelect.addEventListener('change', function() {
+            loadSubGenres(this.value);
+        });
+    }
+    
+    if (themeSelect) {
+        // Load sub-themes when the page loads if a theme is already selected
+        if (themeSelect.value) {
+            loadSubThemes(themeSelect.value);
+        }
+        
+        // Load sub-themes when the theme changes
+        themeSelect.addEventListener('change', function() {
+            loadSubThemes(this.value);
+        });
+    }
+});
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-4xl mx-auto">
@@ -38,14 +113,47 @@
                         {% endif %}
                     </div>
                     
-                    <!-- Category -->
+                    <!-- Genre Littéraire -->
                     <div>
-                        <label for="id_category" class="block text-sm font-medium text-gray-700">Catégorie *</label>
+                        <label for="id_genre_litteraire" class="block text-sm font-medium text-gray-700">Genre Littéraire</label>
                         <div class="mt-1">
-                            {{ form.category }}
+                            {{ form.genre_litteraire }}
                         </div>
-                        {% if form.category.errors %}
-                            <p class="mt-1 text-sm text-red-600">{{ form.category.errors.0 }}</p>
+                        {% if form.genre_litteraire.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.genre_litteraire.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Sous-Genre -->
+                    <div>
+                        <label for="id_sous_genre" class="block text-sm font-medium text-gray-700">Sous-Genre</label>
+                        <div class="mt-1">
+                            {{ form.sous_genre }}
+                        </div>
+                        {% if form.sous_genre.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.sous_genre.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Thème Principal -->
+                    <div>
+                        <label for="id_theme" class="block text-sm font-medium text-gray-700">Thème Principal</label>
+                        <div class="mt-1">
+                            {{ form.theme }}
+                        </div>
+                        {% if form.theme.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.theme.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Sous-Thème -->
+                    <div>
+                        <label for="id_sous_theme" class="block text-sm font-medium text-gray-700">Sous-Thème</label>
+                        <div class="mt-1">
+                            {{ form.sous_theme }}
+                        </div>
+                        {% if form.sous_theme.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.sous_theme.errors.0 }}</p>
                         {% endif %}
                     </div>
                     
