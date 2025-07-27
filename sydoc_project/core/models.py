@@ -526,6 +526,20 @@ class Author(models.Model):
         return f"{self.first_name} {self.last_name}"
 
 
+class Language(models.Model):
+    name = models.CharField(max_length=100, unique=True, verbose_name='Nom de la Langue')
+    code = models.CharField(max_length=10, unique=True, verbose_name='Code ISO')
+    is_favorite = models.BooleanField(default=False, verbose_name='Langue Favorite')
+    
+    class Meta:
+        verbose_name = 'Langue'
+        verbose_name_plural = 'Langues'
+        ordering = ['-is_favorite', 'name']
+    
+    def __str__(self):
+        return self.name
+
+
 class Book(models.Model):
     STATUS_CHOICES = [
         ('available', 'Disponible'),
@@ -557,6 +571,10 @@ class Book(models.Model):
     cover_image = models.ImageField(upload_to='books/covers/', blank=True, null=True, verbose_name='Image de Couverture')
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='available', verbose_name='Statut')
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='Prix (Gourdes)')
+    language = models.ForeignKey(Language, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Langue')
+    minimum_age_required = models.PositiveIntegerField(default=0, verbose_name='Âge Minimum Requis')
+    has_volumes = models.BooleanField(default=False, verbose_name='Possède des Tomes')
+    volume_count = models.PositiveIntegerField(default=0, verbose_name='Nombre de Tomes')
 
     class Meta:
         verbose_name = 'Livre/Ouvrage'
@@ -567,16 +585,14 @@ class Book(models.Model):
     def __str__(self):
         return f"{self.title} by {self.authors.first().full_name if self.authors.exists() else 'Unknown'}"
         
+    def is_age_appropriate(self, age):
+        """Check if a person of given age can borrow this book"""
+        return age >= self.minimum_age_required
+
     @staticmethod
     def get_upload_path(instance, filename):
         """Generate a dynamic upload path for book cover images"""
-        import os
-        from django.conf import settings
-        
-        # Ensure the base upload path exists
-        base_path = os.path.join(settings.MEDIA_ROOT, 'books/covers')
-        os.makedirs(base_path, exist_ok=True)
-        
+        return f"books/covers/{instance.id}/{filename}"
         # Create a debug log
         debug_info = {
             'instance_id': getattr(instance, 'id', 'new'),
@@ -602,7 +618,7 @@ class Book(models.Model):
             if self.file_upload:
                 raise ValidationError({'file_upload': 'Physical books cannot have a file upload.'})
             if self.quantity_available > self.total_quantity:
-                raise ValidationError({'quantity_available': 'Quantity available cannot be greater than total quantity.'})
+                raise ValidationError({'quantity_available': 'Available quantity cannot exceed total quantity.'})
 
     def is_available_for_loan(self):
         return self.quantity_available > 0 and not self.is_digital and self.status == 'available'
@@ -620,6 +636,76 @@ class Book(models.Model):
             self.save()
             return True
         return False
+
+
+class BookVolume(models.Model):
+    """Model representing a volume/tome of a book"""
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='volumes', verbose_name='Livre Principal')
+    volume_number = models.PositiveIntegerField(verbose_name='Numéro du Tome')
+    title = models.CharField(max_length=255, verbose_name='Titre du Tome')
+    quantity_available = models.PositiveIntegerField(default=1, verbose_name='Quantité Disponible')
+    total_quantity = models.PositiveIntegerField(default=1, verbose_name='Quantité Totale')
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='Prix (Gourdes)')
+    cover_image = models.ImageField(upload_to='books/volumes/covers/', blank=True, null=True, verbose_name='Image de Couverture')
+    pages = models.IntegerField(null=True, blank=True, verbose_name='Nombre de Pages')
+    
+    class Meta:
+        verbose_name = 'Tome/Volume'
+        verbose_name_plural = 'Tomes/Volumes'
+        ordering = ['book__title', 'volume_number']
+        unique_together = ('book', 'volume_number')
+    
+    def __str__(self):
+        return f"{self.book.title} - Tome {self.volume_number}: {self.title}"
+
+
+class DeletedBook(models.Model):
+    """Model for storing deleted books in a trash system"""
+    book_data = models.JSONField(verbose_name='Données du Livre')
+    deletion_date = models.DateTimeField(auto_now_add=True, verbose_name='Date de Suppression')
+    deletion_reason = models.TextField(verbose_name='Raison de la Suppression')
+    deleted_by = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, verbose_name='Supprimé par')
+    documentation_center = models.ForeignKey(DocumentationCenter, on_delete=models.CASCADE, verbose_name='Centre de Documentation')
+    
+    class Meta:
+        verbose_name = 'Livre Supprimé'
+        verbose_name_plural = 'Livres Supprimés'
+        ordering = ['-deletion_date']
+    
+    def __str__(self):
+        book_title = self.book_data.get('title', 'Unknown')
+        return f"{book_title} (Supprimé le {self.deletion_date.strftime('%d/%m/%Y')})"
+    
+    def restore_book(self):
+        """Restore the deleted book to the database"""
+        from django.core.serializers.json import DjangoJSONEncoder
+        import json
+        
+        # Extract book data excluding relations that need to be handled separately
+        book_data = self.book_data.copy()
+        authors_data = book_data.pop('authors', [])
+        
+        # Create new book instance
+        book = Book.objects.create(
+            documentation_center=self.documentation_center,
+            **{k: v for k, v in book_data.items() if k not in ['id', 'authors']}
+        )
+        
+        # Restore authors
+        for author_name in authors_data:
+            author_parts = author_name.split(' ', 1)
+            first_name = author_parts[0]
+            last_name = author_parts[1] if len(author_parts) > 1 else ''
+            author, _ = Author.objects.get_or_create(
+                first_name=first_name,
+                last_name=last_name
+            )
+            book.authors.add(author)
+        
+        # Delete this trash entry
+        self.delete()
+        
+        return book
 
 
 class Member(models.Model):
@@ -656,18 +742,45 @@ class Member(models.Model):
 
 class Loan(models.Model):
     STATUS_CHOICES = [
+        ('pending', 'En Attente'),
+        ('approved', 'Approuvé'),
         ('borrowed', 'Emprunté'),
         ('returned', 'Retourné'),
         ('overdue', 'En Retard'),
         ('lost', 'Perdu'),
+        ('cancelled', 'Annulé'),
+        ('rejected', 'Rejeté'),
+    ]
+    
+    CANCELLATION_REASONS = [
+        ('member_request', 'Demande du membre'),
+        ('age_restriction', 'Restriction d\'âge'),
+        ('book_unavailable', 'Livre indisponible'),
+        ('book_damaged', 'Livre endommagé'),
+        ('policy_violation', 'Violation des règles'),
+        ('other', 'Autre raison'),
     ]
 
     book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='loans', verbose_name='Livre/Ouvrage')
+    # For multi-volume books, specify which volume is being loaned
+    volume = models.ForeignKey(BookVolume, on_delete=models.SET_NULL, null=True, blank=True, related_name='loans', verbose_name='Tome/Volume')
     member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='loans', verbose_name='Membre Emprunteur')
     loan_date = models.DateField(default=timezone.now, verbose_name='Date d\'Emprunt')
     due_date = models.DateField(verbose_name='Date de Retour Prévue')
     return_date = models.DateField(null=True, blank=True, verbose_name='Date de Retour Effective')
-    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='borrowed', verbose_name='Statut du Prêt')
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='pending', verbose_name='Statut du Prêt')
+    
+    # Age verification fields
+    age_verified = models.BooleanField(default=False, verbose_name='Âge Vérifié')
+    member_age = models.PositiveIntegerField(null=True, blank=True, verbose_name='Âge du Membre')
+    
+    # Cancellation fields
+    cancellation_date = models.DateField(null=True, blank=True, verbose_name='Date d\'Annulation')
+    cancellation_reason = models.CharField(max_length=50, choices=CANCELLATION_REASONS, null=True, blank=True, verbose_name='Raison d\'Annulation')
+    cancellation_notes = models.TextField(blank=True, null=True, verbose_name='Notes d\'Annulation')
+    
+    # Staff member who processed the loan
+    processed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='processed_loans', verbose_name='Traité par')
 
     class Meta:
         verbose_name = 'Prêt'
@@ -679,40 +792,115 @@ class Loan(models.Model):
 
     def clean(self):
         if self.due_date < self.loan_date:
-            raise ValidationError({'due_date': 'Due date cannot be earlier than loan date.'})
+            raise ValidationError({'due_date': "La date d'échéance doit être postérieure à la date d'emprunt."})
         if self.return_date and self.return_date < self.loan_date:
-            raise ValidationError({'return_date': 'Return date cannot be earlier than loan date.'})
+            raise ValidationError({'return_date': "La date de retour ne peut pas être antérieure à la date d'emprunt."})
 
+        # Status validation
         if self.status in ['returned', 'lost'] and not self.return_date:
-            raise ValidationError({'return_date': 'Return date must be set for returned or lost loans.'})
+            raise ValidationError({'return_date': 'La date de retour doit être définie pour les prêts retournés ou perdus.'})
         elif self.status in ['borrowed', 'overdue'] and self.return_date:
-            raise ValidationError({'return_date': 'Return date must be null for borrowed or overdue loans.'})
+            raise ValidationError({'return_date': 'La date de retour doit être nulle pour les prêts en cours ou en retard.'})
+            
+        # Cancellation validation
+        if self.status == 'cancelled' and not self.cancellation_reason:
+            raise ValidationError({'cancellation_reason': "Une raison d'annulation doit être fournie."})
+        if self.status == 'cancelled' and not self.cancellation_date:
+            self.cancellation_date = timezone.now().date()
+            
+        # Age verification
+        if self.book.minimum_age_required > 0 and not self.age_verified:
+            raise ValidationError({'age_verified': "L'âge du membre doit être vérifié pour ce livre."})
+        if self.book.minimum_age_required > 0 and (self.member_age is None or self.member_age < self.book.minimum_age_required):
+            raise ValidationError({'member_age': f"Le membre doit avoir au moins {self.book.minimum_age_required} ans pour emprunter ce livre."})
+            
+        # Volume validation for multi-volume books
+        if self.book.has_volumes and not self.volume:
+            raise ValidationError({'volume': 'Un tome/volume doit être spécifié pour ce livre.'})
+        if self.volume and self.volume.book != self.book:
+            raise ValidationError({'volume': 'Le tome/volume sélectionné ne correspond pas au livre.'})
 
     @property
     def is_overdue(self):
         """
         Returns True if the loan is overdue (not returned and past due date).
         """
-        if self.return_date:
+        if self.return_date or self.status in ['cancelled', 'rejected']:
             return False
         return timezone.now().date() > self.due_date
+        
+    @property
+    def is_age_appropriate(self):
+        """
+        Returns True if the member meets the age requirement for the book.
+        """
+        if not self.book.minimum_age_required or self.book.minimum_age_required <= 0:
+            return True
+        return self.member_age and self.member_age >= self.book.minimum_age_required
+        
+    def cancel_loan(self, reason, notes=None, user=None):
+        """
+        Cancels the loan with the specified reason and optional notes.
+        """
+        self.status = 'cancelled'
+        self.cancellation_reason = reason
+        self.cancellation_date = timezone.now().date()
+        if notes:
+            self.cancellation_notes = notes
+        if user:
+            self.processed_by = user
+        self.save()
+        
+    def approve_loan(self, user=None):
+        """
+        Approves a pending loan request.
+        """
+        if self.status != 'pending':
+            raise ValidationError('Only pending loans can be approved.')
+        self.status = 'approved'
+        if user:
+            self.processed_by = user
+        self.save()
+        
+    def reject_loan(self, reason, notes=None, user=None):
+        """
+        Rejects a pending loan request.
+        """
+        if self.status != 'pending':
+            raise ValidationError('Only pending loans can be rejected.')
+        self.status = 'rejected'
+        self.cancellation_reason = reason
+        self.cancellation_date = timezone.now().date()
+        if notes:
+            self.cancellation_notes = notes
+        if user:
+            self.processed_by = user
+        self.save()
 
     def save(self, *args, **kwargs):
-        # If return_date is set, update the status to 'returned'
-        if self.return_date:
+        # Run full validation
+        self.full_clean()
+        
+        # Handle status transitions
+        if self.return_date and self.status not in ['returned', 'lost']:
             self.status = 'returned'
             # Update the book's available quantity when returned
-            self.book.quantity_available += 1
-            self.book.save()
+            if self.volume:
+                self.volume.quantity_available += 1
+                self.volume.save()
+            else:
+                self.book.quantity_available += 1
+                self.book.save()
         # Update status based on due date if not returned
-        elif self.due_date and timezone.now().date() > self.due_date:
+        elif self.status in ['borrowed', 'approved'] and self.due_date and timezone.now().date() > self.due_date:
             self.status = 'overdue'
         
-        # Ensure the due date is after the loan date
-        if self.due_date and self.loan_date and self.due_date < self.loan_date:
-            raise ValidationError({
-                'due_date': "La date d'échéance doit être postérieure à la date d'emprunt."
-            })
+        # Handle cancellation
+        if self.status == 'cancelled' and not self.cancellation_date:
+            self.cancellation_date = timezone.now().date()
+            
+        # Call the parent save method
+        super().save(*args, **kwargs)
             
         # If the loan is being created, decrease the book's available quantity
         if not self.pk and self.book.quantity_available > 0:

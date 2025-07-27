@@ -6,6 +6,26 @@
 {% block extra_head %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Handle volume/tome functionality
+        const hasVolumesCheckbox = document.getElementById('id_has_volumes');
+        const volumeCountContainer = document.getElementById('volume-count-container');
+        
+        // Initial state
+        if (hasVolumesCheckbox && hasVolumesCheckbox.checked) {
+            volumeCountContainer.style.display = 'block';
+        }
+        
+        // Toggle volume count field visibility
+        if (hasVolumesCheckbox) {
+            hasVolumesCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    volumeCountContainer.style.display = 'block';
+                } else {
+                    volumeCountContainer.style.display = 'none';
+                    document.getElementById('id_volume_count').value = '0';
+                }
+            });
+        }
         // Debug form submission
         const form = document.querySelector('form');
         if (form) {
@@ -230,6 +250,33 @@ document.addEventListener('DOMContentLoaded', function() {
                         {% endif %}
                     </div>
                     
+                    <!-- Language -->
+                    <div>
+                        <label for="id_language" class="block text-sm font-medium text-gray-700">Langue</label>
+                        <div class="mt-1">
+                            {{ form.language }}
+                        </div>
+                        {% if form.language.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.language.errors.0 }}</p>
+                        {% endif %}
+                        <p class="mt-1 text-xs text-gray-500">Les langues favorites apparaissent en haut de la liste</p>
+                    </div>
+                    
+                    <!-- Minimum Age Required -->
+                    <div>
+                        <label for="id_minimum_age_required" class="block text-sm font-medium text-gray-700">Âge Minimum Requis</label>
+                        <div class="mt-1">
+                            <input type="number" name="minimum_age_required" id="id_minimum_age_required" 
+                                   value="{{ form.minimum_age_required.value|default:'0' }}"
+                                   min="0"
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        {% if form.minimum_age_required.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.minimum_age_required.errors.0 }}</p>
+                        {% endif %}
+                        <p class="mt-1 text-xs text-gray-500">Âge minimum pour emprunter ce livre (0 = aucune restriction)</p>
+                    </div>
+                    
                     <!-- Status -->
                     <div>
                         <label for="id_status" class="block text-sm font-medium text-gray-700">Statut *</label>
@@ -299,8 +346,36 @@ document.addEventListener('DOMContentLoaded', function() {
                             {% if form.is_digital.errors %}
                                 <p class="mt-1 text-sm text-red-600">{{ form.is_digital.errors.0 }}</p>
                             {% endif %}
+                            <p class="ml-3 text-xs text-gray-500">Cochez cette case si une version numérique du livre est disponible</p>
                         </div>
-                        <p class="mt-1 text-xs text-gray-500">Cochez cette case si le livre est disponible en version numérique</p>
+                    </div>
+                    
+                    <!-- Has Volumes -->
+                    <div class="col-span-2">
+                        <div class="flex items-center p-3 bg-gray-50 rounded-md border border-gray-200">
+                            <div class="flex items-center h-5">
+                                {{ form.has_volumes }}
+                            </div>
+                            <label for="id_has_volumes" class="ml-3 text-sm font-medium text-gray-700">Possède des tomes/volumes</label>
+                            {% if form.has_volumes.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.has_volumes.errors.0 }}</p>
+                            {% endif %}
+                            <p class="ml-3 text-xs text-gray-500">Cochez cette case si ce livre fait partie d'une série avec plusieurs tomes</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Volume Count - Only shown when has_volumes is checked -->
+                    <div class="col-span-2 volume-details" id="volume-count-container" style="display: none;">
+                        <label for="id_volume_count" class="block text-sm font-medium text-gray-700">Nombre de tomes</label>
+                        <div class="mt-1">
+                            <input type="number" name="volume_count" id="id_volume_count" 
+                                   value="{{ form.volume_count.value|default:'0' }}"
+                                   min="0"
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        {% if form.volume_count.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.volume_count.errors.0 }}</p>
+                        {% endif %}
                     </div>
                     
                     <!-- File Upload -->

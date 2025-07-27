@@ -15,14 +15,116 @@ import shutil
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, letter
 from PIL import Image, ImageEnhance
-from core.models import (DocumentationCenter, Book, Member, Loan, Staff, ArchivalDocument, 
+from core.models import (DocumentationCenter, Book, BookVolume, Member, Loan, Staff, ArchivalDocument, 
                         TrainingModule, Activity, TrainingSubject, TrainingModule, Lesson, Communique, 
                         Question, Answer, StaffTrainingRecord, Quiz, Author, Role, Profile, LiteraryGenre, 
-                        BookDigitization, DigitizedPage, SubGenre, Theme, SousTheme)
-from .forms import BookForm, MemberForm, CreateLoanForm, StaffForm, ActivityForm, ArchiveForm, TrainingSubjectForm, TrainingModuleForm, LessonFormSet, CommuniqueForm, TrainingModuleForm, LessonForm, QuestionFormSet, AuthorForm, RoleForm, UserForm, ProfileForm
+                        BookDigitization, DigitizedPage, SubGenre, Theme, SousTheme, DeletedBook, Language)
+from .forms import (BookForm, BookVolumeForm, BookVolumeFormSet, MemberForm, LoanForm, LoanCancellationForm, 
+                  StaffForm, ActivityForm, ArchiveForm, TrainingSubjectForm, TrainingModuleForm, 
+                  LessonFormSet, CommuniqueForm, TrainingModuleForm, LessonForm, QuestionFormSet, 
+                  AuthorForm, RoleForm, UserForm, ProfileForm, DeletedBookRestoreForm)
 from django.db.models import Count
 from django.utils import timezone
 from datetime import timedelta
+import json
+from django.views.decorators.http import require_http_methods
+from django.forms import ModelForm
+
+# Language Management Views
+@login_required
+def language_list(request):
+    """List all languages with options to manage them"""
+    languages = Language.objects.all().order_by('-is_favorite', 'name')
+    return render(request, 'center_panel/admin/language_list.html', {
+        'languages': languages,
+        'current_center': DocumentationCenter.objects.first(),
+    })
+
+class LanguageForm(ModelForm):
+    """Form for adding/editing languages"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add Tailwind classes to all fields
+        for field_name, field in self.fields.items():
+            if field_name != 'is_favorite':
+                field.widget.attrs.update({
+                    'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
+                    'placeholder': f'Entrez le {field.label.lower()}'
+                })
+            
+            # Special styling for checkbox
+            if field_name == 'is_favorite':
+                field.widget.attrs.update({
+                    'class': 'h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded'
+                })
+    
+    class Meta:
+        model = Language
+        fields = ['name', 'code', 'is_favorite']
+        labels = {
+            'name': 'Nom de la langue',
+            'code': 'Code ISO (ex: fr, en, es)',
+            'is_favorite': 'Langue favorite',
+        }
+        help_texts = {
+            'code': 'Code à 2 ou 3 lettres selon la norme ISO 639-1/2',
+        }
+
+@login_required
+def add_language(request):
+    """Add a new language"""
+    if request.method == 'POST':
+        form = LanguageForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'La langue a été ajoutée avec succès.')
+            return redirect('center_panel:language_list')
+    else:
+        form = LanguageForm()
+    
+    return render(request, 'center_panel/admin/add_edit_language.html', {
+        'form': form,
+        'title': 'Ajouter une langue',
+        'current_center': DocumentationCenter.objects.first(),
+    })
+
+@login_required
+def edit_language(request, pk):
+    """Edit an existing language"""
+    language = get_object_or_404(Language, pk=pk)
+    
+    if request.method == 'POST':
+        form = LanguageForm(request.POST, instance=language)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'La langue a été mise à jour avec succès.')
+            return redirect('center_panel:language_list')
+    else:
+        form = LanguageForm(instance=language)
+    
+    return render(request, 'center_panel/admin/add_edit_language.html', {
+        'form': form,
+        'title': f'Modifier {language.name}',
+        'current_center': DocumentationCenter.objects.first(),
+    })
+
+@login_required
+def delete_language(request, pk):
+    """Delete a language"""
+    language = get_object_or_404(Language, pk=pk)
+    
+    # Check if the language is used by any books
+    if Book.objects.filter(language=language).exists():
+        messages.error(
+            request,
+            'Impossible de supprimer cette langue car elle est utilisée par un ou plusieurs livres.'
+        )
+    else:
+        language.delete()
+        messages.success(request, 'La langue a été supprimée avec succès.')
+    
+    return redirect('center_panel:language_list')
+from django.contrib.auth.decorators import permission_required
 
 # Helper to check if a user is associated with a DocumentationCenter (placeholder for now)
 # In a real app, you'd link Django User to DocumentationCenter,
@@ -46,6 +148,175 @@ def center_dashboard(request):
             messages.error(request, "Aucun centre de documentation trouvé. Veuillez en créer un via l'administration Superadmin.")
             return redirect('admin:index') # Redirect to admin if no center exists
 
+    except DocumentationCenter.DoesNotExist:
+        messages.error(request, "Votre compte n'est associé à aucun centre de documentation.")
+        
+
+@login_required
+@require_http_methods(["GET"])
+def get_book_volumes(request, book_id):
+    """API endpoint to get volumes for a specific book"""
+    try:
+        book = Book.objects.get(pk=book_id)
+        
+        # Prepare response data
+        data = {
+            'has_volumes': book.has_volumes,
+            'minimum_age_required': book.minimum_age_required,
+            'volumes': []
+        }
+        
+        # If book has volumes, include them in response
+        if book.has_volumes:
+            volumes = BookVolume.objects.filter(book=book).order_by('volume_number')
+            data['volumes'] = [
+                {
+                    'id': volume.id,
+                    'volume_number': volume.volume_number,
+                    'title': volume.title,
+                    'quantity_available': volume.quantity_available
+                } for volume in volumes
+            ]
+            
+        return JsonResponse(data)
+    except Book.DoesNotExist:
+        return JsonResponse({'error': 'Book not found'}, status=404)
+
+
+@login_required
+def add_loan(request):
+    """Add a new loan with age verification and volume selection"""
+    try:
+        current_center = DocumentationCenter.objects.first()  # For development
+    except DocumentationCenter.DoesNotExist:
+        messages.error(request, "Aucun centre de documentation trouvé.")
+        return redirect('center_panel:center_dashboard')
+    
+    if request.method == 'POST':
+        form = LoanForm(request.POST, documentation_center=current_center)
+        if form.is_valid():
+            loan = form.save(commit=False)
+            loan.documentation_center = current_center
+            loan.status = 'pending'  # Start with pending status
+            loan.processed_by = request.user  # Track who created the loan
+            
+            # Perform age verification if required
+            book = form.cleaned_data.get('book')
+            if book and book.minimum_age_required > 0:
+                loan.age_verified = form.cleaned_data.get('age_verified')
+                loan.member_age = form.cleaned_data.get('member_age')
+            
+            # Save the loan
+            loan.save()
+            
+            messages.success(request, "Prêt enregistré avec succès et en attente d'approbation.")
+            return redirect('center_panel:loans')
+    else:
+        form = LoanForm(documentation_center=current_center)
+    
+    context = {
+        'form': form,
+        'current_center': current_center,
+    }
+    return render(request, 'center_panel/admin/add_edit_loan.html', context)
+
+
+@login_required
+def edit_loan(request, loan_id):
+    """Edit an existing loan"""
+    loan = get_object_or_404(Loan, pk=loan_id)
+    current_center = loan.documentation_center
+    
+    if request.method == 'POST':
+        form = LoanForm(request.POST, instance=loan, documentation_center=current_center)
+        if form.is_valid():
+            loan = form.save(commit=False)
+            loan.processed_by = request.user  # Update who last modified the loan
+            loan.save()
+            
+            messages.success(request, "Prêt mis à jour avec succès.")
+            return redirect('center_panel:loans')
+    else:
+        form = LoanForm(instance=loan, documentation_center=current_center)
+    
+    context = {
+        'form': form,
+        'current_center': current_center,
+        'loan': loan
+    }
+    return render(request, 'center_panel/admin/add_edit_loan.html', context)
+
+
+@login_required
+@permission_required('core.change_loan')
+def approve_loan(request, loan_id):
+    """Approve a pending loan"""
+    loan = get_object_or_404(Loan, pk=loan_id)
+    
+    if loan.status != 'pending':
+        messages.error(request, "Ce prêt n'est pas en attente d'approbation.")
+        return redirect('center_panel:loans')
+    
+    # Approve the loan
+    loan.approve(request.user)
+    messages.success(request, "Prêt approuvé avec succès.")
+    return redirect('center_panel:loans')
+
+
+@login_required
+@permission_required('core.change_loan')
+def reject_loan(request, loan_id):
+    """Reject a pending loan"""
+    loan = get_object_or_404(Loan, pk=loan_id)
+    
+    if loan.status != 'pending':
+        messages.error(request, "Ce prêt n'est pas en attente d'approbation.")
+        return redirect('center_panel:loans')
+    
+    # Reject the loan
+    loan.reject(request.user)
+    messages.success(request, "Prêt rejeté avec succès.")
+    return redirect('center_panel:loans')
+
+
+@login_required
+def cancel_loan(request, loan_id):
+    """Cancel a loan with reason"""
+    loan = get_object_or_404(Loan, pk=loan_id)
+    
+    # Only pending or active loans can be cancelled
+    if loan.status not in ['pending', 'active']:
+        messages.error(request, "Ce prêt ne peut pas être annulé dans son état actuel.")
+        return redirect('center_panel:loans')
+    
+    if request.method == 'POST':
+        form = LoanCancellationForm(request.POST)
+        if form.is_valid():
+            reason = form.cleaned_data.get('cancellation_reason')
+            notes = form.cleaned_data.get('cancellation_notes')
+            
+            # Cancel the loan
+            loan.cancel(reason=reason, notes=notes, user=request.user)
+            messages.success(request, "Prêt annulé avec succès.")
+            return redirect('center_panel:loans')
+    else:
+        form = LoanCancellationForm()
+    
+    context = {
+        'form': form,
+        'loan': loan
+    }
+    return render(request, 'center_panel/admin/cancel_loan.html', context)
+
+
+@login_required
+def center_dashboard(request):
+    # Placeholder: In a real application, you'd get the center associated with the logged-in user
+    try:
+        current_center = DocumentationCenter.objects.first()
+        if not current_center:
+            messages.error(request, "Aucun centre de documentation trouvé. Veuillez en créer un via l'administration Superadmin.")
+            return redirect('admin:index') # Redirect to admin if no center exists
     except DocumentationCenter.DoesNotExist:
         messages.error(request, "Votre compte n'est associé à aucun centre de documentation.")
         return redirect('login') # Or wherever your login page is
@@ -392,32 +663,36 @@ def loan_list(request):
 @login_required
 def add_loan(request):
     current_center = DocumentationCenter.objects.first()
+    
     if request.method == 'POST':
-        form = CreateLoanForm(center=current_center, data=request.POST)
+        form = LoanForm(documentation_center=current_center, data=request.POST)
         if form.is_valid():
-            member = form.cleaned_data['member']
-            books_to_loan = form.cleaned_data['books']
-            due_date = form.cleaned_data['due_date']
-            
             try:
-                # Create a loan for each selected book
-                for book in books_to_loan:
-                    # Create the loan
-                    Loan.objects.create(
-                        book=book,
-                        member=member,
-                        due_date=due_date,
-                        status='borrowed',
-                        loan_date=timezone.now().date()
-                    )
+                # Save the loan with the current user as the processor
+                loan = form.save(commit=False)
+                loan.processed_by = request.user
+                loan.status = 'borrowed'  # Set initial status
+                loan.loan_date = timezone.now().date()
+                
+                # If age verification is required, set the verified flag
+                if loan.book.minimum_age_required > 0:
+                    loan.age_verified = True
                     
-                    # Decrease the book's available quantity
-                    book.quantity_available = max(0, book.quantity_available - 1)
-                    book.save()
+                loan.save()
+                
+                # Decrease the book's available quantity
+                if loan.book.has_volumes and loan.volume:
+                    # Decrease volume quantity if it's a multi-volume book
+                    loan.volume.quantity_available = max(0, loan.volume.quantity_available - 1)
+                    loan.volume.save()
+                else:
+                    # Decrease book quantity for regular books
+                    loan.book.quantity_available = max(0, loan.book.quantity_available - 1)
+                    loan.book.save()
                 
                 messages.success(
                     request, 
-                    f"Les prêts pour {member.first_name} {member.last_name} ont été enregistrés avec succès."
+                    f"Le prêt de '{loan.book.title}' pour {loan.member.first_name} {loan.member.last_name} a été enregistré avec succès."
                 )
                 return redirect('center_panel:loans')
                 
@@ -427,7 +702,12 @@ def add_loan(request):
                     f"Une erreur s'est produite lors de l'enregistrement du prêt : {str(e)}"
                 )
     else:
-        form = CreateLoanForm(center=current_center)
+        # Initialize form with current date as default
+        initial_data = {
+            'loan_date': timezone.now().date(),
+            'due_date': timezone.now().date() + timezone.timedelta(days=14)  # Default 2-week loan
+        }
+        form = LoanForm(documentation_center=current_center, initial=initial_data)
 
     context = {
         'form': form,

@@ -1,0 +1,107 @@
+{% extends 'center_panel/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto">
+        <!-- Back button -->
+        <div class="mb-6">
+            <a href="{% url 'center_panel:language_list' %}" class="text-blue-600 hover:text-blue-800 flex items-center">
+                <svg class="h-5 w-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+                Retour à la liste des langues
+            </a>
+        </div>
+
+        <!-- Form Card -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6 bg-gray-50 border-b border-gray-200">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                    {{ title }}
+                </h3>
+            </div>
+            
+            <form method="post" class="px-4 py-5 sm:p-6">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="mb-4 p-4 bg-red-50 border-l-4 border-red-400">
+                    {% for error in form.non_field_errors %}
+                        <p class="text-sm text-red-700">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Name Field -->
+                <div class="mb-4">
+                    <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.name.label }} *
+                    </label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Code Field -->
+                <div class="mb-4">
+                    <label for="{{ form.code.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.code.label }} *
+                    </label>
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                        {{ form.code }}
+                    </div>
+                    {% if form.code.help_text %}
+                        <p class="mt-1 text-xs text-gray-500">{{ form.code.help_text }}</p>
+                    {% endif %}
+                    {% if form.code.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.code.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Is Favorite Field -->
+                <div class="mb-6">
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            {{ form.is_favorite }}
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="{{ form.is_favorite.id_for_label }}" class="font-medium text-gray-700">
+                                {{ form.is_favorite.label }}
+                            </label>
+                            <p class="text-gray-500">Les langues favorites apparaissent en haut des listes de sélection.</p>
+                        </div>
+                    </div>
+                    {% if form.is_favorite.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.is_favorite.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="flex justify-end space-x-3">
+                    <a href="{% url 'center_panel:language_list' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Annuler
+                    </a>
+                    <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add some JavaScript to format the code field to uppercase -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const codeField = document.getElementById('{{ form.code.id_for_label }}');
+    if (codeField) {
+        codeField.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+    }
+});
+</script>
+{% endblock %}

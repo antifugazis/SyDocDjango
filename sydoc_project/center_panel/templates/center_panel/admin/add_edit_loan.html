@@ -1,0 +1,240 @@
+{% extends 'center_panel/base.html' %}
+
+{% block title %}{% if form.instance.pk %}Modifier le prêt{% else %}Enregistrer un nouveau prêt{% endif %}{% endblock %}
+
+{% block extra_head %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle book selection to update volume options
+        const bookSelect = document.getElementById('id_book');
+        const volumeSelect = document.getElementById('id_volume');
+        const volumeContainer = document.getElementById('volume-container');
+        const ageContainer = document.getElementById('age-verification-container');
+        const ageVerifiedCheckbox = document.getElementById('id_age_verified');
+        const memberAgeInput = document.getElementById('id_member_age');
+        
+        // Function to fetch volumes for selected book
+        function fetchVolumes(bookId) {
+            if (!bookId) {
+                volumeContainer.style.display = 'none';
+                return;
+            }
+            
+            fetch(`/center_panel/api/book/${bookId}/volumes/`)
+                .then(response => response.json())
+                .then(data => {
+                    // Clear existing options
+                    volumeSelect.innerHTML = '';
+                    
+                    // Add new options
+                    if (data.has_volumes) {
+                        data.volumes.forEach(volume => {
+                            const option = document.createElement('option');
+                            option.value = volume.id;
+                            option.textContent = `Tome ${volume.volume_number}: ${volume.title}`;
+                            volumeSelect.appendChild(option);
+                        });
+                        
+                        // Enable and show volume selection
+                        volumeSelect.disabled = false;
+                        volumeContainer.style.display = 'block';
+                    } else {
+                        volumeContainer.style.display = 'none';
+                    }
+                    
+                    // Handle age restriction
+                    if (data.minimum_age_required > 0) {
+                        document.getElementById('minimum-age-notice').textContent = 
+                            `Ce livre nécessite un âge minimum de ${data.minimum_age_required} ans.`;
+                        ageContainer.style.display = 'block';
+                    } else {
+                        ageContainer.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching volumes:', error);
+                });
+        }
+        
+        // Initial state based on selected book
+        if (bookSelect && bookSelect.value) {
+            fetchVolumes(bookSelect.value);
+        } else if (volumeContainer) {
+            volumeContainer.style.display = 'none';
+        }
+        
+        // Update volumes when book selection changes
+        if (bookSelect) {
+            bookSelect.addEventListener('change', function() {
+                fetchVolumes(this.value);
+            });
+        }
+        
+        // Toggle age verification fields
+        if (ageVerifiedCheckbox) {
+            ageVerifiedCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    memberAgeInput.removeAttribute('disabled');
+                } else {
+                    memberAgeInput.setAttribute('disabled', 'disabled');
+                    memberAgeInput.value = '';
+                }
+            });
+            
+            // Initial state
+            if (!ageVerifiedCheckbox.checked) {
+                memberAgeInput.setAttribute('disabled', 'disabled');
+            }
+        }
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto">
+        <!-- Back button -->
+        <div class="mb-6">
+            <a href="{% url 'center_panel:loans' %}" class="text-blue-600 hover:text-blue-800 flex items-center">
+                <svg class="h-5 w-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+                Retour à la liste des prêts
+            </a>
+        </div>
+
+        <!-- Form Card -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6 bg-gray-50 border-b border-gray-200">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                    {% if form.instance.pk %}Modifier le prêt{% else %}Enregistrer un nouveau prêt{% endif %}
+                </h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                    Remplissez les détails du prêt ci-dessous
+                </p>
+            </div>
+            
+            <form method="post" class="px-4 py-5 sm:p-6">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="mb-4 p-4 bg-red-50 border-l-4 border-red-400">
+                    {% for error in form.non_field_errors %}
+                        <p class="text-sm text-red-700">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Member Selection -->
+                <div class="mb-6">
+                    <label for="id_member" class="block text-sm font-medium text-gray-700 mb-1">
+                        Membre emprunteur *
+                    </label>
+                    <div class="mt-1 relative">
+                        {{ form.member }}
+                        {% if form.member.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.member.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Book Selection -->
+                <div class="mb-6">
+                    <label for="id_book" class="block text-sm font-medium text-gray-700 mb-1">
+                        Livre à emprunter *
+                    </label>
+                    <div class="mt-1">
+                        {{ form.book }}
+                        {% if form.book.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.book.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Volume Selection (only shown for multi-volume books) -->
+                <div id="volume-container" class="mb-6" style="display: none;">
+                    <label for="id_volume" class="block text-sm font-medium text-gray-700 mb-1">
+                        Tome/Volume *
+                    </label>
+                    <div class="mt-1">
+                        {{ form.volume }}
+                        {% if form.volume.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.volume.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Age Verification (only shown for age-restricted books) -->
+                <div id="age-verification-container" class="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400" style="display: none;">
+                    <p id="minimum-age-notice" class="text-sm text-yellow-800 mb-3"></p>
+                    
+                    <div class="flex items-center mb-3">
+                        <div class="flex items-center h-5">
+                            {{ form.age_verified }}
+                        </div>
+                        <label for="id_age_verified" class="ml-3 text-sm font-medium text-gray-700">
+                            J'ai vérifié l'âge du membre
+                        </label>
+                        {% if form.age_verified.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.age_verified.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="id_member_age" class="block text-sm font-medium text-gray-700 mb-1">
+                            Âge du membre
+                        </label>
+                        <div class="mt-1">
+                            {{ form.member_age }}
+                            {% if form.member_age.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.member_age.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Loan Date -->
+                <div class="mb-6">
+                    <label for="id_loan_date" class="block text-sm font-medium text-gray-700 mb-1">
+                        Date d'emprunt *
+                    </label>
+                    <div class="mt-1">
+                        {{ form.loan_date }}
+                        {% if form.loan_date.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.loan_date.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Due Date -->
+                <div class="mb-6">
+                    <label for="id_due_date" class="block text-sm font-medium text-gray-700 mb-1">
+                        Date de retour prévue *
+                    </label>
+                    <div class="mt-1">
+                        {{ form.due_date }}
+                        {% if form.due_date.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.due_date.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="mt-8 border-t border-gray-200 pt-5">
+                    <div class="flex justify-end">
+                        <a href="{% url 'center_panel:loans' %}" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-3">
+                            Annuler
+                        </a>
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                            {% if form.instance.pk %}Mettre à jour le prêt{% else %}Enregistrer le prêt{% endif %}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

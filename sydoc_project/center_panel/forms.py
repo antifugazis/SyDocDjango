@@ -5,7 +5,7 @@ from django.forms.models import modelformset_factory, inlineformset_factory
 from django.contrib.auth.models import User
 from core.models import LiteraryGenre, SubGenre, Theme, SousTheme
 from django.utils.translation import gettext_lazy as _
-from core.models import Book, Author, Member, Loan, Staff, Activity, ArchivalDocument, TrainingSubject, TrainingModule, Lesson, Question, Answer, Communique, Role, Profile, BookDigitization, DigitizedPage
+from core.models import Book, BookVolume, Author, Member, Loan, Staff, Activity, ArchivalDocument, TrainingSubject, TrainingModule, Lesson, Question, Answer, Communique, Role, Profile, BookDigitization, DigitizedPage, Language, DeletedBook
 
 class BookForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -16,12 +16,19 @@ class BookForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
         
+        # Special styling for checkbox fields
+        self.fields['is_digital'].widget.attrs['class'] = 'h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded'
+        self.fields['has_volumes'].widget.attrs['class'] = 'h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded'
+        
         # Limit choices to the current documentation center if provided
         if self.documentation_center:
             self.fields['literary_genre'].queryset = LiteraryGenre.objects.all()
             self.fields['sub_genre'].queryset = SubGenre.objects.filter(genre__in=self.fields['literary_genre'].queryset)
             self.fields['theme'].queryset = Theme.objects.all()
             self.fields['sub_theme'].queryset = SousTheme.objects.filter(theme__in=self.fields['theme'].queryset)
+            
+        # Set language queryset with favorites first
+        self.fields['language'].queryset = Language.objects.all().order_by('-is_favorite', 'name')
         
         # Add empty labels for select fields
         self.fields['literary_genre'].empty_label = 'Sélectionner un genre'
@@ -36,7 +43,7 @@ class BookForm(forms.ModelForm):
             'literary_genre', 'sub_genre', 'theme', 'sub_theme',
             'is_digital', 'file_upload', 'pages', 'quantity_available',
             'total_quantity', 'acquisition_date', 'cover_image', 'price',
-            'status'
+            'status', 'language', 'minimum_age_required', 'has_volumes', 'volume_count'
         ]
         widgets = {
             'publication_date': forms.DateInput(attrs={'type': 'date'}),
@@ -53,7 +60,7 @@ class BookForm(forms.ModelForm):
             'sub_genre': 'Sous-Genre',
             'theme': 'Thème Principal',
             'sub_theme': 'Sous-Thème',
-            'is_digital': 'Version Numérique',
+            'is_digital': 'Version Numérique Disponible',
             'file_upload': 'Fichier Numérique (PDF, EPUB, etc.)',
             'pages': 'Nombre de Pages',
             'quantity_available': 'Quantité Disponible (Physique)',
@@ -61,8 +68,169 @@ class BookForm(forms.ModelForm):
             'acquisition_date': "Date d'Acquisition",
             'cover_image': 'Image de Couverture',
             'price': 'Prix (Gourdes)',
-            'status': 'Statut du livre'
+            'status': 'Statut du livre',
+            'language': 'Langue',
+            'minimum_age_required': 'Âge Minimum Requis',
+            'has_volumes': 'Possède des Tomes/Volumes',
+            'volume_count': 'Nombre de Tomes/Volumes'
         }
+
+class BookVolumeForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Add Tailwind CSS classes to all form fields for consistent styling
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+    
+    class Meta:
+        model = BookVolume
+        fields = [
+            'volume_number', 'title', 'quantity_available', 'total_quantity',
+            'price', 'cover_image', 'pages'
+        ]
+        widgets = {
+            'cover_image': forms.FileInput(),
+        }
+        labels = {
+            'volume_number': 'Numéro du Tome',
+            'title': 'Titre du Tome',
+            'quantity_available': 'Quantité Disponible',
+            'total_quantity': 'Quantité Totale',
+            'price': 'Prix (Gourdes)',
+            'cover_image': 'Image de Couverture',
+            'pages': 'Nombre de Pages'
+        }
+
+
+# Create a formset for BookVolume
+BookVolumeFormSet = inlineformset_factory(
+    Book, 
+    BookVolume,
+    form=BookVolumeForm,
+    extra=1,
+    can_delete=True,
+    min_num=0,
+    validate_min=False
+)
+
+
+class LoanForm(forms.ModelForm):
+    """Enhanced loan form with age verification and volume selection"""
+    # Add a field for age verification that's not in the model
+    member_age_verification = forms.IntegerField(
+        label="Âge du membre",
+        min_value=0,
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'})
+    )
+    
+    class Meta:
+        model = Loan
+        fields = [
+            'book', 'member', 'loan_date', 'due_date', 'volume',
+            'member_age', 'age_verified'
+        ]
+        widgets = {
+            'loan_date': forms.DateInput(attrs={'type': 'date'}),
+            'due_date': forms.DateInput(attrs={'type': 'date'}),
+            'age_verified': forms.CheckboxInput(attrs={'class': 'h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded'}),
+        }
+        labels = {
+            'book': 'Livre',
+            'member': 'Membre',
+            'loan_date': "Date d'emprunt",
+            'due_date': 'Date de retour prévue',
+            'volume': 'Tome/Volume',
+            'member_age': 'Âge du membre',
+            'age_verified': 'Âge vérifié'
+        }
+    
+    def __init__(self, *args, **kwargs):
+        self.documentation_center = kwargs.pop('documentation_center', None)
+        super().__init__(*args, **kwargs)
+        
+        # Add Tailwind CSS classes to all form fields for consistent styling
+        for field_name, field in self.fields.items():
+            if field_name != 'age_verified':
+                field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+        
+        # Filter books by documentation center
+        if self.documentation_center:
+            self.fields['book'].queryset = Book.objects.filter(
+                documentation_center=self.documentation_center,
+                status='available'
+            ).order_by('title')
+            self.fields['member'].queryset = Member.objects.filter(
+                documentation_center=self.documentation_center,
+                is_active=True
+            ).order_by('last_name', 'first_name')
+        
+        # Initially disable volume field until a book is selected
+        self.fields['volume'].widget.attrs['disabled'] = 'disabled'
+        self.fields['volume'].required = False
+        
+        # If we're editing an existing loan and it has a book with volumes
+        if self.instance and self.instance.pk and self.instance.book and self.instance.book.has_volumes:
+            self.fields['volume'].queryset = BookVolume.objects.filter(
+                book=self.instance.book
+            ).order_by('volume_number')
+            self.fields['volume'].widget.attrs.pop('disabled', None)
+            self.fields['volume'].required = True
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        book = cleaned_data.get('book')
+        member = cleaned_data.get('member')
+        member_age = cleaned_data.get('member_age')
+        age_verified = cleaned_data.get('age_verified')
+        volume = cleaned_data.get('volume')
+        
+        # Age verification checks
+        if book and book.minimum_age_required > 0:
+            if not age_verified:
+                self.add_error('age_verified', "L'âge du membre doit être vérifié pour ce livre.")
+            
+            if not member_age:
+                self.add_error('member_age', "L'âge du membre est requis pour ce livre.")
+            elif member_age < book.minimum_age_required:
+                self.add_error('member_age', f"Le membre doit avoir au moins {book.minimum_age_required} ans pour emprunter ce livre.")
+        
+        # Volume validation for multi-volume books
+        if book and book.has_volumes and not volume:
+            self.add_error('volume', "Veuillez sélectionner un tome/volume pour ce livre.")
+        
+        # Check if the book or volume is available
+        if book and not book.has_volumes and book.quantity_available <= 0:
+            self.add_error('book', "Ce livre n'est pas disponible pour l'emprunt.")
+        elif book and book.has_volumes and volume and volume.quantity_available <= 0:
+            self.add_error('volume', "Ce tome/volume n'est pas disponible pour l'emprunt.")
+        
+        return cleaned_data
+
+
+class LoanCancellationForm(forms.Form):
+    """Form for cancelling a loan"""
+    cancellation_reason = forms.ChoiceField(
+        choices=Loan.CANCELLATION_REASONS,
+        label="Raison d'annulation",
+        widget=forms.Select(attrs={'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'})
+    )
+    cancellation_notes = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 3, 'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'}),
+        label="Notes d'annulation",
+        required=False
+    )
+
+
+class DeletedBookRestoreForm(forms.Form):
+    """Form for restoring a book from the trash"""
+    reason = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 3, 'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'}),
+        label='Raison de la restauration',
+        required=False
+    )
+
 
 class MemberForm(forms.ModelForm):
     class Meta:

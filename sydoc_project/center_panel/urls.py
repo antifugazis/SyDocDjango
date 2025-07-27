@@ -27,7 +27,14 @@ urlpatterns = [
     # Loan Management
     path('loans/', views.loan_list, name='loans'),
     path('loans/add/', views.add_loan, name='add_loan'),
+    path('loans/<int:loan_id>/edit/', views.edit_loan, name='edit_loan'),
     path('loans/<int:loan_id>/return/', views.return_loan, name='return_loan'),
+    path('loans/<int:loan_id>/approve/', views.approve_loan, name='approve_loan'),
+    path('loans/<int:loan_id>/reject/', views.reject_loan, name='reject_loan'),
+    path('loans/<int:loan_id>/cancel/', views.cancel_loan, name='cancel_loan'),
+    
+    # API Endpoints
+    path('api/book/<int:book_id>/volumes/', views.get_book_volumes, name='book_volumes_api'),
 
     # Staff Management
     path('staff/', views.staff_list, name='staff'),
@@ -99,6 +106,12 @@ urlpatterns = [
     path('themes/add/', views.add_theme, name='add_theme'),
     path('themes/<int:pk>/edit/', views.edit_theme, name='edit_theme'),
     path('themes/<int:pk>/delete/', views.delete_theme, name='delete_theme'),
+    
+    # Language Management
+    path('languages/', views.language_list, name='language_list'),
+    path('languages/add/', views.add_language, name='add_language'),
+    path('languages/<int:pk>/edit/', views.edit_language, name='edit_language'),
+    path('languages/<int:pk>/delete/', views.delete_language, name='delete_language'),
     
     # Sub-Theme Management
     path('sub-themes/', views.subtheme_list, name='subthemes'),
