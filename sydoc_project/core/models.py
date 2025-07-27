@@ -544,7 +544,7 @@ class Book(models.Model):
                                     verbose_name='Sous-Genre')
     theme = models.ForeignKey(Theme, on_delete=models.SET_NULL, null=True, blank=True,
                                 verbose_name='Thème Principal')
-    sous_theme = models.ForeignKey(SousTheme, on_delete=models.SET_NULL, null=True, blank=True,
+    sub_theme = models.ForeignKey(SousTheme, on_delete=models.SET_NULL, null=True, blank=True,
                                      verbose_name='Sous-Thème')
     authors = models.ManyToManyField(Author, related_name='books', verbose_name='Auteurs')
     description = models.TextField(blank=True, verbose_name='Description')
@@ -566,6 +566,31 @@ class Book(models.Model):
 
     def __str__(self):
         return f"{self.title} by {self.authors.first().full_name if self.authors.exists() else 'Unknown'}"
+        
+    @staticmethod
+    def get_upload_path(instance, filename):
+        """Generate a dynamic upload path for book cover images"""
+        import os
+        from django.conf import settings
+        
+        # Ensure the base upload path exists
+        base_path = os.path.join(settings.MEDIA_ROOT, 'books/covers')
+        os.makedirs(base_path, exist_ok=True)
+        
+        # Create a debug log
+        debug_info = {
+            'instance_id': getattr(instance, 'id', 'new'),
+            'filename': filename,
+            'media_root': settings.MEDIA_ROOT,
+            'base_path': base_path,
+            'full_path': os.path.join(settings.MEDIA_ROOT, 'books/covers', str(getattr(instance, 'id', 'new')), filename)
+        }
+        
+        import logging
+        logger = logging.getLogger('center_panel')
+        logger.debug(f"File upload path generation: {debug_info}")
+        
+        return f'books/covers/{instance.id}/{filename}'
 
     def clean(self):
         if self.is_digital:

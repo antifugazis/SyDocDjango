@@ -3,6 +3,7 @@
 from django.urls import path
 from . import views
 from . import log_views
+from . import views_debug
 
 app_name = 'center_panel' # Namespace for this app's URLs
 
@@ -104,6 +105,10 @@ urlpatterns = [
     path('sub-themes/add/', views.add_subtheme, name='add_subtheme'),
     path('sub-themes/<int:pk>/edit/', views.edit_subtheme, name='edit_subtheme'),
     path('sub-themes/<int:pk>/delete/', views.delete_subtheme, name='delete_subtheme'),
+    
+    # Debug URLs
+    path('debug/media-config/', views_debug.DebugMediaConfigView.as_view(), name='debug_media_config'),
+    path('debug/upload/', views_debug.debug_upload, name='debug_upload'),
     
     # Author Management
     path('authors/', views.author_list, name='authors'),

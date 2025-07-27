@@ -42,8 +42,8 @@ class AuthorAdmin(admin.ModelAdmin):
 
 @admin.register(Book)
 class BookAdmin(admin.ModelAdmin):
-    list_display = ('title', 'documentation_center', 'isbn', 'literary_genre', 'sub_genre', 'theme', 'sous_theme', 'is_digital', 'quantity_available', 'total_quantity', 'status', 'acquisition_date')
-    list_filter = ('documentation_center', 'literary_genre', 'sub_genre', 'theme', 'sous_theme', 'is_digital', 'status', 'acquisition_date')
+    list_display = ('title', 'documentation_center', 'isbn', 'literary_genre', 'sub_genre', 'theme', 'sub_theme', 'is_digital', 'quantity_available', 'total_quantity', 'status', 'acquisition_date')
+    list_filter = ('documentation_center', 'literary_genre', 'sub_genre', 'theme', 'sub_theme', 'is_digital', 'status', 'acquisition_date')
     search_fields = ('title', 'isbn', 'description')
     raw_id_fields = ('documentation_center',)
     filter_horizontal = ('authors',)
@@ -52,7 +52,7 @@ class BookAdmin(admin.ModelAdmin):
             'fields': ('documentation_center', 'title', 'isbn', 'publication_date', 'authors', 'description')
         }),
         (_('Classification'), {
-            'fields': (('literary_genre', 'sub_genre'), ('theme', 'sous_theme'))
+            'fields': (('literary_genre', 'sub_genre'), ('theme', 'sub_theme'))
         }),
         (_('Détails Physiques/Numériques'), {
             'fields': ('is_digital', 'file_upload', 'pages', ('quantity_available', 'total_quantity'), 'cover_image', 'status')

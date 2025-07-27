@@ -1,15 +1,70 @@
 {% extends 'center_panel/base.html' %}
+{% load static %}
 
 {% block title %}{% if form.instance.pk %}Modifier le livre: {{ form.instance.title }}{% else %}Ajouter un nouveau livre{% endif %}{% endblock %}
+
+{% block extra_head %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Debug form submission
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                console.log('Form submission started');
+                
+                // Log all form data
+                const formData = new FormData(form);
+                console.log('Form data:');
+                for (let [key, value] of formData.entries()) {
+                    if (key === 'cover_image' || key === 'file_upload') {
+                        console.log(`${key}:`, value.name, `(${value.size} bytes, type: ${value.type})`);
+                    } else {
+                        console.log(`${key}:`, value);
+                    }
+                }
+                
+                // Check if files are included
+                const fileInputs = form.querySelectorAll('input[type="file"]');
+                fileInputs.forEach(input => {
+                    console.log(`File input '${input.name}':`, input.files.length > 0 ? 
+                        `${input.files[0].name} (${input.files[0].size} bytes)` : 'No file selected');
+                });
+            });
+        }
+        
+        // Debug file selection
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+        fileInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                console.log(`File selected for ${this.name}:`, this.files.length > 0 ? 
+                    `${this.files[0].name} (${this.files[0].size} bytes)` : 'No file selected');
+                
+                // Preview for cover image
+                if (this.name === 'cover_image' && this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.getElementById('cover-preview');
+                        if (preview) {
+                            preview.src = e.target.result;
+                            preview.classList.remove('hidden');
+                        }
+                    }
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
 
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Get the genre and sub-genre select elements
-    const genreSelect = document.getElementById('id_genre_litteraire');
-    const subGenreSelect = document.getElementById('id_sous_genre');
+    const genreSelect = document.getElementById('id_literary_genre');
+    const subGenreSelect = document.getElementById('id_sub_genre');
     const themeSelect = document.getElementById('id_theme');
-    const subThemeSelect = document.getElementById('id_sous_theme');
+    const subThemeSelect = document.getElementById('id_sub_theme');
     
     // Function to load sub-genres based on the selected genre
     function loadSubGenres(genreId) {
@@ -115,23 +170,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     <!-- Genre Littéraire -->
                     <div>
-                        <label for="id_genre_litteraire" class="block text-sm font-medium text-gray-700">Genre Littéraire</label>
+                        <label for="id_literary_genre" class="block text-sm font-medium text-gray-700">Genre Littéraire</label>
                         <div class="mt-1">
-                            {{ form.genre_litteraire }}
+                            {{ form.literary_genre }}
                         </div>
-                        {% if form.genre_litteraire.errors %}
-                            <p class="mt-1 text-sm text-red-600">{{ form.genre_litteraire.errors.0 }}</p>
+                        {% if form.literary_genre.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.literary_genre.errors.0 }}</p>
                         {% endif %}
                     </div>
                     
                     <!-- Sous-Genre -->
                     <div>
-                        <label for="id_sous_genre" class="block text-sm font-medium text-gray-700">Sous-Genre</label>
+                        <label for="id_sub_genre" class="block text-sm font-medium text-gray-700">Sous-Genre</label>
                         <div class="mt-1">
-                            {{ form.sous_genre }}
+                            {{ form.sub_genre }}
                         </div>
-                        {% if form.sous_genre.errors %}
-                            <p class="mt-1 text-sm text-red-600">{{ form.sous_genre.errors.0 }}</p>
+                        {% if form.sub_genre.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.sub_genre.errors.0 }}</p>
                         {% endif %}
                     </div>
                     
@@ -148,12 +203,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     <!-- Sous-Thème -->
                     <div>
-                        <label for="id_sous_theme" class="block text-sm font-medium text-gray-700">Sous-Thème</label>
+                        <label for="id_sub_theme" class="block text-sm font-medium text-gray-700">Sous-Thème</label>
                         <div class="mt-1">
-                            {{ form.sous_theme }}
+                            {{ form.sub_theme }}
                         </div>
-                        {% if form.sous_theme.errors %}
-                            <p class="mt-1 text-sm text-red-600">{{ form.sous_theme.errors.0 }}</p>
+                        {% if form.sub_theme.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.sub_theme.errors.0 }}</p>
                         {% endif %}
                     </div>
                     
@@ -204,13 +259,48 @@ document.addEventListener('DOMContentLoaded', function() {
                         {% endif %}
                     </div>
                     
-                    <!-- Is Digital -->
-                    <div class="col-span-2 flex items-center">
-                        {{ form.is_digital }}
-                        <label for="id_is_digital" class="ml-2 block text-sm font-medium text-gray-700">Est numérique ?</label>
-                        {% if form.is_digital.errors %}
-                            <p class="mt-1 text-sm text-red-600">{{ form.is_digital.errors.0 }}</p>
+                    <!-- Number of Pages -->
+                    <div>
+                        <label for="id_pages" class="block text-sm font-medium text-gray-700">Nombre de pages</label>
+                        <div class="mt-1">
+                            <input type="number" name="pages" id="id_pages" 
+                                   value="{{ form.pages.value|default:'' }}"
+                                   min="1"
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        {% if form.pages.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.pages.errors.0 }}</p>
                         {% endif %}
+                    </div>
+                    
+                    <!-- Status -->
+                    <div class="col-span-2">
+                        <label for="id_status" class="block text-sm font-medium text-gray-700">Statut du livre *</label>
+                        <div class="mt-1">
+                            <select id="id_status" name="status" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                <option value="available" {% if form.status.value == 'available' %}selected{% endif %}>Disponible</option>
+                                <option value="on_loan" {% if form.status.value == 'on_loan' %}selected{% endif %}>En prêt</option>
+                                <option value="damaged" {% if form.status.value == 'damaged' %}selected{% endif %}>Endommagé</option>
+                                <option value="lost" {% if form.status.value == 'lost' %}selected{% endif %}>Perdu</option>
+                            </select>
+                        </div>
+                        {% if form.status.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.status.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Is Digital -->
+                    <div class="col-span-2">
+                        <div class="flex items-center p-3 bg-gray-50 rounded-md border border-gray-200">
+                            <div class="flex items-center h-5">
+                                {{ form.is_digital }}
+                            </div>
+                            <label for="id_is_digital" class="ml-3 text-sm font-medium text-gray-700">Version numérique disponible</label>
+                            {% if form.is_digital.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.is_digital.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500">Cochez cette case si le livre est disponible en version numérique</p>
                     </div>
                     
                     <!-- File Upload -->
@@ -234,29 +324,59 @@ document.addEventListener('DOMContentLoaded', function() {
                         <label class="block text-sm font-medium text-gray-700">
                             Image de couverture
                         </label>
-                        <div class="mt-1 flex items-center">
+                        <div class="mt-1">
                             {{ form.cover_image }}
-                        </div>
-                        {% if form.cover_image.errors %}
-                            <p class="mt-1 text-sm text-red-600">{{ form.cover_image.errors.0 }}</p>
-                        {% endif %}
-                        {% if form.instance.cover_image %}
-                            <div class="mt-2">
-                                <img src="{{ form.instance.cover_image.url }}" alt="Couverture actuelle" class="h-32 w-auto object-cover rounded">
+                            {% if form.cover_image.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.cover_image.errors.0 }}</p>
+                            {% endif %}
+                            
+                            <!-- Cover Image Preview -->
+                            <div id="cover-preview-container" class="mt-2">
+                                {% if form.instance.cover_image %}
+                                    <img id="cover-preview" src="{{ form.instance.cover_image.url }}" 
+                                         alt="Couverture actuelle" class="h-32 w-auto object-cover rounded">
+                                {% else %}
+                                    <img id="cover-preview" class="h-32 w-auto object-cover rounded hidden" 
+                                         alt="Aperçu de la couverture">
+                                    <p id="no-cover" class="text-sm text-gray-500">Aucune image sélectionnée</p>
+                                {% endif %}
                             </div>
+                            
+                            <!-- Debug Info (visible in dev tools) -->
+                            <div class="hidden">
+                                <p>MEDIA_URL: {{ MEDIA_URL|default:"Not set" }}</p>
+                                {% if form.instance.cover_image %}
+                                    <p>Cover path: {{ form.instance.cover_image.path }}</p>
+                                    <p>Cover URL: {{ form.instance.cover_image.url }}</p>
+                                    <p>File exists: {{ form.instance.cover_image.file.exists|yesno:"Yes,No" }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Acquisition Date -->
+                    <div class="mt-6">
+                        <label for="id_acquisition_date" class="block text-sm font-medium text-gray-700">Date d'Acquisition</label>
+                        <div class="mt-1">
+                            <input type="date" name="acquisition_date" id="id_acquisition_date" 
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                   value="{{ form.instance.acquisition_date|date:'Y-m-d'|default:'' }}" required>
+                            {% if form.acquisition_date.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.acquisition_date.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="mt-6">
+                        <label for="id_description" class="block text-sm font-medium text-gray-700">Description</label>
+                        <div class="mt-1">
+                            {{ form.description }}
+                        </div>
+                        {% if form.description.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.description.errors.0 }}</p>
                         {% endif %}
                     </div>
-                </div>
-                
-                <!-- Description -->
-                <div class="mt-6">
-                    <label for="id_description" class="block text-sm font-medium text-gray-700">Description</label>
-                    <div class="mt-1">
-                        {{ form.description }}
-                    </div>
-                    {% if form.description.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ form.description.errors.0 }}</p>
-                    {% endif %}
                 </div>
                 
                 <!-- Form Actions -->

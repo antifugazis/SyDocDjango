@@ -130,10 +130,34 @@
                         <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ book.isbn|default:"Non spécifié" }}</dd>
                     </div>
                     
-                    <!-- Category -->
+                    <!-- Genre and Sub-Genre -->
                     <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt class="text-sm font-medium text-gray-500">Catégorie</dt>
-                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ book.category.name|default:"Non catégorisé" }}</dd>
+                        <dt class="text-sm font-medium text-gray-500">Genre Littéraire</dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {% if book.literary_genre %}
+                                {{ book.literary_genre.name }}
+                                {% if book.sub_genre %}
+                                    <span class="text-gray-500"> > {{ book.sub_genre.name }}</span>
+                                {% endif %}
+                            {% else %}
+                                Non spécifié
+                            {% endif %}
+                        </dd>
+                    </div>
+                    
+                    <!-- Theme and Sub-Theme -->
+                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500">Thème Principal</dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {% if book.theme %}
+                                {{ book.theme.name }}
+                                {% if book.sub_theme %}
+                                    <span class="text-gray-500"> > {{ book.sub_theme.name }}</span>
+                                {% endif %}
+                            {% else %}
+                                Non spécifié
+                            {% endif %}
+                        </dd>
                     </div>
                     
                     <!-- Publication Date -->
@@ -172,6 +196,15 @@
                     
                     <!-- Quantity -->
                     {% if not book.is_digital %}
+                    <!-- Description -->
+                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500">Description</dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {{ book.description|linebreaksbr|default:"Aucune description disponible." }}
+                        </dd>
+                    </div>
+                    
+                    <!-- Quantity -->
                     <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                         <dt class="text-sm font-medium text-gray-500">Quantité</dt>
                         <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ book.quantity_available }} / {{ book.total_quantity }}</dd>

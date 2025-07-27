@@ -141,26 +141,62 @@ def book_detail(request, pk):
     }
     return render(request, 'center_panel/book_detail.html', context)
 
+import logging
+logger = logging.getLogger(__name__)
+
 @login_required
 def add_book(request):
     current_center = DocumentationCenter.objects.first()
+    logger.info(f"Add book view called. Method: {request.method}")
     
     if request.method == 'POST':
+        logger.info("POST request received")
+        logger.info(f"POST data: {request.POST}")
+        logger.info(f"FILES data: {dict(request.FILES)}")
+        
         form = BookForm(request.POST, request.FILES, documentation_center=current_center)
+        logger.info(f"Form is valid: {form.is_valid()}")
+        
         if form.is_valid():
-            book = form.save(commit=False)
-            book.documentation_center = current_center
-            book.save()
-            form.save_m2m() # Needed to save ManyToMany relationships like 'authors'
-            messages.success(request, 'Le livre a été ajouté avec succès.')
-            return redirect('center_panel:book_list')
+            try:
+                book = form.save(commit=False)
+                book.documentation_center = current_center
+                
+                # Debug file upload
+                if 'cover_image' in request.FILES:
+                    cover_file = request.FILES['cover_image']
+                    logger.info(f"Processing cover image: {cover_file.name}, size: {cover_file.size} bytes, content_type: {cover_file.content_type}")
+                    logger.info(f"Temporary file path: {getattr(cover_file, 'temporary_file_path', 'In memory')}")
+                
+                book.save()
+                form.save_m2m()  # Needed to save ManyToMany relationships like 'authors'
+                
+                # Log successful save
+                logger.info(f"Book saved successfully. ID: {book.id}, Title: {book.title}")
+                if hasattr(book, 'cover_image'):
+                    logger.info(f"Cover image path: {book.cover_image.path if book.cover_image else 'None'}")
+                    logger.info(f"Cover image URL: {book.cover_image.url if book.cover_image else 'None'}")
+                
+                messages.success(request, 'Le livre a été ajouté avec succès.')
+                return redirect('center_panel:books')  # Changed from 'book_list' to 'books'
+                
+            except Exception as e:
+                logger.error(f"Error saving book: {str(e)}", exc_info=True)
+                messages.error(request, f"Une erreur est survenue lors de l'ajout du livre: {str(e)}")
+        else:
+            logger.warning(f"Form errors: {form.errors}")
+            for field, errors in form.errors.items():
+                for error in errors:
+                    logger.warning(f"Field '{field}': {error}")
     else:
         form = BookForm(documentation_center=current_center)
     
-    return render(request, 'center_panel/books/add_edit_book.html', {
+    from django.conf import settings
+    return render(request, 'center_panel/admin/add_edit_book.html', {
         'form': form,
         'current_center': current_center,
         'is_edit': False,
+        'MEDIA_URL': settings.MEDIA_URL,
     })
 
 @login_required
@@ -177,11 +213,13 @@ def edit_book(request, pk):
     else:
         form = BookForm(instance=book, documentation_center=current_center)
     
-    return render(request, 'center_panel/books/add_edit_book.html', {
+    from django.conf import settings
+    return render(request, 'center_panel/admin/add_edit_book.html', {
         'form': form,
         'book': book,
         'current_center': current_center,
         'is_edit': True,
+        'MEDIA_URL': settings.MEDIA_URL,
     })
 
 @login_required
@@ -1335,19 +1373,6 @@ def edit_subgenre(request, pk):
     }
     return render(request, 'center_panel/admin/add_edit_subgenre.html', context)
 
-@login_required
-def delete_subgenre(request, pk):
-    """Delete a sub-genre."""
-    subgenre = get_object_or_404(SubGenre, pk=pk)
-    
-    # Check if the sub-genre is used by any books
-    if subgenre.book_set.exists():
-        messages.error(request, 'Impossible de supprimer ce sous-genre car il est associé à des livres.')
-    else:
-        subgenre.delete()
-        messages.success(request, 'Sous-genre supprimé avec succès.')
-    
-    return redirect('center_panel:subgenres')
 
 # Theme CRUD Views
 @login_required
@@ -2176,7 +2201,7 @@ def api_subgenres(request):
     API endpoint to get sub-genres for a given genre.
     """
     from django.http import JsonResponse
-    from .models import SubGenre
+    from core.models import SubGenre
     
     genre_id = request.GET.get('genre_id')
     if not genre_id:
@@ -2191,7 +2216,7 @@ def api_subthemes(request):
     API endpoint to get sub-themes for a given theme.
     """
     from django.http import JsonResponse
-    from .models import SousTheme
+    from core.models import SousTheme
     
     theme_id = request.GET.get('theme_id')
     if not theme_id:

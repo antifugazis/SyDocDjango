@@ -22,7 +22,7 @@
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Couverture</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Titre</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Auteurs</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catégorie</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Genre / Thème</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantité</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -57,8 +57,18 @@
                             {% endif %}
                         </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-500">{{ book.category|default:"Non catégorisé" }}</div>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-gray-900">
+                            {% if book.literary_genre %}
+                                <div><span class="font-medium">Genre:</span> {{ book.literary_genre.name }}{% if book.sub_genre %} > {{ book.sub_genre.name }}{% endif %}</div>
+                            {% endif %}
+                            {% if book.theme %}
+                                <div class="mt-1"><span class="font-medium">Thème:</span> {{ book.theme.name }}{% if book.sub_theme %} > {{ book.sub_theme.name }}{% endif %}</div>
+                            {% endif %}
+                            {% if not book.literary_genre and not book.theme %}
+                                <span class="text-gray-500">Non catégorisé</span>
+                            {% endif %}
+                        </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm text-gray-500">{{ book.total_quantity }}</div>

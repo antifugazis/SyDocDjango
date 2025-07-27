@@ -21,21 +21,22 @@ class BookForm(forms.ModelForm):
             self.fields['literary_genre'].queryset = LiteraryGenre.objects.all()
             self.fields['sub_genre'].queryset = SubGenre.objects.filter(genre__in=self.fields['literary_genre'].queryset)
             self.fields['theme'].queryset = Theme.objects.all()
-            self.fields['sous_theme'].queryset = SousTheme.objects.filter(theme__in=self.fields['theme'].queryset)
+            self.fields['sub_theme'].queryset = SousTheme.objects.filter(theme__in=self.fields['theme'].queryset)
         
         # Add empty labels for select fields
         self.fields['literary_genre'].empty_label = 'Sélectionner un genre'
         self.fields['sub_genre'].empty_label = 'Sélectionner un sous-genre (optionnel)'
         self.fields['theme'].empty_label = 'Sélectionner un thème (optionnel)'
-        self.fields['sous_theme'].empty_label = 'Sélectionner un sous-thème (optionnel)'
+        self.fields['sub_theme'].empty_label = 'Sélectionner un sous-thème (optionnel)'
     
     class Meta:
         model = Book
         fields = [
             'title', 'isbn', 'publication_date', 'authors', 'description',
-            'literary_genre', 'sub_genre', 'theme', 'sous_theme',
+            'literary_genre', 'sub_genre', 'theme', 'sub_theme',
             'is_digital', 'file_upload', 'pages', 'quantity_available',
-            'total_quantity', 'acquisition_date', 'cover_image', 'price'
+            'total_quantity', 'acquisition_date', 'cover_image', 'price',
+            'status'
         ]
         widgets = {
             'publication_date': forms.DateInput(attrs={'type': 'date'}),
@@ -51,7 +52,7 @@ class BookForm(forms.ModelForm):
             'literary_genre': 'Genre Littéraire',
             'sub_genre': 'Sous-Genre',
             'theme': 'Thème Principal',
-            'sous_theme': 'Sous-Thème',
+            'sub_theme': 'Sous-Thème',
             'is_digital': 'Version Numérique',
             'file_upload': 'Fichier Numérique (PDF, EPUB, etc.)',
             'pages': 'Nombre de Pages',
@@ -59,7 +60,8 @@ class BookForm(forms.ModelForm):
             'total_quantity': 'Quantité Totale (Physique)',
             'acquisition_date': "Date d'Acquisition",
             'cover_image': 'Image de Couverture',
-            'price': 'Prix (Gourdes)'
+            'price': 'Prix (Gourdes)',
+            'status': 'Statut du livre'
         }
 
 class MemberForm(forms.ModelForm):
