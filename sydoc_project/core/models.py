@@ -492,6 +492,7 @@ class Book(models.Model):
     acquisition_date = models.DateField(default=timezone.now, verbose_name='Date d\'Acquisition')
     cover_image = models.ImageField(upload_to='books/covers/', blank=True, null=True, verbose_name='Image de Couverture')
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='available', verbose_name='Statut')
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name='Prix (Gourdes)')
 
     class Meta:
         verbose_name = 'Livre/Ouvrage'

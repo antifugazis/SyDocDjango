@@ -58,6 +58,15 @@ def center_dashboard(request):
         'total_staff': Staff.objects.filter(documentation_center=current_center).count(),
         'total_archives': ArchivalDocument.objects.filter(documentation_center=current_center).count(),
         'total_training_modules': TrainingModule.objects.filter(documentation_center=current_center).count(),
+        
+        # New statistics for the dashboard
+        'total_book_cost': Book.objects.filter(documentation_center=current_center).exclude(price__isnull=True).aggregate(Sum('price'))['price__sum'] or 0,
+        'total_activities': Activity.objects.filter(documentation_center=current_center).count(),
+        'total_roles': Role.objects.count(),  # Removed documentation_center filter as Role is not center-specific
+        'digitized_books': BookDigitization.objects.filter(book__documentation_center=current_center).count(),
+        'digitization_progress': round((BookDigitization.objects.filter(book__documentation_center=current_center).count() / 
+                                    max(Book.objects.filter(documentation_center=current_center, is_digital=False).count(), 1)) * 100, 1),
+        'active_users': User.objects.filter(last_login__gte=timezone.now() - timedelta(days=1)).count(),
     }
     
     # Recent Loans (last 5)
