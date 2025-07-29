@@ -20,8 +20,9 @@ CSRF_TRUSTED_ORIGINS = ['https://sydoc.nexpns.net', 'https://www.sydoc.nexpns.ne
 # Email Configuration for OTP
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.hostinger.com'
-EMAIL_PORT = 465
-EMAIL_USE_SSL = True
+EMAIL_PORT = 587
+EMAIL_USE_SSL = False
+EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'noreply@nexpns.net'
 EMAIL_HOST_PASSWORD = 'Sonicbozz20.'
 DEFAULT_FROM_EMAIL = 'SYDOC <noreply@nexpns.net>'
