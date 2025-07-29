@@ -163,6 +163,7 @@ def get_book_volumes(request, book_id):
         data = {
             'has_volumes': book.has_volumes,
             'minimum_age_required': book.minimum_age_required,
+            'quantity_available': book.quantity_available,
             'volumes': []
         }
         
@@ -209,10 +210,26 @@ def add_loan(request):
             # Save the loan
             loan.save()
             
+            # Reduce available quantity
+            quantity = form.cleaned_data.get('quantity', 1)
+            if loan.book.has_volumes and loan.volume:
+                # Reduce volume quantity
+                loan.volume.quantity_available -= quantity
+                loan.volume.save()
+            else:
+                # Reduce book quantity
+                loan.book.quantity_available -= quantity
+                loan.book.save()
+            
             messages.success(request, "Prêt enregistré avec succès et en attente d'approbation.")
             return redirect('center_panel:loans')
     else:
-        form = LoanForm(documentation_center=current_center)
+        # Initialize form with current date as default
+        initial_data = {
+            'loan_date': timezone.now().date(),
+            'due_date': timezone.now().date() + timezone.timedelta(days=14)  # Default 2-week loan
+        }
+        form = LoanForm(documentation_center=current_center, initial=initial_data)
     
     context = {
         'form': form,
@@ -225,14 +242,34 @@ def add_loan(request):
 def edit_loan(request, loan_id):
     """Edit an existing loan"""
     loan = get_object_or_404(Loan, pk=loan_id)
-    current_center = loan.documentation_center
+    current_center = loan.book.documentation_center
     
     if request.method == 'POST':
         form = LoanForm(request.POST, instance=loan, documentation_center=current_center)
         if form.is_valid():
+            # Store original quantity before saving
+            original_quantity = loan.quantity
+            
             loan = form.save(commit=False)
             loan.processed_by = request.user  # Update who last modified the loan
             loan.save()
+            
+            # Adjust available quantity if quantity changed
+            new_quantity = form.cleaned_data.get('quantity', 1)
+            if original_quantity != new_quantity:
+                # Restore original quantity
+                if loan.book.has_volumes and loan.volume:
+                    loan.volume.quantity_available += original_quantity
+                else:
+                    loan.book.quantity_available += original_quantity
+                
+                # Deduct new quantity
+                if loan.book.has_volumes and loan.volume:
+                    loan.volume.quantity_available -= new_quantity
+                    loan.volume.save()
+                else:
+                    loan.book.quantity_available -= new_quantity
+                    loan.book.save()
             
             messages.success(request, "Prêt mis à jour avec succès.")
             return redirect('center_panel:loans')
@@ -297,6 +334,15 @@ def cancel_loan(request, loan_id):
             
             # Cancel the loan
             loan.cancel(reason=reason, notes=notes, user=request.user)
+            
+            # Restore the quantity
+            if loan.book.has_volumes and loan.volume:
+                loan.volume.quantity_available += loan.quantity
+                loan.volume.save()
+            else:
+                loan.book.quantity_available += loan.quantity
+                loan.book.save()
+            
             messages.success(request, "Prêt annulé avec succès.")
             return redirect('center_panel:loans')
     else:
@@ -713,7 +759,7 @@ def add_loan(request):
         'form': form,
         'current_center': current_center,
     }
-    return render(request, 'center_panel/admin/add_loan.html', context)
+    return render(request, 'center_panel/admin/add_edit_loan.html', context)
 
 @login_required
 def return_loan(request, loan_id):
@@ -733,14 +779,52 @@ def return_loan(request, loan_id):
         
         # Update book availability
         book = loan.book
-        book.quantity_available += 1
-        book.save()
+        if book.has_volumes and loan.volume:
+            loan.volume.quantity_available += loan.quantity
+            loan.volume.save()
+        else:
+            book.quantity_available += loan.quantity
+            book.save()
         
         messages.success(request, f"Le livre '{loan.book.title}' a été marqué comme retourné.")
         return redirect('center_panel:loans')
     
     # If not a POST request, redirect to loans list
     return redirect('center_panel:loans')
+
+
+@login_required
+def delete_loan(request, loan_id):
+    """
+    Delete a loan and update the book's availability.
+    """
+    current_center = DocumentationCenter.objects.first()
+    loan = get_object_or_404(Loan, 
+                           id=loan_id, 
+                           book__documentation_center=current_center)
+    
+    if request.method == 'POST':
+        # Save the quantity before deleting the loan
+        quantity = loan.quantity
+        book = loan.book
+        
+        # Delete the loan
+        loan.delete()
+        
+        # Update book availability
+        if book.has_volumes and loan.volume:
+            loan.volume.quantity_available += quantity
+            loan.volume.save()
+        else:
+            book.quantity_available += quantity
+            book.save()
+        
+        messages.success(request, f"Le prêt de '{book.title}' a été supprimé.")
+        return redirect('center_panel:loans')
+    
+    # If not a POST request, redirect to loans list
+    return redirect('center_panel:loans')
+
 @login_required
 def staff_list(request):
     # Get the current center

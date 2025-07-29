@@ -87,7 +87,7 @@
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Membre</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date d'emprunt</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date de retour prévue</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date de retour</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantité</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
                         <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -136,15 +136,9 @@
                             </div>
                         </td>
                         
-                        <!-- Return Date -->
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">
-                                {% if loan.return_date %}
-                                    {{ loan.return_date|date:"d/m/Y" }}
-                                {% else %}
-                                    <span class="text-gray-400">-</span>
-                                {% endif %}
-                            </div>
+                        <!-- Quantity -->
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ loan.quantity }}
                         </td>
                         
                         <!-- Status -->
@@ -165,20 +159,26 @@
                         </td>
                         
                         <!-- Actions -->
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            {% if not loan.return_date %}
-                                <form action="{% url 'center_panel:return_loan' loan.id %}" method="post" class="inline" onsubmit="return confirm('Marquer ce prêt comme retourné ?');">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex flex-col space-y-2">
+                                <a href="{% url 'center_panel:edit_loan' loan.id %}" class="text-indigo-600 hover:text-indigo-900">
+                                    Modifier
+                                </a>
+                                {% if not loan.return_date %}
+                                    <form action="{% url 'center_panel:return_loan' loan.id %}" method="post" class="inline" onsubmit="return confirm('Marquer ce prêt comme retourné ?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="text-blue-600 hover:text-blue-900">
+                                            Retourner
+                                        </button>
+                                    </form>
+                                {% endif %}
+                                <form action="{% url 'center_panel:delete_loan' loan.id %}" method="post" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce prêt ?');">
                                     {% csrf_token %}
-                                    <button type="submit" class="text-blue-600 hover:text-blue-900 text-sm font-medium">
-                                        <span class="sr-only">Marquer comme retourné</span>
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                        </svg>
+                                    <button type="submit" class="text-red-600 hover:text-red-900">
+                                        Supprimer
                                     </button>
                                 </form>
-                            {% else %}
-                                <span class="text-gray-400">-</span>
-                            {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% empty %}

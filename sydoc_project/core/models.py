@@ -770,6 +770,9 @@ class Loan(models.Model):
     return_date = models.DateField(null=True, blank=True, verbose_name='Date de Retour Effective')
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='pending', verbose_name='Statut du Prêt')
     
+    # Quantity of books borrowed (for multiple copies)
+    quantity = models.PositiveIntegerField(default=1, verbose_name='Quantité Empruntée')
+    
     # Age verification fields
     age_verified = models.BooleanField(default=False, verbose_name='Âge Vérifié')
     member_age = models.PositiveIntegerField(null=True, blank=True, verbose_name='Âge du Membre')

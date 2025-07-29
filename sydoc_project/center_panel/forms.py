@@ -129,12 +129,13 @@ class LoanForm(forms.ModelForm):
         model = Loan
         fields = [
             'book', 'member', 'loan_date', 'due_date', 'volume',
-            'member_age', 'age_verified'
+            'member_age', 'age_verified', 'quantity'
         ]
         widgets = {
             'loan_date': forms.DateInput(attrs={'type': 'date'}),
             'due_date': forms.DateInput(attrs={'type': 'date'}),
             'age_verified': forms.CheckboxInput(attrs={'class': 'h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded'}),
+            'quantity': forms.NumberInput(attrs={'min': 1, 'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'}),
         }
         labels = {
             'book': 'Livre',
@@ -143,7 +144,8 @@ class LoanForm(forms.ModelForm):
             'due_date': 'Date de retour prévue',
             'volume': 'Tome/Volume',
             'member_age': 'Âge du membre',
-            'age_verified': 'Âge vérifié'
+            'age_verified': 'Âge vérifié',
+            'quantity': 'Quantité'
         }
     
     def __init__(self, *args, **kwargs):
@@ -201,10 +203,11 @@ class LoanForm(forms.ModelForm):
             self.add_error('volume', "Veuillez sélectionner un tome/volume pour ce livre.")
         
         # Check if the book or volume is available
-        if book and not book.has_volumes and book.quantity_available <= 0:
-            self.add_error('book', "Ce livre n'est pas disponible pour l'emprunt.")
-        elif book and book.has_volumes and volume and volume.quantity_available <= 0:
-            self.add_error('volume', "Ce tome/volume n'est pas disponible pour l'emprunt.")
+        quantity = cleaned_data.get('quantity', 1)
+        if book and not book.has_volumes and book.quantity_available < quantity:
+            self.add_error('quantity', f"Seulement {book.quantity_available} exemplaires disponibles pour ce livre.")
+        elif book and book.has_volumes and volume and volume.quantity_available < quantity:
+            self.add_error('quantity', f"Seulement {volume.quantity_available} exemplaires disponibles pour ce tome/volume.")
         
         return cleaned_data
 

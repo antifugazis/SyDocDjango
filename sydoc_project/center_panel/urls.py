@@ -32,6 +32,7 @@ urlpatterns = [
     path('loans/<int:loan_id>/approve/', views.approve_loan, name='approve_loan'),
     path('loans/<int:loan_id>/reject/', views.reject_loan, name='reject_loan'),
     path('loans/<int:loan_id>/cancel/', views.cancel_loan, name='cancel_loan'),
+    path('loans/<int:loan_id>/delete/', views.delete_loan, name='delete_loan'),
     
     # API Endpoints
     path('api/book/<int:book_id>/volumes/', views.get_book_volumes, name='book_volumes_api'),
