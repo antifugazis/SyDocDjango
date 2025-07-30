@@ -19,6 +19,7 @@
     <link href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css" rel="stylesheet">
     
     <!-- Tawk.to Script -->
+    {% block tawk %}
     <script type="text/javascript">
     var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
     (function(){
@@ -30,6 +31,7 @@
     s0.parentNode.insertBefore(s1,s0);
     })();
     </script>
+    {% endblock %}
     
     <!-- Custom styles -->
     <style>
@@ -118,6 +120,7 @@
 </head>
 <body class="bg-gray-50">
     <!-- Header -->
+    {% block header %}
     <header class="bg-white border-b border-gray-200 shadow-sm">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <!-- Print Page Button -->
@@ -169,8 +172,10 @@
             </div>
         </div>
     </header>
+    {% endblock %}
 
     <!-- Navigation -->
+    {% block navigation %}
     <nav class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
         <div class="container mx-auto px-4">
             <div class="flex items-center justify-between h-16">
@@ -874,6 +879,7 @@
                     Déconnexion
                 </a>
     </nav>
+    {% endblock %}
 
     <!-- Messages -->
     <div class="container mx-auto mt-4 px-4">
@@ -1131,6 +1137,8 @@
     
     <!-- Tawk.to Chat Widget -->
     <!--Start of Tawk.to Script-->
+    
+    {% block tawk1 %}
     <script type="text/javascript">
     var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
     (function(){
@@ -1142,6 +1150,7 @@
     s0.parentNode.insertBefore(s1,s0);
     })();
     </script>
+    {% endblock %}
     <!--End of Tawk.to Script-->
 </body>
 </html>
