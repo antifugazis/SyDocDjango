@@ -148,6 +148,12 @@ LOGIN_REDIRECT_URL = 'center_panel:dashboard'
 LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = 'login'
 
+# Custom authentication backends
+AUTHENTICATION_BACKENDS = [
+    'core.backends.EmailOrUsernameModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 
 LOGGING = {
     "version": 1,

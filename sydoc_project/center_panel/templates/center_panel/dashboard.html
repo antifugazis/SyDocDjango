@@ -917,135 +917,18 @@
     </div>
 </div>
 
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Book Distribution Chart
-        const bookDistributionCtx = document.getElementById('bookDistributionChart').getContext('2d');
-        const bookPhysical = Number('{{ stats.physical_books|default:"0" }}');
-        const bookEbooks = Number('{{ stats.ebooks|default:"0" }}');
-        const bookTotal = Number('{{ stats.total_books|default:"0" }}');
-        const bookOther = Math.max(bookTotal - bookPhysical - bookEbooks, 0);
-        const bookDistributionData = [bookPhysical, bookEbooks, bookOther];
-        let bookDistributionChart;
-        if (bookPhysical + bookEbooks + bookOther > 0) {
-            bookDistributionChart = new Chart(bookDistributionCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Livres physiques', 'Livres électroniques', 'Autres'],
-                    datasets: [{
-                        data: bookDistributionData,
-                        backgroundColor: [
-                            '#6366f1', // indigo
-                            '#34d399', // emerald
-                            '#f59e42'  // orange
-                        ],
-                        borderColor: [
-                            '#3730a3',
-                            '#059669',
-                            '#ea580c'
-                        ],
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                font: {
-                                    family: "Funnel Sans",
-                                    size: 12
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        } else {
-            // Show fallback text if no data
-            const bookChartContainer = document.getElementById('bookDistributionChart').parentElement;
-            bookChartContainer.innerHTML = '<div class="flex items-center justify-center h-full text-gray-400">Aucune donnée à afficher</div>';
-        }
-        // Hide spinner if present
-        const bookSpinner = bookDistributionCtx.canvas.parentElement.querySelector('.chart-loading');
-        if (bookSpinner) bookSpinner.style.display = 'none';
-
-        // Loan Activity Chart
-        const loanActivityCtx = document.getElementById('loanActivityChart').getContext('2d');
-        const activeLoans = Number('{{ stats.active_loans|default:"0" }}');
-        const overdueLoans = Number('{{ stats.overdue_loans|default:"0" }}');
-        const upcomingReturns = Number('{{ upcoming_returns|length|default:"0" }}');
-        let loanActivityChart;
-        if (activeLoans + overdueLoans + upcomingReturns > 0) {
-            loanActivityChart = new Chart(loanActivityCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Prêts actifs', 'Prêts en retard', 'Retours prévus'],
-                    datasets: [{
-                        label: 'Nombre',
-                        data: [activeLoans, overdueLoans, upcomingReturns],
-                        backgroundColor: [
-                            '#eab308', // yellow
-                            '#ef4444', // red
-                            '#8b5cf6'  // purple
-                        ],
-                        borderColor: [
-                            '#d97706',
-                            '#dc2626',
-                            '#7c3aed'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        }
-                    }
-                }
-            }
-            });
-            
-            // Hide spinner if present
-            const loanSpinner = loanActivityCtx.canvas.parentElement.querySelector('.chart-loading');
-            if (loanSpinner) loanSpinner.style.display = 'none';
-        } else {
-            // Show fallback text if no data
-            const loanChartContainer = document.getElementById('loanActivityChart').parentElement;
-            loanChartContainer.innerHTML = '<div class="flex items-center justify-center h-full text-gray-400">Aucune donnée à afficher</div>';
-        }
-    });
-</script>
-{% endblock %}
-
 <!-- Monthly Loans Chart -->
 <div class="mb-12">
     <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
         <h3 class="text-xl dm-sans-medium text-gray-700 mb-4 flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            Prêts mensuels
+            Évolution des prêts mensuels
         </h3>
-        <div class="h-64">
+        <div class="h-80">
             <canvas id="monthlyLoansChart"></canvas>
         </div>
-        <p class="text-sm dm-sans-regular text-gray-500 mt-2">Historique des prêts sur les 12 derniers mois</p>
     </div>
 </div>
 
@@ -1308,7 +1191,7 @@
             <div class="flex items-center mb-4">
                 <div class="p-3 bg-teal-100 rounded-lg mr-4">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>
                 </div>
                 <h3 class="text-lg font-medium text-gray-900">Management</h3>
@@ -1418,12 +1301,126 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock content %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
-    // Monthly Loans Chart
     document.addEventListener('DOMContentLoaded', function() {
+        // Book Distribution Chart
+        const bookDistributionCtx = document.getElementById('bookDistributionChart').getContext('2d');
+        const bookPhysical = Number('{{ stats.physical_books|default:"0" }}');
+        const bookEbooks = Number('{{ stats.ebooks|default:"0" }}');
+        const bookTotal = Number('{{ stats.total_books|default:"0" }}');
+        const bookOther = Math.max(bookTotal - bookPhysical - bookEbooks, 0);
+        const bookDistributionData = [bookPhysical, bookEbooks, bookOther];
+        let bookDistributionChart;
+        if (bookPhysical + bookEbooks + bookOther > 0) {
+            bookDistributionChart = new Chart(bookDistributionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Physiques', 'Numériques', 'Autres'],
+                    datasets: [{
+                        data: bookDistributionData,
+                        backgroundColor: [
+                            '#4f46e5',
+                            '#0ea5e9',
+                            '#94a3b8'
+                        ],
+                        borderColor: [
+                            '#4f46e5',
+                            '#0ea5e9',
+                            '#94a3b8'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            // Hide spinner if present
+            const bookSpinner = bookDistributionCtx.canvas.parentElement.querySelector('.chart-loading');
+            if (bookSpinner) bookSpinner.style.display = 'none';
+        } else {
+            // Show fallback text if no data
+            const bookChartContainer = document.getElementById('bookDistributionChart').parentElement;
+            bookChartContainer.innerHTML = '<div class="flex items-center justify-center h-full text-gray-400">Aucune donnée à afficher</div>';
+        }
+        
+        // Loan Activity Chart
+        const loanActivityCtx = document.getElementById('loanActivityChart').getContext('2d');
+        const loanData = {{ recent_loans_data|safe }};
+        let loanActivityChart;
+        if (loanData.labels && loanData.labels.length > 0) {
+            loanActivityChart = new Chart(loanActivityCtx, {
+                type: 'bar',
+                data: {
+                    labels: loanData.labels,
+                    datasets: [{
+                        label: 'Prêts',
+                        data: loanData.data,
+                        backgroundColor: [
+                            '#8b5cf6',
+                            '#ec4899',
+                            '#f97316',
+                            '#10b981',
+                            '#0ea5e9',
+                            '#f59e0b',
+                            '#6366f1'
+                        ],
+                        borderColor: [
+                            '#7c3aed',
+                            '#db2777',
+                            '#ea580c',
+                            '#059669',
+                            '#0284c7',
+                            '#d97706',
+                            '#4f46e5'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                color: '#6b7280',
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Hide spinner if present
+            const loanSpinner = loanActivityCtx.canvas.parentElement.querySelector('.chart-loading');
+            if (loanSpinner) loanSpinner.style.display = 'none';
+        } else {
+            // Show fallback text if no data
+            const loanChartContainer = document.getElementById('loanActivityChart').parentElement;
+            loanChartContainer.innerHTML = '<div class="flex items-center justify-center h-full text-gray-400">Aucune donnée à afficher</div>';
+        }
+        
+        // Monthly Loans Chart
         const monthlyLoansCtx = document.getElementById('monthlyLoansChart').getContext('2d');
         
         // Show loading spinner
@@ -1523,3 +1520,5 @@
     });
 </script>
 {% endblock %}
+{% block tawk1 %}{% endblock %}
+{% block tawk %}{% endblock %}

@@ -585,8 +585,38 @@ def add_member(request):
     if request.method == 'POST':
         form = MemberForm(request.POST)
         if form.is_valid():
+            # Create Django User
+            user_type = form.cleaned_data['user_type']
+            password = form.cleaned_data['password']
+            
+            # Create username from first and last name
+            username = f"{form.cleaned_data['first_name'].lower()}.{form.cleaned_data['last_name'].lower()}"
+            
+            # Check if user already exists
+            from django.contrib.auth.models import User
+            if User.objects.filter(username=username).exists():
+                username = f"{username}.{User.objects.filter(username__startswith=username).count() + 1}"
+            
+            user = User.objects.create_user(
+                username=username,
+                email=form.cleaned_data['email'],
+                password=password,
+                first_name=form.cleaned_data['first_name'],
+                last_name=form.cleaned_data['last_name']
+            )
+            
+            # Assign user to group
+            from django.contrib.auth.models import Group
+            try:
+                group = Group.objects.get(name=user_type)
+                user.groups.add(group)
+            except Group.DoesNotExist:
+                messages.warning(request, f"Le groupe '{user_type}' n'existe pas.")
+            
+            # Create member profile
             member = form.save(commit=False)
             member.documentation_center = current_center
+            member.user = user  # Link to Django User
             member.save()
             
             # Generate member ID if not provided

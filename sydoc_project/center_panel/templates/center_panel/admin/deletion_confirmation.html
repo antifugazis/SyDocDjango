@@ -1,0 +1,63 @@
+{% extends 'center_panel/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Confirmation de Suppression{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="bg-red-600 px-6 py-4">
+            <h2 class="text-2xl font-bold text-white">
+                Confirmation de Suppression
+            </h2>
+        </div>
+        
+        <div class="p-6">
+            <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+                <h3 class="text-lg font-medium text-red-800">
+                    Action irreversible
+                </h3>
+                <p class="text-sm text-red-700 mt-1">
+                    Cette action supprimera definitivement l'element et toutes ses donnees associees.
+                </p>
+            </div>
+
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div>
+                    <label for="{{ form.reason.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ form.reason.label }}
+                    </label>
+                    {{ form.reason }}
+                    {% if form.reason.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.reason.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="flex items-start">
+                    <div class="flex items-center h-5">
+                        {{ form.confirm_deletion }}
+                    </div>
+                    <div class="ml-3 text-sm">
+                        <label for="{{ form.confirm_deletion.id_for_label }}" class="font-medium text-gray-700">
+                            {{ form.confirm_deletion.label }}
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-4 border-t">
+                    <a href="{{ cancel_url|default:request.META.HTTP_REFERER }}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        Annuler
+                    </a>
+                    <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700">
+                        Confirmer la suppression
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

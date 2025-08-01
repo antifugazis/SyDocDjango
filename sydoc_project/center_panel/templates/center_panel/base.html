@@ -178,13 +178,15 @@
     {% block navigation %}
     <nav class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
         <div class="container mx-auto px-4">
-            <div class="flex items-center justify-between h-16">
-                <!-- Logo and brand -->
-                <div class="flex items-center">
-                    <a href="{% url 'center_panel:dashboard' %}" class="flex items-center">
-                        <div class="p-2 bg-indigo-100 rounded-lg mr-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            
+                <div class="hidden md:flex items-center justify-between h-16">
+                    <!-- Logo and brand -->
+                    
+                        <div class="flex items-center">
+                            <a href="{% url 'center_panel:dashboard' %}" class="flex items-center">
+                                <div class="p-2 bg-indigo-100 rounded-lg mr-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                             </svg>
                         </div>
                         <span class="text-lg font-semibold text-indigo-600">SYDOC</span>
@@ -203,6 +205,7 @@
                         </svg>
                     </button>
                 </div>
+            
                 
                 <!-- Desktop navigation -->
                 <div class="hidden md:flex md:items-center md:space-x-1">
@@ -274,7 +277,7 @@
                             <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>
                             </svg>
-                            Bibliothèque
+                            Ouvrages
                             <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                             </svg>
@@ -556,9 +559,18 @@
             </div>
         </div>
         
-        <!-- Mobile menu, show/hide based on menu state -->
-        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200 shadow-md">
-            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200 shadow-md fixed top-0 left-0 right-0 h-screen overflow-y-auto z-50">
+            <div class="px-4 pt-4 pb-20 space-y-2 sm:px-3">
+                <!-- Close button for mobile menu -->
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Menu</h3>
+                    <button id="mobile-menu-close" class="p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
                 <!-- Dashboard Link -->
                 <a href="{% url 'center_panel:dashboard' %}" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'dashboard' %}text-indigo-600 bg-indigo-50{% else %}text-gray-700{% endif %} flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -878,6 +890,8 @@
                     </svg>
                     Déconnexion
                 </a>
+            </div>
+        </div>
     </nav>
     {% endblock %}
 
@@ -926,12 +940,69 @@
         <div>
             {% block content %}
             <!-- Content will be inserted here -->
-            {% endblock content %}
+            {% endblock %}
         </div>
     </main>
 
+    <!-- Mobile Bottom Navigation (Only visible on small screens) -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
+        <!-- Green indicator line at bottom -->
+        <div class="h-1 bg-green-500 absolute bottom-0 left-0 w-1/5 transition-transform duration-300 ease-in-out" id="nav-indicator"></div>
+        <div class="flex justify-around items-center h-16">
+            <!-- Dashboard -->
+            <a href="{% url 'center_panel:dashboard' %}" class="mobile-bottom-nav-item flex flex-col items-center justify-center w-1/5 h-full {% if request.resolver_match.url_name == 'dashboard' %}active text-green-600{% else %}text-gray-600{% endif %}">
+                <div class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                </div>
+                <span class="text-xs mt-1">Accueil</span>
+            </a>
+            
+            <!-- Books -->
+            <a href="{% url 'center_panel:books' %}" class="mobile-bottom-nav-item flex flex-col items-center justify-center w-1/5 h-full {% if request.resolver_match.url_name in 'books,add_book,edit_book,book_detail' %}active text-green-600{% else %}text-gray-600{% endif %}">
+                <div class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                </div>
+                <span class="text-xs mt-1">Livres</span>
+            </a>
+            
+            <!-- Members -->
+            <a href="{% url 'center_panel:members' %}" class="mobile-bottom-nav-item flex flex-col items-center justify-center w-1/5 h-full {% if request.resolver_match.url_name in 'members,add_member,edit_member,member_detail' %}active text-green-600{% else %}text-gray-600{% endif %}">
+                <div class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                </div>
+                <span class="text-xs mt-1">Membres</span>
+            </a>
+            
+            <!-- Loans -->
+            <a href="{% url 'center_panel:loans' %}" class="mobile-bottom-nav-item flex flex-col items-center justify-center w-1/5 h-full {% if request.resolver_match.url_name in 'loans,add_loan,edit_loan,return_loan' %}active text-green-600{% else %}text-gray-600{% endif %}">
+                <div class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                    </svg>
+                </div>
+                <span class="text-xs mt-1">Prêts</span>
+            </a>
+            
+            <!-- Menu -->
+            <button id="mobile-menu-bottom-button" class="mobile-bottom-nav-item flex flex-col items-center justify-center w-1/5 h-full text-gray-600">
+                <div class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </div>
+                <span class="text-xs mt-1">Plus</span>
+            </button>
+        </div>
+    </div>
+
     <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 py-6 px-4">
+    <footer class="bg-white border-t border-gray-200 py-6 px-4 md:block hidden">
         <div class="container mx-auto">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div class="mb-4 md:mb-0">
@@ -1015,34 +1086,64 @@
     <script>
         // Mobile menu and dropdown functionality
         document.addEventListener('DOMContentLoaded', function() {
+            // Original top mobile menu button
             const mobileMenuButton = document.getElementById('mobile-menu-button');
+            // New bottom mobile menu button
+            const mobileMenuBottomButton = document.getElementById('mobile-menu-bottom-button');
             const mobileMenu = document.getElementById('mobile-menu');
             const menuClosedIcon = document.getElementById('menu-closed-icon');
             const menuOpenIcon = document.getElementById('menu-open-icon');
             
+            // Function to toggle mobile menu
+            const toggleMobileMenu = function() {
+                if (mobileMenu.classList.contains('hidden')) {
+                    openMobileMenu();
+                } else {
+                    closeMobileMenu();
+                }
+            };
+            
+            // Function to close mobile menu
+            const closeMobileMenu = function() {
+                mobileMenu.classList.add('hidden');
+                if (menuClosedIcon && menuOpenIcon) {
+                    menuClosedIcon.classList.remove('hidden');
+                    menuOpenIcon.classList.add('hidden');
+                }
+                // Enable body scrolling
+                document.body.classList.remove('overflow-hidden');
+            };
+            
+            // Function to open mobile menu
+            const openMobileMenu = function() {
+                mobileMenu.classList.remove('hidden');
+                if (menuClosedIcon && menuOpenIcon) {
+                    menuClosedIcon.classList.add('hidden');
+                    menuOpenIcon.classList.remove('hidden');
+                }
+                // Disable body scrolling when menu is open
+                document.body.classList.add('overflow-hidden');
+            };
+            
+            // Add click event to original top menu button
             if (mobileMenuButton && mobileMenu) {
-                mobileMenuButton.addEventListener('click', function() {
-                    // Toggle mobile menu visibility
-                    mobileMenu.classList.toggle('hidden');
-                    
-                    // Toggle menu icons
-                    if (menuClosedIcon && menuOpenIcon) {
-                        menuClosedIcon.classList.toggle('hidden');
-                        menuOpenIcon.classList.toggle('hidden');
-                    }
-                });
-                
-                // Close menu when clicking outside
-                document.addEventListener('click', function(event) {
-                    if (!mobileMenuButton.contains(event.target) && 
-                        !mobileMenu.contains(event.target) && 
-                        !mobileMenu.classList.contains('hidden')) {
-                        mobileMenu.classList.add('hidden');
-                        menuClosedIcon.classList.remove('hidden');
-                        menuOpenIcon.classList.add('hidden');
-                    }
-                });
+                mobileMenuButton.addEventListener('click', toggleMobileMenu);
             }
+            
+            // Add click event to new bottom menu button
+            if (mobileMenuBottomButton && mobileMenu) {
+                mobileMenuBottomButton.addEventListener('click', toggleMobileMenu);
+            }
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function(event) {
+                if (mobileMenu && !mobileMenu.classList.contains('hidden') && 
+                    ((mobileMenuButton && !mobileMenuButton.contains(event.target)) || !mobileMenuButton) && 
+                    ((mobileMenuBottomButton && !mobileMenuBottomButton.contains(event.target)) || !mobileMenuBottomButton) && 
+                    !mobileMenu.contains(event.target)) {
+                    closeMobileMenu();
+                }
+            });
             
             // Mobile dropdowns
             const mobileDropdownToggles = document.querySelectorAll('.mobile-dropdown-toggle');
@@ -1079,6 +1180,68 @@
                     });
                 });
             });
+            
+            // Add padding to the bottom of the main content to account for the fixed bottom nav
+            const main = document.querySelector('main');
+            if (main && window.innerWidth < 768) { // Only on mobile
+                main.style.paddingBottom = '5rem'; // Add padding to account for the bottom nav
+            }
+            
+            // Handle close button in mobile menu
+            const mobileMenuCloseButton = document.getElementById('mobile-menu-close');
+            if (mobileMenuCloseButton) {
+                mobileMenuCloseButton.addEventListener('click', closeMobileMenu);
+            }
+            
+            // Handle window resize to adjust padding
+            window.addEventListener('resize', function() {
+                if (main) {
+                    if (window.innerWidth < 768) {
+                        main.style.paddingBottom = '5rem';
+                    } else {
+                        main.style.paddingBottom = '';
+                    }
+                }
+            });
+            
+            // Mobile bottom nav indicator functionality
+            const navIndicator = document.getElementById('nav-indicator');
+            const bottomNavItems = document.querySelectorAll('.mobile-bottom-nav-item');
+            
+            // Set initial position of indicator based on active item
+            function setInitialIndicatorPosition() {
+                if (navIndicator) {
+                    const activeItem = document.querySelector('.mobile-bottom-nav-item.active');
+                    if (activeItem) {
+                        const index = Array.from(bottomNavItems).indexOf(activeItem);
+                        navIndicator.style.transform = `translateX(${index * 100}%)`;
+                    }
+                }
+            }
+            
+            // Add click event listeners to bottom nav items
+            if (bottomNavItems.length > 0 && navIndicator) {
+                bottomNavItems.forEach((item, index) => {
+                    item.addEventListener('click', function() {
+                        // Only handle indicator movement for items that are links (not the menu button)
+                        if (!this.id || this.id !== 'mobile-menu-bottom-button') {
+                            // Move the indicator
+                            navIndicator.style.transform = `translateX(${index * 100}%)`;
+                            
+                            // Update active state
+                            bottomNavItems.forEach(navItem => {
+                                navItem.classList.remove('active', 'text-green-600');
+                                navItem.classList.add('text-gray-600');
+                            });
+                            this.classList.add('active', 'text-green-600');
+                            this.classList.remove('text-gray-600');
+                        }
+                    });
+                });
+                
+                // Set initial position
+                setInitialIndicatorPosition();
+            }
         });
     </script>
     <script>

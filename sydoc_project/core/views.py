@@ -324,23 +324,45 @@ class TwoFactorLoginView(LoginView):
         # Get the user from the form
         user = form.get_user()
         
-        # Store user info in session for the 2FA step
-        self.request.session['2fa_user_id'] = user.id
+        # Check if remember_me is checked to bypass 2FA
+        remember_me = self.request.POST.get('remember_me', False)
         
-        # Generate and send OTP
-        otp_obj = OTP.create_otp_for_user(user)
-        if not send_otp_email(user.email, otp_obj):
-            messages.error(self.request, _('Erreur lors de l\'envoi du code de vérification. Veuillez réessayer.'))
-            return self.form_invalid(form)
+        # Check if user belongs to groups that require 2FA (Super Admin and Admin)
+        requires_2fa = user.groups.filter(name__in=['Super Admin', 'Admin']).exists()
         
-        # Store OTP info in session
-        self.request.session['otp_created_at'] = timezone.now().isoformat()
-        self.request.session['otp_email'] = user.email
-        self.request.session.modified = True
-        
-        # Redirect to 2FA verification page
-        logger.info(f'User {user.username} authenticated with password, redirecting to 2FA verification')
-        return redirect('core:verify_2fa')
+        # If user doesn't require 2FA or remember_me is checked, bypass 2FA
+        if not requires_2fa or remember_me:
+            # Bypass 2FA and log the user in directly
+            login(self.request, user)
+            
+            # Set session to expire in 30 days if remember me is checked
+            if remember_me:
+                self.request.session.set_expiry(30 * 24 * 60 * 60)  # 30 days
+            else:
+                self.request.session.set_expiry(0)  # Expire when browser closes
+            
+            # Redirect to the appropriate page
+            redirect_to = self.request.GET.get(REDIRECT_FIELD_NAME, settings.LOGIN_REDIRECT_URL)
+            logger.info(f'User {user.username} authenticated with password and 2FA bypassed, redirecting to {redirect_to}')
+            return redirect(redirect_to)
+        else:
+            # Store user info in session for the 2FA step
+            self.request.session['2fa_user_id'] = user.id
+            
+            # Generate and send OTP
+            otp_obj = OTP.create_otp_for_user(user)
+            if not send_otp_email(user.email, otp_obj):
+                messages.error(self.request, _('Erreur lors de l\'envoi du code de vérification. Veuillez réessayer.'))
+                return self.form_invalid(form)
+            
+            # Store OTP info in session
+            self.request.session['otp_created_at'] = timezone.now().isoformat()
+            self.request.session['otp_email'] = user.email
+            self.request.session.modified = True
+            
+            # Redirect to 2FA verification page
+            logger.info(f'User {user.username} authenticated with password, redirecting to 2FA verification')
+            return redirect('core:verify_2fa')
 
 
 class TwoFactorVerifyView(View):

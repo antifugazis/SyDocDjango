@@ -561,6 +561,7 @@ class Book(models.Model):
     sub_theme = models.ForeignKey(SousTheme, on_delete=models.SET_NULL, null=True, blank=True,
                                      verbose_name='Sous-Thème')
     authors = models.ManyToManyField(Author, related_name='books', verbose_name='Auteurs')
+    editor = models.CharField(max_length=255, blank=True, verbose_name='Éditeur')
     description = models.TextField(blank=True, verbose_name='Description')
     is_digital = models.BooleanField(default=False, verbose_name='Est Numérique')
     file_upload = models.FileField(upload_to='books/digital/', blank=True, null=True, verbose_name='Fichier Numérique (PDF, EPUB, etc.)')
@@ -715,6 +716,15 @@ class Member(models.Model):
         ('public', 'Public'),
     ]
 
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='member_profile',
+        verbose_name=_('Utilisateur')
+    )
+    
     documentation_center = models.ForeignKey(DocumentationCenter, on_delete=models.CASCADE, related_name='members', verbose_name='Centre de Documentation')
     member_id = models.CharField(max_length=50, unique=True, verbose_name='ID Membre')
     first_name = models.CharField(max_length=100, verbose_name='Prénom')
@@ -1404,3 +1414,146 @@ class DigitizedPage(models.Model):
 
     def __str__(self):
         return f"Page {self.page_number} for '{self.digitization_process.book.title}'"
+
+
+class DeletionLog(models.Model):
+    """
+    Tracks deletions across the system with required justifications.
+    This provides an audit trail for all deleted items.
+    """
+    DELETION_TYPES = [
+        ('book', 'Livre/Ouvrage'),
+        ('member', 'Membre'),
+        ('staff', 'Personnel'),
+        ('loan', 'Prêt'),
+        ('training', 'Formation'),
+        ('document', 'Document'),
+        ('other', 'Autre'),
+    ]
+
+    documentation_center = models.ForeignKey(
+        DocumentationCenter,
+        on_delete=models.CASCADE,
+        related_name='deletion_logs',
+        verbose_name='Centre de Documentation'
+    )
+    
+    # Generic foreign key to track what was deleted
+    content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+        verbose_name='Type de contenu'
+    )
+    object_id = models.PositiveIntegerField(verbose_name='ID de l\'objet')
+    content_object = GenericForeignKey('content_type', 'object_id')
+    
+    deletion_type = models.CharField(
+        max_length=20,
+        choices=DELETION_TYPES,
+        verbose_name='Type de suppression'
+    )
+    
+    # Store the deleted item's key information
+    item_identifier = models.CharField(
+        max_length=255,
+        verbose_name='Identifiant de l\'élément',
+        help_text="Nom, titre ou identifiant unique de l'élément supprimé"
+    )
+    
+    # Required justification
+    reason = models.TextField(
+        verbose_name='Justification de la suppression',
+        help_text='Une explication détaillée de la raison de la suppression'
+    )
+    
+    # Who performed the deletion
+    deleted_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='deleted_items',
+        verbose_name='Supprimé par'
+    )
+    
+    # When it was deleted
+    deleted_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Date de suppression'
+    )
+    
+    # Additional metadata
+    additional_data = models.JSONField(
+        blank=True,
+        null=True,
+        verbose_name='Données supplémentaires',
+        help_text='Informations supplémentaires sur l\'élément au moment de la suppression'
+    )
+
+    class Meta:
+        verbose_name = 'Journal de Suppression'
+        verbose_name_plural = 'Journaux de Suppression'
+        ordering = ['-deleted_at']
+        indexes = [
+            models.Index(fields=['documentation_center', 'deleted_at']),
+            models.Index(fields=['content_type', 'object_id']),
+            models.Index(fields=['deleted_by', 'deleted_at']),
+        ]
+
+    def __str__(self):
+        return f"Suppression: {self.item_identifier} ({self.deletion_type}) - {self.deleted_at.strftime('%d/%m/%Y %H:%M')}"
+
+    def get_absolute_url(self):
+        return reverse('center_panel:deletion_detail', args=[self.pk])
+
+
+def log_deletion(instance, reason, deleted_by, deletion_type=None, additional_data=None):
+    """
+    Utility function to log deletions across the system.
+    
+    Args:
+        instance: The object being deleted
+        reason: The justification for deletion
+        deleted_by: The user performing the deletion
+        deletion_type: Type of deletion (auto-detected if not provided)
+        additional_data: Additional data to store with the deletion log
+    """
+    from django.contrib.contenttypes.models import ContentType
+    
+    # Auto-detect deletion type based on model class
+    if deletion_type is None:
+        model_name = instance.__class__.__name__.lower()
+        type_mapping = {
+            'book': 'book',
+            'member': 'member',
+            'staff': 'staff',
+            'loan': 'loan',
+            'training': 'training',
+            'document': 'document',
+        }
+        deletion_type = type_mapping.get(model_name, 'other')
+    
+    # Get the documentation center
+    doc_center = None
+    if hasattr(instance, 'documentation_center'):
+        doc_center = instance.documentation_center
+    elif hasattr(instance, 'book') and hasattr(instance.book, 'documentation_center'):
+        doc_center = instance.book.documentation_center
+    
+    # Get identifier
+    identifier = str(instance)
+    if hasattr(instance, 'title'):
+        identifier = instance.title
+    elif hasattr(instance, 'name'):
+        identifier = instance.name
+    
+    # Create the deletion log
+    DeletionLog.objects.create(
+        documentation_center=doc_center,
+        content_type=ContentType.objects.get_for_model(instance),
+        object_id=instance.pk,
+        deletion_type=deletion_type,
+        item_identifier=identifier,
+        reason=reason,
+        deleted_by=deleted_by,
+        additional_data=additional_data or {}
+    )

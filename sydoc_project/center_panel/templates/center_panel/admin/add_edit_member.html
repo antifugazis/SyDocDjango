@@ -1,4 +1,5 @@
 {% extends 'center_panel/base.html' %}
+{% load custom_tags %}
 
 {% block title %}{% if form.instance.pk %}Modifier {{ form.instance.full_name }}{% else %}Ajouter un nouveau membre{% endif %}{% endblock %}
 
@@ -92,6 +93,19 @@
                             {% endif %}
                         </div>
 
+                        <!-- User Type - Only visible to admins -->
+                        {% if user|has_group:"Super Admin,Admin" %}
+                        <div>
+                            <label for="id_user_type" class="block text-sm font-medium text-gray-700">
+                                Type d'utilisateur *
+                            </label>
+                            {{ form.user_type }}
+                            {% if form.user_type.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.user_type.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
                         <!-- Is Active -->
                         <div class="flex items-center">
                             {{ form.is_active }}
@@ -106,9 +120,26 @@
 
                     <!-- Right Column -->
                     <div class="space-y-4">
-                        <!-- Empty column to balance the layout -->
-                        <div class="md:col-span-2">
-                            <!-- This empty div helps maintain the grid layout -->
+                        <!-- Password -->
+                        <div>
+                            <label for="id_password" class="block text-sm font-medium text-gray-700">
+                                Mot de passe *
+                            </label>
+                            {{ form.password }}
+                            {% if form.password.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.password.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div>
+                            <label for="id_confirm_password" class="block text-sm font-medium text-gray-700">
+                                Confirmer le mot de passe *
+                            </label>
+                            {{ form.confirm_password }}
+                            {% if form.confirm_password.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.confirm_password.errors.0 }}</p>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

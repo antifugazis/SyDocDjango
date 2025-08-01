@@ -124,6 +124,12 @@
                         </dd>
                     </div>
                     
+                    <!-- Editor -->
+                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500">Éditeur</dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ book.editor|default:"Non spécifié" }}</dd>
+                    </div>
+                    
                     <!-- ISBN -->
                     <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                         <dt class="text-sm font-medium text-gray-500">ISBN</dt>
@@ -172,6 +178,18 @@
                         <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ book.pages|default:"Non spécifié" }}</dd>
                     </div>
                     
+                    <!-- Price -->
+                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500">Prix</dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {% if book.price %}
+                                {{ book.price }} Gourdes
+                            {% else %}
+                                Non spécifié
+                            {% endif %}
+                        </dd>
+                    </div>
+                    
                     <!-- Type -->
                     <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                         <dt class="text-sm font-medium text-gray-500">Type</dt>
@@ -198,7 +216,7 @@
                     {% if not book.is_digital %}
                     <!-- Description -->
                     <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt class="text-sm font-medium text-gray-500">Description</dt>
+                        <dt class="text-sm font-medium text-gray-500">Résumé</dt>
                         <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                             {{ book.description|linebreaksbr|default:"Aucune description disponible." }}
                         </dd>

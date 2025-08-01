@@ -39,7 +39,7 @@ class BookForm(forms.ModelForm):
     class Meta:
         model = Book
         fields = [
-            'title', 'isbn', 'publication_date', 'authors', 'description',
+            'title', 'isbn', 'publication_date', 'authors', 'editor', 'description',
             'literary_genre', 'sub_genre', 'theme', 'sub_theme',
             'is_digital', 'file_upload', 'pages', 'quantity_available',
             'total_quantity', 'acquisition_date', 'cover_image', 'price',
@@ -55,6 +55,7 @@ class BookForm(forms.ModelForm):
             'isbn': 'ISBN',
             'publication_date': 'Date de Publication',
             'authors': 'Auteur(s)',
+            'editor': 'Éditeur',
             'description': 'Description',
             'literary_genre': 'Genre Littéraire',
             'sub_genre': 'Sous-Genre',
@@ -236,6 +237,38 @@ class DeletedBookRestoreForm(forms.Form):
 
 
 class MemberForm(forms.ModelForm):
+    USER_TYPE_CHOICES = [
+        ('Super Admin', 'Super Admin'),
+        ('Admin', 'Admin'),
+        ('Documentation Center', 'Documentation Center'),
+        ('Member', 'Member'),
+    ]
+    
+    user_type = forms.ChoiceField(
+        choices=USER_TYPE_CHOICES,
+        label='Type d\'utilisateur',
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+        })
+    )
+    
+    password = forms.CharField(
+        label='Mot de passe',
+        widget=forms.PasswordInput(attrs={
+            'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+        }),
+        required=True
+    )
+    
+    confirm_password = forms.CharField(
+        label='Confirmer le mot de passe',
+        widget=forms.PasswordInput(attrs={
+            'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+        }),
+        required=True
+    )
+    
     class Meta:
         model = Member
         fields = [
@@ -261,8 +294,18 @@ class MemberForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Apply consistent Tailwind CSS classes
         for field_name, field in self.fields.items():
-            if field_name != 'is_active':  # Skip checkbox as it has custom classes
+            if field_name not in ['is_active', 'user_type', 'password', 'confirm_password']:  # Skip fields with custom classes
                 field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
+        
+        if password and confirm_password and password != confirm_password:
+            raise forms.ValidationError('Les mots de passe ne correspondent pas.')
+        
+        return cleaned_data
 
 class CreateLoanForm(forms.Form):
     """
@@ -594,3 +637,27 @@ class ProfileForm(forms.ModelForm):
         for field in self.fields.values():
             if field.widget.__class__.__name__ != 'CheckboxInput':
                 field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+
+
+class DeletionJustificationForm(forms.Form):
+    """
+    Form for collecting deletion justification from users.
+    """
+    reason = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-textarea mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50',
+            'rows': 4,
+            'placeholder': 'Veuillez expliquer en détail la raison de cette suppression...',
+            'required': True
+        }),
+        label='Justification de la suppression',
+        help_text='Une explication détaillée est requise pour toute suppression.',
+        required=True,
+        min_length=10,
+        max_length=1000
+    )
+    
+    confirm_deletion = forms.BooleanField(
+        label='Je confirme que je souhaite supprimer cet élément de façon permanente',
+        required=True
+    )
