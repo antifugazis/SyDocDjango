@@ -1078,7 +1078,7 @@
             {% endblock %}
         </div>
     </main>
-
+{% block bottom_nav %}
     <!-- Mobile Bottom Navigation (Only visible on small screens) -->
     <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
         <!-- Green indicator line at bottom -->
@@ -1150,8 +1150,9 @@
             </button>
         </div>
     </div>
-
+{% endblock %}
     <!-- Footer -->
+{% block footer %}
     <footer class="bg-white border-t border-gray-200 py-6 px-4 md:block hidden">
         <div class="container mx-auto">
             <div class="flex flex-col md:flex-row justify-between items-center">
@@ -1175,7 +1176,7 @@
             </div>
         </div>
     </footer>
-    
+{% endblock %} 
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
