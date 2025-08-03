@@ -8,6 +8,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.utils import timezone
 import os
 import io
 import tempfile
@@ -18,7 +19,33 @@ from PIL import Image, ImageEnhance
 from core.models import (DocumentationCenter, Book, BookVolume, Member, Loan, Staff, ArchivalDocument, 
                         TrainingModule, Activity, TrainingSubject, TrainingModule, Lesson, Communique, 
                         Question, Answer, StaffTrainingRecord, Quiz, Author, Role, Profile, LiteraryGenre, 
-                        BookDigitization, DigitizedPage, SubGenre, Theme, SousTheme, DeletedBook, Language)
+                        BookDigitization, DigitizedPage, SubGenre, Theme, SousTheme, DeletedBook, Language,
+                        BookLike, BookDislike, BookRead)
+from core.utils import get_user_group_names, is_user_in_group, get_user_highest_privilege_group, require_groups
+
+
+def get_redirect_url_for_user(user):
+    """
+    Get the appropriate redirect URL based on user's group membership.
+    
+    Args:
+        user: Django User object
+        
+    Returns:
+        str: URL to redirect the user to
+    """
+    # Check groups in order of privilege (highest first)
+    if is_user_in_group(user, 'Super Admin'):
+        return 'center_panel:admin_panel'
+    elif is_user_in_group(user, 'Admin'):
+        return 'center_panel:dashboard'
+    elif is_user_in_group(user, 'Documentation Center'):
+        return 'center_panel:dashboard'
+    elif is_user_in_group(user, 'Member'):
+        return 'center_panel:dashboard'  # Members will see the member panel through the dashboard view
+    else:
+        # Default redirect for users with no specific group
+        return 'center_panel:dashboard'
 from .forms import (BookForm, BookVolumeForm, BookVolumeFormSet, MemberForm, LoanForm, LoanCancellationForm, 
                   StaffForm, ActivityForm, ArchiveForm, TrainingSubjectForm, TrainingModuleForm, 
                   LessonFormSet, CommuniqueForm, TrainingModuleForm, LessonForm, QuestionFormSet, 
@@ -154,86 +181,108 @@ def center_dashboard(request):
 
 @login_required
 @require_http_methods(["GET"])
-def get_book_volumes(request, book_id):
-    """API endpoint to get volumes for a specific book"""
+def get_book_details(request, book_id):
+    """API endpoint to get details for a specific book"""
     try:
         book = Book.objects.get(pk=book_id)
         
-        # Prepare response data
-        data = {
-            'has_volumes': book.has_volumes,
+        return JsonResponse({
             'minimum_age_required': book.minimum_age_required,
             'quantity_available': book.quantity_available,
-            'volumes': []
-        }
-        
-        # If book has volumes, include them in response
-        if book.has_volumes:
-            volumes = BookVolume.objects.filter(book=book).order_by('volume_number')
-            data['volumes'] = [
-                {
-                    'id': volume.id,
-                    'volume_number': volume.volume_number,
-                    'title': volume.title,
-                    'quantity_available': volume.quantity_available
-                } for volume in volumes
-            ]
-            
-        return JsonResponse(data)
+        })
     except Book.DoesNotExist:
         return JsonResponse({'error': 'Book not found'}, status=404)
+        
 
+def get_member_details(request, member_id):
+    """API endpoint to get details for a specific member"""
+    try:
+        member = Member.objects.get(pk=member_id)
+        
+        return JsonResponse({
+            'has_date_of_birth': member.date_of_birth is not None,
+            'first_name': member.first_name,
+            'last_name': member.last_name,
+        })
+    except Member.DoesNotExist:
+        return JsonResponse({'error': 'Member not found'}, status=404)
+
+
+import logging
+logger = logging.getLogger(__name__)
 
 @login_required
 def add_loan(request):
     """Add a new loan with age verification and volume selection"""
+    logger.info(f"Add loan view called with method: {request.method}")
+    
     try:
-        current_center = DocumentationCenter.objects.first()  # For development
+        current_center = DocumentationCenter.objects.first()
     except DocumentationCenter.DoesNotExist:
         messages.error(request, "Aucun centre de documentation trouvé.")
         return redirect('center_panel:center_dashboard')
     
     if request.method == 'POST':
+        logger.info(f"POST data: {request.POST}")
         form = LoanForm(request.POST, documentation_center=current_center)
-        if form.is_valid():
-            loan = form.save(commit=False)
-            loan.documentation_center = current_center
-            loan.status = 'pending'  # Start with pending status
-            loan.processed_by = request.user  # Track who created the loan
-            
-            # Perform age verification if required
-            book = form.cleaned_data.get('book')
-            if book and book.minimum_age_required > 0:
-                loan.age_verified = form.cleaned_data.get('age_verified')
-                loan.member_age = form.cleaned_data.get('member_age')
-            
-            # Save the loan
-            loan.save()
-            
-            # Reduce available quantity
-            quantity = form.cleaned_data.get('quantity', 1)
-            if loan.book.has_volumes and loan.volume:
-                # Reduce volume quantity
-                loan.volume.quantity_available -= quantity
-                loan.volume.save()
-            else:
-                # Reduce book quantity
-                loan.book.quantity_available -= quantity
+        
+        # Force form validation and log results
+        is_valid = form.is_valid()
+        logger.info(f"Form is valid: {is_valid}")
+        if is_valid:
+            try:
+                # Create loan object but don't save yet
+                loan = form.save(commit=False)
+                loan.documentation_center = current_center
+                loan.status = 'pending'
+                loan.processed_by = request.user
+                
+                # Handle age verification if needed
+                book = form.cleaned_data.get('book')
+                if book and hasattr(book, 'minimum_age_required') and book.minimum_age_required > 0:
+                    # Use the age_verified value from cleaned_data (which may be auto-set by the form)
+                    loan.age_verified = form.cleaned_data.get('age_verified', False)
+                    # member_age is now calculated automatically in the form, use the calculated value
+                    if hasattr(form, 'calculated_member_age'):
+                        loan.member_age = form.calculated_member_age
+                    else:
+                        loan.member_age = 0
+                
+                # Save the loan
+                logger.info(f"Saving loan for book: {loan.book}, member: {loan.member}")
+                loan.save()
+                
+                # Update inventory quantities
+                quantity = form.cleaned_data.get('quantity', 1) or 1
+                logger.info(f"Updating book quantity: {loan.book.quantity_available} - {quantity}")
+                loan.book.quantity_available = max(0, loan.book.quantity_available - quantity)
                 loan.book.save()
-            
-            messages.success(request, "Prêt enregistré avec succès et en attente d'approbation.")
-            return redirect('center_panel:loans')
+                
+                messages.success(request, "Prêt enregistré avec succès et en attente d'approbation.")
+                logger.info("Loan saved successfully, redirecting to loans list")
+                return redirect('center_panel:loans')
+            except Exception as e:
+                logger.error(f"Error saving loan: {str(e)}", exc_info=True)
+                messages.error(request, f"Erreur lors de l'enregistrement du prêt: {str(e)}")
+        else:
+            logger.error(f"Form validation errors: {form.errors}")
+            # Add more detailed error messages
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"Erreur dans le champ {field}: {error}")
     else:
-        # Initialize form with current date as default
+        # GET request - initialize form with default values
         initial_data = {
             'loan_date': timezone.now().date(),
-            'due_date': timezone.now().date() + timezone.timedelta(days=14)  # Default 2-week loan
+            'due_date': timezone.now().date() + timezone.timedelta(days=14),
+            'quantity': 1
         }
         form = LoanForm(documentation_center=current_center, initial=initial_data)
     
     context = {
         'form': form,
         'current_center': current_center,
+        'debug_mode': settings.DEBUG,
     }
     return render(request, 'center_panel/admin/add_edit_loan.html', context)
 
@@ -252,6 +301,15 @@ def edit_loan(request, loan_id):
             
             loan = form.save(commit=False)
             loan.processed_by = request.user  # Update who last modified the loan
+            
+            # If age verification is required, set the verified flag and member_age
+            if loan.book.minimum_age_required > 0:
+                # Use the age_verified value from the form (which may be auto-set)
+                loan.age_verified = form.cleaned_data.get('age_verified', False)
+                # Set member_age if it was calculated in the form
+                if hasattr(form, 'calculated_member_age'):
+                    loan.member_age = form.calculated_member_age
+            
             loan.save()
             
             # Adjust available quantity if quantity changed
@@ -417,6 +475,133 @@ def center_dashboard(request):
         'upcoming_returns': upcoming_returns,
         'current_date': timezone.localdate(),
     }
+    # Check user group to render the correct dashboard
+    if request.user.groups.filter(name='Member').exists():
+        # --- Member Panel Context ---
+        search_query = request.GET.get('q', '')
+        books = Book.objects.filter(documentation_center=current_center, status='available')
+
+        if search_query:
+            books = books.filter(
+                Q(title__icontains=search_query) |
+                Q(authors__full_name__icontains=search_query) |
+                Q(description__icontains=search_query)
+            ).distinct()
+
+        books = books.order_by('title')
+        
+        # Get loans for this member
+        try:
+            member = request.user.member_profile
+            member_loans = Loan.objects.filter(member=member).order_by('-loan_date')
+            total_member_loans = member_loans.count()
+            active_member_loans = member_loans.filter(return_date__isnull=True).count()
+            overdue_member_loans = member_loans.filter(return_date__isnull=True, due_date__lt=timezone.now().date()).count()
+        except Member.DoesNotExist:
+            member_loans = Loan.objects.none()
+            total_member_loans = 0
+            active_member_loans = 0
+            overdue_member_loans = 0
+            member = None
+        
+        # Calculate digital books count
+        digital_books = Book.objects.filter(documentation_center=current_center, is_digital=True).count()
+        
+        # Get reading progress data (books read per month)
+        import json
+        from datetime import datetime
+        from django.db.models import Count
+        from django.db.models.functions import Extract
+        
+        # Get books read in the last 12 months
+        end_date = timezone.now().date()
+        start_date = end_date - timedelta(days=365)
+        
+        reading_progress_data = BookRead.objects.filter(
+            user=request.user,
+            created_at__date__gte=start_date,
+            created_at__date__lte=end_date
+        ).annotate(
+            month=Extract('created_at', 'month'),
+            year=Extract('created_at', 'year')
+        ).values('year', 'month').annotate(count=Count('id')).order_by('year', 'month')
+        
+        # Format data for chart
+        reading_progress_chart_data = []
+        reading_progress_labels = []
+        
+        # Create a dictionary with all months
+        months_data = {}
+        for i in range(12):
+            date = start_date + timedelta(days=30*i)
+            month_key = f"{date.year}-{date.month:02d}"
+            months_data[month_key] = 0
+            
+        # Fill in actual data
+        for item in reading_progress_data:
+            month_key = f"{int(item['year'])}-{int(item['month']):02d}"
+            months_data[month_key] = item['count']
+            
+        # Convert to lists for chart
+        for month_key, count in months_data.items():
+            year, month = month_key.split('-')
+            month_names = ['', 'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jui', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
+            reading_progress_labels.append(f"{month_names[int(month)]} {year}")
+            reading_progress_chart_data.append(count)
+        
+        # Get completed trainings data (using books read as placeholder)
+        # In the future, this would be replaced with actual training completion data
+        completed_trainings_data = BookRead.objects.filter(
+            user=request.user,
+            created_at__date__gte=start_date,
+            created_at__date__lte=end_date
+        ).annotate(
+            month=Extract('created_at', 'month'),
+            year=Extract('created_at', 'year')
+        ).values('year', 'month').annotate(count=Count('id')).order_by('year', 'month')
+        
+        # Format data for chart
+        completed_trainings_chart_data = []
+        completed_trainings_labels = []
+        
+        # Create a dictionary with all months
+        trainings_data = {}
+        for i in range(12):
+            date = start_date + timedelta(days=30*i)
+            month_key = f"{date.year}-{date.month:02d}"
+            trainings_data[month_key] = 0
+            
+        # Fill in actual data
+        for item in completed_trainings_data:
+            month_key = f"{int(item['year'])}-{int(item['month']):02d}"
+            trainings_data[month_key] = item['count']
+            
+        # Convert to lists for chart
+        for month_key, count in trainings_data.items():
+            year, month = month_key.split('-')
+            month_names = ['', 'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jui', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
+            completed_trainings_labels.append(f"{month_names[int(month)]} {year}")
+            completed_trainings_chart_data.append(count)
+        
+        member_context = {
+            'current_center': current_center,
+            'books': books,
+            'search_query': search_query,
+            'total_books': books.count(),
+            'digital_books': digital_books,
+            'member_loans': member_loans,
+            'total_member_loans': total_member_loans,
+            'active_member_loans': active_member_loans,
+            'overdue_member_loans': overdue_member_loans,
+            'member': member,
+            'reading_progress_data': json.dumps(reading_progress_chart_data),
+            'reading_progress_labels': json.dumps(reading_progress_labels),
+            'completed_trainings_data': json.dumps(completed_trainings_chart_data),
+            'completed_trainings_labels': json.dumps(completed_trainings_labels),
+        }
+        return render(request, 'center_panel/member_panel.html', member_context)
+    
+    # --- Admin/Staff Panel Context ---
     return render(request, 'center_panel/dashboard.html', context)
 
 
@@ -434,6 +619,20 @@ def center_book_list(request):
         return redirect('login')
 
     books = Book.objects.filter(documentation_center=current_center).order_by('title')
+    
+    # Add user interaction data for each book
+    if request.user.is_authenticated:
+        # Get all user interactions for books in this center
+        book_ids = books.values_list('id', flat=True)
+        user_likes = BookLike.objects.filter(user=request.user, book_id__in=book_ids).values_list('book_id', flat=True)
+        user_dislikes = BookDislike.objects.filter(user=request.user, book_id__in=book_ids).values_list('book_id', flat=True)
+        user_reads = BookRead.objects.filter(user=request.user, book_id__in=book_ids).values_list('book_id', flat=True)
+        
+        # Add interaction data to each book
+        for book in books:
+            book.user_liked = book.id in user_likes
+            book.user_disliked = book.id in user_dislikes
+            book.user_read = book.id in user_reads
 
     context = {
         'current_center': current_center,
@@ -452,11 +651,56 @@ def book_detail(request, pk):
     
     book = get_object_or_404(Book, pk=pk, documentation_center=current_center)
     
+    # Check user's interaction status with the book
+    user_liked = BookLike.objects.filter(user=request.user, book=book).exists()
+    user_disliked = BookDislike.objects.filter(user=request.user, book=book).exists()
+    user_read = BookRead.objects.filter(user=request.user, book=book).exists()
+    
     context = {
         'book': book,
-        'current_center': current_center
+        'current_center': current_center,
+        'user_liked': user_liked,
+        'user_disliked': user_disliked,
+        'user_read': user_read,
     }
     return render(request, 'center_panel/book_detail.html', context)
+
+
+@login_required
+def like_book(request, book_id):
+    """View for liking a book."""
+    if request.method == 'POST':
+        book = get_object_or_404(Book, id=book_id)
+        # Remove any existing dislike by this user for this book
+        BookDislike.objects.filter(user=request.user, book=book).delete()
+        # Create like (if it doesn't already exist)
+        BookLike.objects.get_or_create(user=request.user, book=book)
+        messages.success(request, "Vous avez aimé ce livre.")
+    return redirect('center_panel:book_detail', pk=book_id)
+
+
+@login_required
+def dislike_book(request, book_id):
+    """View for disliking a book."""
+    if request.method == 'POST':
+        book = get_object_or_404(Book, id=book_id)
+        # Remove any existing like by this user for this book
+        BookLike.objects.filter(user=request.user, book=book).delete()
+        # Create dislike (if it doesn't already exist)
+        BookDislike.objects.get_or_create(user=request.user, book=book)
+        messages.success(request, "Vous n'avez pas aimé ce livre.")
+    return redirect('center_panel:book_detail', pk=book_id)
+
+
+@login_required
+def mark_book_as_read(request, book_id):
+    """View for marking a book as read."""
+    if request.method == 'POST':
+        book = get_object_or_404(Book, id=book_id)
+        # Create read record (if it doesn't already exist)
+        BookRead.objects.get_or_create(user=request.user, book=book)
+        messages.success(request, "Vous avez marqué ce livre comme lu.")
+    return redirect('center_panel:book_detail', pk=book_id)
 
 import logging
 logger = logging.getLogger(__name__)
@@ -610,8 +854,13 @@ def add_member(request):
             try:
                 group = Group.objects.get(name=user_type)
                 user.groups.add(group)
+                messages.success(request, f"L'utilisateur a été ajouté au groupe '{user_type}'.")
+                # Log the success
+                logger.info(f"User {user.username} (ID: {user.id}) successfully added to group '{user_type}'")
             except Group.DoesNotExist:
-                messages.warning(request, f"Le groupe '{user_type}' n'existe pas.")
+                messages.error(request, f"Le groupe '{user_type}' n'existe pas. L'utilisateur n'a pas été assigné à un groupe.")
+                # Log the error for debugging
+                logger.error(f"Group '{user_type}' does not exist when creating user {user.username}")
             
             # Create member profile
             member = form.save(commit=False)
@@ -736,6 +985,52 @@ def loan_list(request):
         'returned_loans': returned_loans,
     }
     return render(request, 'center_panel/loans.html', context)
+
+
+@login_required
+def member_loans(request):
+    # Get the current center
+    current_center = DocumentationCenter.objects.first()
+    if not current_center:
+        messages.error(request, "Aucun centre de documentation trouvé.")
+        return redirect('admin:index')
+    
+    # Get the member associated with the current user
+    try:
+        member = request.user.member_profile
+    except Member.DoesNotExist:
+        messages.error(request, "Aucun profil de membre trouvé pour votre compte.")
+        return redirect('center_panel:dashboard')
+    
+    # Get loans for this member
+    loans = Loan.objects.filter(member=member).order_by('-loan_date')
+    
+    # Apply status filter if provided
+    status_filter = request.GET.get('status', '')
+    if status_filter == 'active':
+        loans = loans.filter(return_date__isnull=True)
+    elif status_filter == 'overdue':
+        loans = loans.filter(return_date__isnull=True, due_date__lt=timezone.now().date())
+    elif status_filter == 'returned':
+        loans = loans.filter(return_date__isnull=False)
+    
+    # Counts for status filters
+    total_loans = loans.count()
+    active_loans = loans.filter(return_date__isnull=True).count()
+    overdue_loans = loans.filter(return_date__isnull=True, due_date__lt=timezone.now().date()).count()
+    returned_loans = loans.filter(return_date__isnull=False).count()
+    
+    context = {
+        'current_center': current_center,
+        'loans': loans,
+        'status_filter': status_filter,
+        'total_loans': total_loans,
+        'active_loans': active_loans,
+        'overdue_loans': overdue_loans,
+        'returned_loans': returned_loans,
+        'member': member,
+    }
+    return render(request, 'center_panel/member_loans.html', context)
 @login_required
 def add_loan(request):
     current_center = DocumentationCenter.objects.first()
@@ -750,9 +1045,12 @@ def add_loan(request):
                 loan.status = 'borrowed'  # Set initial status
                 loan.loan_date = timezone.now().date()
                 
-                # If age verification is required, set the verified flag
+                # If age verification is required, set the verified flag and member_age
                 if loan.book.minimum_age_required > 0:
                     loan.age_verified = True
+                    # Set member_age if it was calculated in the form
+                    if hasattr(form, 'calculated_member_age'):
+                        loan.member_age = form.calculated_member_age
                     
                 loan.save()
                 

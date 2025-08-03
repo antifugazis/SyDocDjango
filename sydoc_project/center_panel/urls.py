@@ -4,6 +4,8 @@ from django.urls import path
 from . import views
 from . import log_views
 from . import views_debug
+from . import views_group_test
+from . import views_login
 
 app_name = 'center_panel' # Namespace for this app's URLs
 
@@ -17,6 +19,9 @@ urlpatterns = [
     path('books/<int:pk>/', views.book_detail, name='book_detail'),
     path('books/<int:pk>/edit/', views.edit_book, name='edit_book'),
     path('books/<int:pk>/delete/', views.delete_book, name='delete_book'),
+    path('books/<int:book_id>/like/', views.like_book, name='like_book'),
+    path('books/<int:book_id>/dislike/', views.dislike_book, name='dislike_book'),
+    path('books/<int:book_id>/mark-as-read/', views.mark_book_as_read, name='mark_book_as_read'),
 
     # Member Management
     path('members/', views.member_list, name='members'),
@@ -34,8 +39,12 @@ urlpatterns = [
     path('loans/<int:loan_id>/cancel/', views.cancel_loan, name='cancel_loan'),
     path('loans/<int:loan_id>/delete/', views.delete_loan, name='delete_loan'),
     
+    # Member Loans (for members to view their own loans)
+    path('my-loans/', views.member_loans, name='member_loans'),
+    
     # API Endpoints
-    path('api/book/<int:book_id>/volumes/', views.get_book_volumes, name='book_volumes_api'),
+    path('api/books/<int:book_id>/details/', views.get_book_details, name='book_details_api'),
+    path('api/members/<int:member_id>/details/', views.get_member_details, name='member_details_api'),
 
     # Staff Management
     path('staff/', views.staff_list, name='staff'),
@@ -154,4 +163,12 @@ urlpatterns = [
     
     # Admin Features
     path('admin/logs/', log_views.view_logs, name='logs'),
+    
+    # Group Testing Views
+    path('group-info/', views_group_test.group_info, name='group_info'),
+    path('group-info/api/', views_group_test.group_info_api, name='group_info_api'),
+    path('group-protected/', views_group_test.group_protected_view, name='group_protected_view'),
+    
+    # Login Success - Group-based redirect
+    path('login-success/', views_login.login_success, name='login_success'),
 ]

@@ -144,7 +144,7 @@ LOGS_DIR = os.path.join(BASE_DIR, 'logs')
 os.makedirs(LOGS_DIR, exist_ok=True)
 
 # Authentication settings
-LOGIN_REDIRECT_URL = 'center_panel:dashboard'
+LOGIN_REDIRECT_URL = 'center_panel:login_success'
 LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = 'login'
 
@@ -206,6 +206,11 @@ LOGGING = {
         "core": {
             "handlers": ["console", "file"],
             "level": "DEBUG",
+            "propagate": True,
+        },
+        "auth": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
             "propagate": True,
         },
     },

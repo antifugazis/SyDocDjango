@@ -1,4 +1,6 @@
 {% extends 'center_panel/base.html' %}
+{% load static %}
+{% load custom_tags %}
 
 {% block title %}Communiqués Officiels{% endblock %}
 
@@ -6,10 +8,12 @@
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Communiqués Officiels</h1>
+        {% if not user|has_group:'Member' %}
         <a href="{% url 'center_panel:add_communique' %}" class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow transition duration-150 ease-in-out">
             <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
             Rédiger un communiqué
         </a>
+        {% endif %}
     </div>
 
     {% if communiques %}

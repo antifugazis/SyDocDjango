@@ -93,8 +93,7 @@
                             {% endif %}
                         </div>
 
-                        <!-- User Type - Only visible to admins -->
-                        {% if user|has_group:"Super Admin,Admin" %}
+                        <!-- User Type -->
                         <div>
                             <label for="id_user_type" class="block text-sm font-medium text-gray-700">
                                 Type d'utilisateur *
@@ -104,7 +103,6 @@
                                 <p class="mt-1 text-sm text-red-600">{{ form.user_type.errors.0 }}</p>
                             {% endif %}
                         </div>
-                        {% endif %}
 
                         <!-- Is Active -->
                         <div class="flex items-center">
@@ -142,6 +140,19 @@
                             {% endif %}
                         </div>
                     </div>
+                </div>
+
+                <!-- Date of Birth -->
+                <div class="mt-6">
+                    <label for="id_date_of_birth" class="block text-sm font-medium text-gray-700">
+                        Date de Naissance <span class="text-red-600">*</span>
+                    </label>
+                    {{ form.date_of_birth }}
+                    {% if form.date_of_birth.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.date_of_birth.errors.0 }}</p>
+                    {% else %}
+                        <p class="mt-1 text-xs text-gray-500">Obligatoire pour vérifier l'âge lors des emprunts de livres avec restriction d'âge.</p>
+                    {% endif %}
                 </div>
 
                 <!-- Address (Full Width) -->

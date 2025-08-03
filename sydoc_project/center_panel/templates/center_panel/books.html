@@ -1,4 +1,5 @@
 {% extends 'center_panel/base.html' %}
+{% load custom_tags %}
 
 {% block title %}Mes Livres - {{ current_center.name }}{% endblock %}
 
@@ -25,6 +26,8 @@
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Genre / Thème</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantité</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lu</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avis</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
@@ -79,16 +82,35 @@
                                 Archivé
                             </span>
                         {% else %}
-                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                Disponible
+                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {% if book.status == 'available' %}bg-green-100 text-green-800{% elif book.status == 'on_loan' %}bg-yellow-100 text-yellow-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ book.get_status_display }}
                             </span>
                         {% endif %}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if book.user_read %}
+                            <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">Lu</span>
+                        {% else %}
+                            <span class="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">Non lu</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if book.user_liked %}
+                            <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">J'aime</span>
+                        {% elif book.user_disliked %}
+                            <span class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">Je n'aime pas</span>
+                        {% else %}
+                            <span class="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">Aucun avis</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div class="flex space-x-2">
-                            <a href="{% url 'center_panel:book_detail' book.id %}" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">Voir les détails</a>
+                            
+                            <a href="{% url 'center_panel:book_detail' book.id %}" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">Voir</a>
+                            {% if not user|has_group:'Member' %}
                             <a href="{% url 'center_panel:edit_book' book.id %}" class="bg-yellow-100 hover:bg-yellow-200 text-yellow-700 px-3 py-1 rounded-full text-sm font-medium">Modifier</a>
                             <a href="{% url 'center_panel:delete_book' book.id %}" class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded-full text-sm font-medium">Supprimer</a>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>

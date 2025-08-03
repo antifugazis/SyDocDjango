@@ -1,5 +1,5 @@
 {% extends 'center_panel/base.html' %}
-
+{% load custom_tags %}
 {% block title %}{{ book.title }} - Détails du livre{% endblock %}
 
 {% block content %}
@@ -13,12 +13,24 @@
                 </svg>
                 Retour à la liste
             </a>
+            {% if not user|has_group:'Member' %}
             <a href="{% url 'center_panel:edit_book' book.id %}" class="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors duration-200 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                     <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                 </svg>
                 Modifier
             </a>
+            {% else %}
+            <form method="post" action="{% url 'center_panel:mark_book_as_read' book.id %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors duration-200 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    Marquer comme lu
+                </button>
+            </form>
+            {% endif %}
         </div>
     </div>
     
@@ -109,6 +121,71 @@
             
             <!-- Book Details Section -->
             <div class="md:w-2/3 p-6">
+                <!-- User Interaction Section -->
+                <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <div class="flex flex-wrap gap-4 justify-center">
+                        <!-- Like Button -->
+                        <form method="post" action="{% url 'center_panel:like_book' book.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="flex items-center justify-center px-4 py-2 {% if user_liked %}bg-green-500 text-white{% else %}bg-green-100 text-green-800 hover:bg-green-200{% endif %} rounded-lg transition-colors duration-200">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                                </svg>
+                                <span>J'aime</span>
+                            </button>
+                        </form>
+                        
+                        <!-- Dislike Button -->
+                        <form method="post" action="{% url 'center_panel:dislike_book' book.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="flex items-center justify-center px-4 py-2 {% if user_disliked %}bg-red-500 text-white{% else %}bg-red-100 text-red-800 hover:bg-red-200{% endif %} rounded-lg transition-colors duration-200">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                </svg>
+                                <span>Je n'aime pas</span>
+                            </button>
+                        </form>
+                        
+                        <!-- Mark as Read Button -->
+                        <form method="post" action="{% url 'center_panel:mark_book_as_read' book.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="flex items-center justify-center px-4 py-2 {% if user_read %}bg-blue-500 text-white{% else %}bg-blue-100 text-blue-800 hover:bg-blue-200{% endif %} rounded-lg transition-colors duration-200">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                                <span>Marquer comme lu</span>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- User Interaction Status -->
+                    <div class="mt-4 text-center text-sm text-gray-600">
+                        {% if user_liked %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-green-400" fill="currentColor" viewBox="0 0 8 8">
+                                    <circle cx="4" cy="4" r="3" />
+                                </svg>
+                                Vous avez aimé ce livre
+                            </span>
+                        {% elif user_disliked %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-red-400" fill="currentColor" viewBox="0 0 8 8">
+                                    <circle cx="4" cy="4" r="3" />
+                                </svg>
+                                Vous n'avez pas aimé ce livre
+                            </span>
+                        {% endif %}
+                        
+                        {% if user_read %}
+                            <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-blue-400" fill="currentColor" viewBox="0 0 8 8">
+                                    <circle cx="4" cy="4" r="3" />
+                                </svg>
+                                Vous avez lu ce livre
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
                 <dl>
                     <!-- Authors -->
                     <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 rounded-t-lg">
@@ -242,6 +319,7 @@
                     </div>
                 </dl>
             </div>
+            
         </div>
     </div>
 </div>

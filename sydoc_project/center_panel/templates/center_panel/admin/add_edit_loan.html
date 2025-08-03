@@ -7,68 +7,67 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Handle book selection to update volume options
         const bookSelect = document.getElementById('id_book');
-        const volumeSelect = document.getElementById('id_volume');
-        const volumeContainer = document.getElementById('volume-container');
-        const ageContainer = document.getElementById('age-verification-container');
+        const memberSelect = document.getElementById('id_member');
+        const ageVerificationContainer = document.getElementById('age-verification-container');
+        const tempDobContainer = document.getElementById('temp-dob-container');
         const ageVerifiedCheckbox = document.getElementById('id_age_verified');
-        const memberAgeInput = document.getElementById('id_member_age');
+        const tempDateOfBirthInput = document.getElementById('id_temp_date_of_birth');
         const quantityInput = document.getElementById('id_quantity');
+        const loanForm = document.querySelector('form');
         
-        // Function to fetch volumes for selected book
-        function fetchVolumes(bookId) {
-            if (!bookId) {
-                volumeContainer.style.display = 'none';
-                return;
-            }
-            
-            fetch(`/center_panel/api/book/${bookId}/volumes/`)
-                .then(response => response.json())
-                .then(data => {
-                    // Clear existing options
-                    volumeSelect.innerHTML = '';
-                    
-                    // Add new options
-                    if (data.has_volumes) {
-                        data.volumes.forEach(volume => {
-                            const option = document.createElement('option');
-                            option.value = volume.id;
-                            option.textContent = `Tome ${volume.volume_number}: ${volume.title}`;
-                            volumeSelect.appendChild(option);
-                        });
+        // Function to check if a member has a date of birth
+        function checkMemberDateOfBirth() {
+            const memberId = memberSelect.value;
+            if (memberId) {
+                fetch(`/center/api/members/${memberId}/details/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Member data:', data);
                         
-                        // Enable and show volume selection
-                        volumeSelect.disabled = false;
-                        volumeContainer.style.display = 'block';
-                        
-                        // Update quantity max based on first volume's available stock
-                        if (quantityInput && data.volumes.length > 0) {
-                            const maxQuantity = data.volumes[0].quantity_available;
-                            quantityInput.max = maxQuantity;
-                            
-                            // Update hint about available quantity
-                            let hintElement = document.getElementById('quantity-hint');
-                            if (hintElement) {
-                                hintElement.textContent = `Disponible: ${maxQuantity} exemplaire(s)`;
-                            }
+                        // If the book requires age verification and member doesn't have date of birth
+                        if (!data.has_date_of_birth && !ageVerificationContainer.classList.contains('hidden')) {
+                            tempDobContainer.style.display = 'block';
+                            tempDateOfBirthInput.required = true;
+                        } else {
+                            tempDobContainer.style.display = 'none';
+                            tempDateOfBirthInput.required = false;
                         }
-                    } else {
-                        volumeContainer.style.display = 'none';
-                    }
-                    
-                    // Handle age restriction
-                    if (data.minimum_age_required > 0) {
-                        document.getElementById('minimum-age-notice').textContent = 
-                            `Ce livre nécessite un âge minimum de ${data.minimum_age_required} ans.`;
-                        ageContainer.style.display = 'block';
-                    } else {
-                        ageContainer.style.display = 'none';
-                    }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching member details:', error);
+                        // Show the temp DOB field as a fallback
+                        tempDobContainer.style.display = 'block';
+                    });
+            }
+        }
+        
+        function updateBookDetails() {
+            const bookId = bookSelect.value;
+            if (bookId) {
+                fetch(`/center/api/books/${bookId}/details/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Book data:', data);
+                        
+                        // Handle age verification
+                        if (data.minimum_age_required > 0) {
+                            ageVerificationContainer.style.display = 'block';
+                            document.getElementById('minimum-age-notice').textContent = 
+                                `Ce livre nécessite un âge minimum de ${data.minimum_age_required} ans. Veuillez vérifier l'âge du membre.`;
+                            
+                            // Mark age verification fields as required
+                            // We'll auto-check this when the member's age is sufficient
+                            // The form's clean method will handle the verification
+                            
+                            // Check if we need to show the temp DOB field
+                            checkMemberDateOfBirth();
+                        } else {
+                            ageVerificationContainer.style.display = 'none';
+                        }
                     
                     // Update quantity max based on available stock
                     if (quantityInput) {
-                        // For books with volumes, we'll update this when a volume is selected
-                        // For books without volumes, use the book's available quantity
-                        const maxQuantity = data.has_volumes ? 1 : data.quantity_available;
+                        const maxQuantity = data.quantity_available;
                         quantityInput.max = maxQuantity;
                         quantityInput.min = 1;
                         
@@ -89,53 +88,64 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Error fetching volumes:', error);
+                    console.error('Error fetching book details:', error);
+                    alert('Erreur lors de la récupération des détails du livre. Veuillez réessayer.');
                 });
+            } else {
+                ageVerificationContainer.classList.add('hidden');
+                if (quantityInput) {
+                    quantityInput.max = 1;
+                    quantityInput.value = 1;
+                }
+            }
         }
         
         // Initial state based on selected book
         if (bookSelect && bookSelect.value) {
-            fetchVolumes(bookSelect.value);
-        } else if (volumeContainer) {
-            volumeContainer.style.display = 'none';
+            updateBookDetails();
+        } else {
+            ageVerificationContainer.style.display = 'none';
         }
         
-        // Handle volume selection to update quantity
-        if (volumeSelect) {
-            volumeSelect.addEventListener('change', function() {
-                if (bookSelect && bookSelect.value) {
-                    // Fetch volumes again to get the selected volume's available quantity
-                    fetch(`/center_panel/api/book/${bookSelect.value}/volumes/`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (quantityInput && data.volumes.length > 0) {
-                                // Find the selected volume
-                                const selectedVolumeId = parseInt(this.value);
-                                const selectedVolume = data.volumes.find(volume => volume.id === selectedVolumeId);
-                                
-                                if (selectedVolume) {
-                                    const maxQuantity = selectedVolume.quantity_available;
-                                    quantityInput.max = maxQuantity;
-                                    
-                                    // Update hint about available quantity
-                                    let hintElement = document.getElementById('quantity-hint');
-                                    if (hintElement) {
-                                        hintElement.textContent = `Disponible: ${maxQuantity} exemplaire(s)`;
-                                    }
-                                }
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error fetching volumes:', error);
-                        });
+        // Initially hide the temp DOB container
+        if (tempDobContainer) {
+            tempDobContainer.style.display = 'none';
+        }
+        
+        // No volume selection needed
+        
+        // Update book details when book selection changes
+        bookSelect.addEventListener('change', function() {
+            updateBookDetails();
+        });
+        
+        // Add member change event listener
+        if (memberSelect) {
+            memberSelect.addEventListener('change', function() {
+                // If age verification is visible, check member DOB
+                if (ageVerificationContainer.style.display !== 'none') {
+                    checkMemberDateOfBirth();
                 }
             });
         }
         
-        // Update volumes when book selection changes
-        if (bookSelect) {
-            bookSelect.addEventListener('change', function() {
-                fetchVolumes(this.value);
+        // Add form submission handler
+        if (loanForm) {
+            loanForm.addEventListener('submit', function(event) {
+                console.log('Submit button clicked');
+                
+                // Check if book requires age verification
+                const bookId = bookSelect.value;
+                if (bookId && ageVerificationContainer && !ageVerificationContainer.classList.contains('hidden')) {
+                    // Ensure age is verified
+                    if (!ageVerifiedCheckbox.checked) {
+                        event.preventDefault();
+                        alert("Veuillez vérifier l'âge du membre pour ce livre.");
+                        return false;
+                    }
+                }
+                
+                // No volume validation needed
             });
         }
         
@@ -143,16 +153,12 @@
         if (ageVerifiedCheckbox) {
             ageVerifiedCheckbox.addEventListener('change', function() {
                 if (this.checked) {
-                    memberAgeInput.removeAttribute('disabled');
                 } else {
-                    memberAgeInput.setAttribute('disabled', 'disabled');
-                    memberAgeInput.value = '';
                 }
             });
             
             // Initial state
             if (!ageVerifiedCheckbox.checked) {
-                memberAgeInput.setAttribute('disabled', 'disabled');
             }
         }
         
@@ -168,6 +174,47 @@
                     this.value = 1;
                 }
             });
+        }
+    });
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form submission debugging
+    document.addEventListener('DOMContentLoaded', function() {
+        const loanForm = document.getElementById('loan-form');
+        if (loanForm) {
+            console.log('Loan form found, adding submission handler');
+            
+            loanForm.addEventListener('submit', function(event) {
+                console.log('Form submission event triggered');
+                
+                // Log form data
+                const formData = new FormData(loanForm);
+                console.log('Form data:');
+                for (let pair of formData.entries()) {
+                    console.log(pair[0] + ': ' + pair[1]);
+                }
+                
+                // Check for required fields
+                const requiredFields = ['book', 'member', 'loan_date', 'due_date'];
+                let missingFields = [];
+                
+                requiredFields.forEach(field => {
+                    const fieldElement = document.getElementById('id_' + field);
+                    if (fieldElement && !fieldElement.value) {
+                        console.error('Missing required field:', field);
+                        missingFields.push(field);
+                    }
+                });
+                
+                if (missingFields.length > 0) {
+                    console.error('Form has missing required fields:', missingFields);
+                }
+            });
+        } else {
+            console.error('Loan form not found!');
         }
     });
 </script>
@@ -197,7 +244,32 @@
                 </p>
             </div>
             
-            <form method="post" class="px-4 py-5 sm:p-6">
+            <!-- Django Messages -->
+            {% if messages %}
+            <div class="px-4 py-3">
+                {% for message in messages %}
+                <div class="{% if message.tags == 'success' %}bg-green-50 text-green-800 border-green-400{% elif message.tags == 'error' %}bg-red-50 text-red-800 border-red-400{% else %}bg-blue-50 text-blue-800 border-blue-400{% endif %} p-4 mb-3 rounded-md border-l-4">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Form Errors Debug -->
+            {% if form.errors %}
+            <div class="px-4 py-3 bg-red-50 border-l-4 border-red-400 mb-4">
+                <h4 class="font-medium text-red-800">Erreurs de formulaire:</h4>
+                <ul class="list-disc pl-5 mt-2 text-sm text-red-700">
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <li>{{ field }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            <form method="post" class="px-4 py-5 sm:p-6" id="loan-form">
                 {% csrf_token %}
                 
                 {% if form.non_field_errors %}
@@ -234,19 +306,6 @@
                     </div>
                 </div>
                 
-                <!-- Volume Selection (only shown for multi-volume books) -->
-                <div id="volume-container" class="mb-6" style="display: none;">
-                    <label for="id_volume" class="block text-sm font-medium text-gray-700 mb-1">
-                        Tome/Volume *
-                    </label>
-                    <div class="mt-1">
-                        {{ form.volume }}
-                        {% if form.volume.errors %}
-                            <p class="mt-1 text-sm text-red-600">{{ form.volume.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-                </div>
-                
                 <!-- Quantity -->
                 <div class="mb-6">
                     <label for="id_quantity" class="block text-sm font-medium text-gray-700 mb-1">
@@ -267,6 +326,21 @@
                 <div id="age-verification-container" class="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400" style="display: none;">
                     <p id="minimum-age-notice" class="text-sm text-yellow-800 mb-3"></p>
                     
+                    <!-- Temporary Date of Birth field -->
+                    <div id="temp-dob-container" class="mb-3">
+                        <label for="id_temp_date_of_birth" class="block text-sm font-medium text-gray-700 mb-1">
+                            Date de naissance du membre
+                        </label>
+                        <div class="mt-1">
+                            {{ form.temp_date_of_birth }}
+                        </div>
+                        {% if form.temp_date_of_birth.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.temp_date_of_birth.errors.0 }}</p>
+                        {% else %}
+                            <p class="mt-1 text-xs text-gray-500">Si la date de naissance du membre n'est pas enregistrée, veuillez la saisir ici. Elle sera sauvegardée pour les futurs emprunts.</p>
+                        {% endif %}
+                    </div>
+                    
                     <div class="flex items-center mb-3">
                         <div class="flex items-center h-5">
                             {{ form.age_verified }}
@@ -277,18 +351,6 @@
                         {% if form.age_verified.errors %}
                             <p class="mt-1 text-sm text-red-600">{{ form.age_verified.errors.0 }}</p>
                         {% endif %}
-                    </div>
-                    
-                    <div>
-                        <label for="id_member_age" class="block text-sm font-medium text-gray-700 mb-1">
-                            Âge du membre
-                        </label>
-                        <div class="mt-1">
-                            {{ form.member_age }}
-                            {% if form.member_age.errors %}
-                                <p class="mt-1 text-sm text-red-600">{{ form.member_age.errors.0 }}</p>
-                            {% endif %}
-                        </div>
                     </div>
                 </div>
                 
@@ -324,7 +386,7 @@
                         <a href="{% url 'center_panel:loans' %}" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-3">
                             Annuler
                         </a>
-                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <button type="submit" id="loan-submit-button" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" onclick="console.log('Submit button clicked')">
                             <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                             </svg>

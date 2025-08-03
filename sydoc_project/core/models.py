@@ -11,6 +11,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.core.cache import cache
 from django.conf import settings
+from django.urls import reverse
 import random
 import string
 import logging
@@ -732,6 +733,7 @@ class Member(models.Model):
     email = models.EmailField(blank=True, null=True, verbose_name='E-mail')
     phone_number = models.CharField(max_length=17, blank=True, null=True, validators=[DocumentationCenter.phone_regex], verbose_name='Téléphone')
     address = models.TextField(blank=True, verbose_name='Adresse')
+    date_of_birth = models.DateField(null=True, blank=True, verbose_name='Date de Naissance')
     date_joined = models.DateField(auto_now_add=True, verbose_name='Date d\'Adhésion')
     is_active = models.BooleanField(default=True, verbose_name='Actif')
     membership_type = models.CharField(max_length=50, choices=MEMBERSHIP_CHOICES, default='public', verbose_name='Type d\'Adhésion')
@@ -748,6 +750,15 @@ class Member(models.Model):
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
+    
+    @property
+    def age(self):
+        """Calculate and return the member's age in years"""
+        if self.date_of_birth:
+            from datetime import date
+            today = date.today()
+            return today.year - self.date_of_birth.year - ((today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day))
+        return None
 
 
 class Loan(models.Model):
@@ -1416,13 +1427,67 @@ class DigitizedPage(models.Model):
         return f"Page {self.page_number} for '{self.digitization_process.book.title}'"
 
 
+class BookLike(models.Model):
+    """
+    Model to track user likes for books.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='book_likes')
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='likes')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('user', 'book')  # A user can like a book only once
+        verbose_name = 'Like de Livre'
+        verbose_name_plural = 'Likes de Livres'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.username} liked {self.book.title}"
+
+
+class BookDislike(models.Model):
+    """
+    Model to track user dislikes for books.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='book_dislikes')
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='dislikes')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('user', 'book')  # A user can dislike a book only once
+        verbose_name = 'Dislike de Livre'
+        verbose_name_plural = 'Dislikes de Livres'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.username} disliked {self.book.title}"
+
+
+class BookRead(models.Model):
+    """
+    Model to track when users mark books as read.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='books_read')
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='read_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('user', 'book')  # A user can mark a book as read only once
+        verbose_name = 'Livre Lu'
+        verbose_name_plural = 'Livres Lus'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.username} read {self.book.title}"
+
+
 class DeletionLog(models.Model):
     """
     Tracks deletions across the system with required justifications.
     This provides an audit trail for all deleted items.
     """
     DELETION_TYPES = [
-        ('book', 'Livre/Ouvrage'),
+        ('book', 'Livre'),
         ('member', 'Membre'),
         ('staff', 'Personnel'),
         ('loan', 'Prêt'),
@@ -1430,12 +1495,15 @@ class DeletionLog(models.Model):
         ('document', 'Document'),
         ('other', 'Autre'),
     ]
-
+    
+    # Link to documentation center
     documentation_center = models.ForeignKey(
         DocumentationCenter,
         on_delete=models.CASCADE,
         related_name='deletion_logs',
-        verbose_name='Centre de Documentation'
+        verbose_name='Centre de Documentation',
+        null=True,
+        blank=True
     )
     
     # Generic foreign key to track what was deleted

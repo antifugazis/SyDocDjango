@@ -1,4 +1,5 @@
 {% load static %}
+{% load custom_tags %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -208,7 +209,7 @@
             
                 
                 <!-- Desktop navigation -->
-                <div class="hidden md:flex md:items-center md:space-x-1">
+                <div class="hidden md:flex md:items-center md:justify-center md:space-x-1 md:flex-grow">
                     <!-- Dashboard Link -->
                     <a href="{% url 'center_panel:dashboard' %}" class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name == 'dashboard' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %}">
                         <div class="flex items-center">
@@ -219,7 +220,9 @@
                         </div>
                     </a>
 
-                    <!-- Formation Dropdown -->
+                    
+                    <!-- Formation Dropdown (Only for Super Admin, Admin, and Documentation Center) -->
+                    
                     <div class="relative group">
                         <button class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name in 'trainings,training_detail,add_training,edit_training_module,training_subjects,add_training_subject,edit_training_subject,lesson_list,lesson_detail,lesson_quiz' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %} flex items-center">
                             <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -239,6 +242,7 @@
                                     </svg>
                                     Liste des formations
                                 </a>
+                                {% if not user|has_group:'Member' %}
                                 <a href="{% url 'center_panel:add_training' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -267,11 +271,13 @@
                                     </svg>
                                     Ajouter un sujet
                                 </a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
-
-                    <!-- Bibliothèque Dropdown -->
+                    
+                   
+                    <!-- Bibliothèque Dropdown (Only for Super Admin, Admin, and Documentation Center) -->
                     <div class="relative group">
                         <button class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name in 'books,book_detail,add_book,edit_book,delete_book,loans,add_loan,return_loan,literary_genres,add_literary_genre,edit_literary_genre,delete_literary_genre,themes,add_theme,edit_theme,delete_theme' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %} flex items-center">
                             <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -291,6 +297,7 @@
                                     </svg>
                                     Liste des livres
                                 </a>
+                                {% if not user|has_group:'Member' %}
                                 <a href="{% url 'center_panel:add_book' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -348,14 +355,12 @@
                                     </svg>
                                     Numérisation Nubo
                                 </a>
-                                {% if request.user.is_superuser %}
                                 <a href="{% url 'center_panel:logs' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                                     </svg>
                                     Logs système
                                 </a>
-                                {% endif %}
                                 <div class="border-t border-gray-100 my-1"></div>
                                 <span class="block px-4 py-1 text-xs font-medium text-gray-500 uppercase tracking-wider">Prêts</span>
                                 <a href="{% url 'center_panel:loans' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
@@ -364,6 +369,16 @@
                                     </svg>
                                     Tous les prêts
                                 </a>
+                                {% endif %}
+                                {% if user|has_group:'Member,Admin,Super Admin,Documentation Center' %}
+                                <a href="{% url 'center_panel:member_loans' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                                    </svg>
+                                    Mes prêts
+                                </a>
+                                {% endif %}
+                                {% if not user|has_group:'Member' %}
                                 <a href="{% url 'center_panel:add_loan' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -384,11 +399,13 @@
                                     Retards
                                     <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-red-100 text-red-800 rounded-full">{{ overdue_loans_count|default:0 }}</span>
                                 </a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
-
+                    {% if not user|has_group:'Member' %}
                     <!-- Personnes Dropdown -->
+                    
                     <div class="relative group">
                         <button class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name in 'members,add_member,edit_member,delete_member,staff,add_staff,edit_staff,delete_staff' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %} flex items-center">
                             <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -439,6 +456,7 @@
                             </div>
                         </div>
                     </div>
+                    {% endif %}
 
                     <!-- Admin Panel (Only for superusers) -->
                     {% if user.is_superuser %}
@@ -472,12 +490,14 @@
                                     </svg>
                                     Liste des activités
                                 </a>
+                                {% if not user|has_group:'Member' %}
                                 <a href="{% url 'center_panel:add_activity' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                     </svg>
                                     Ajouter une activité
                                 </a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -502,12 +522,14 @@
                                     </svg>
                                     Liste des communiqués
                                 </a>
+                                {% if not user|has_group:'Member' %}
                                 <a href="{% url 'center_panel:add_communique' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                     </svg>
                                     Nouveau communiqué
                                 </a>
+                                {% endif %}
                                 <div class="border-t border-gray-100 my-1"></div>
                                 <span class="block px-4 py-1 text-xs font-medium text-gray-500 uppercase tracking-wider">Notifications</span>
                                 <a href="{% url 'center_panel:notifications' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 flex items-center">
@@ -520,6 +542,7 @@
                         </div>
                     </div>
 
+                    {% if not user|has_group:'Member' %}
                     <!-- Archives Dropdown -->
                     <div class="relative group">
                         <button class="px-3 py-2 rounded-md text-sm dm-sans-medium hover:bg-gray-100 transition-colors duration-200 {% if request.resolver_match.url_name in 'archives,add_archive,edit_archive,download_archive,delete_archive' %}text-indigo-600 border-b-2 border-indigo-600{% else %}text-gray-700{% endif %} flex items-center">
@@ -548,7 +571,8 @@
                             </div>
                         </div>
                     </div>
-
+                    {% endif %}
+                    {% if user|has_group:'Super Admin,Admin,Documentation Center,Member' %}
                     <!-- Logout Button -->
                     <a href="{% url 'logout' %}" class="ml-2 px-3 py-2 rounded-md text-sm dm-sans-medium text-red-600 hover:bg-red-50 transition-colors duration-200 flex items-center">
                         <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -556,6 +580,7 @@
                         </svg>
                         Déconnexion
                     </a>
+                    {% endif %}
             </div>
         </div>
         
@@ -579,6 +604,7 @@
                     Tableau de bord
                 </a>
                 
+                {% if not user|has_group:'Member' %}
                 <!-- Formation Dropdown -->
                 <div class="mobile-dropdown border-b border-gray-100 py-1">
                     <button class="mobile-dropdown-toggle w-full px-3 py-2 rounded-md text-base font-medium text-left {% if request.resolver_match.url_name in 'trainings,training_detail,add_training,edit_training_module,training_subjects,add_training_subject,edit_training_subject,lesson_list,lesson_detail,lesson_quiz' %}text-indigo-600{% else %}text-gray-700{% endif %} flex items-center justify-between">
@@ -717,6 +743,14 @@
                             </svg>
                             Gestion des prêts
                         </a>
+                        {% if user|has_group:'Member' %}
+                        <a href="{% url 'center_panel:member_loans' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                            </svg>
+                            Mes prêts
+                        </a>
+                        {% endif %}
                         <a href="{% url 'center_panel:add_loan' %}" class="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -892,6 +926,7 @@
                 </a>
             </div>
         </div>
+        {% endif %}
     </nav>
     {% endblock %}
 
@@ -934,6 +969,7 @@
             {% endfor %}
         {% endif %}
     </div>
+</div>
 
     <!-- Main Content -->
     <main class="container mx-auto py-6 px-4">

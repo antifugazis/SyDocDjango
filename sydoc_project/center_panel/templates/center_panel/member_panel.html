@@ -1,0 +1,651 @@
+{% extends 'center_panel/base.html' %}
+{% load static %}
+{% load tz %}
+
+{% block title %}Panel Membres - {{ current_center.name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Funnel+Sans:ital,wght@0,300..800;1,300..800&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<style>
+    /* Animation Classes */
+    .animate-fade-in {
+        animation: fadeIn 0.6s ease-in-out forwards;
+        opacity: 0;
+    }
+    
+    .animate-delay-100 { animation-delay: 0.1s; }
+    .animate-delay-200 { animation-delay: 0.2s; }
+    .animate-delay-300 { animation-delay: 0.3s; }
+    .animate-delay-400 { animation-delay: 0.4s; }
+    .animate-delay-500 { animation-delay: 0.5s; }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Stat Cards */
+    .stat-card {
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Mobile Navigation */
+    .mobile-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: white;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        z-index: 50;
+    }
+    
+    .mobile-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 0;
+        color: #6b7280;
+        transition: all 0.2s ease;
+    }
+    
+    .mobile-nav-item.active {
+        color: #10b981;
+    }
+    
+    .mobile-nav-item.active .active-indicator {
+        opacity: 1;
+    }
+    
+    .active-indicator {
+        position: absolute;
+        bottom: 0;
+        height: 3px;
+        width: 100%;
+        background-color: #10b981;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+    
+    /* Tab Content */
+    .tab-content {
+        display: none;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Main Container -->
+<div class="px-1 py-4 sm:px-3 md:px-6 max-w-7xl mx-auto mb-20">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 animate-fade-in">
+        <div class="mb-4 md:mb-0">
+            <h1 class="text-3xl md:text-4xl funnel-sans-bold text-gray-800 mb-1">Panel Membres</h1>
+            <p class="text-xl dm-sans-regular text-gray-600">{{ current_center.name }}</p>
+        </div>
+    </div>
+    
+    <!-- Content Tabs -->
+    <div class="tab-content active" id="dashboard-tab">
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            <!-- Total Books Card -->
+            <div class="stat-card bg-white rounded-lg shadow-sm p-6 border border-gray-200 animate-fade-in animate-delay-100" style="--accent-color: #3b82f6; --accent-color-light: #dbeafe;">
+                <div class="flex items-center mb-4">
+                    <div class="p-3 rounded-full stat-icon mr-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700">Ouvrages Totaux</h3>
+                        <p class="text-sm text-gray-500">Tous les livres disponibles</p>
+                    </div>
+                </div>
+                <div class="flex items-baseline">
+                    <span class="text-3xl stat-value counter-animation">{{ total_books|default:"0" }}</span>
+                    <span class="ml-2 text-sm text-gray-500">livres</span>
+                </div>
+            </div>
+            
+            <!-- Digital Books Card -->
+            <div class="stat-card bg-white rounded-lg shadow-sm p-6 border border-gray-200 animate-fade-in animate-delay-200" style="--accent-color: #10b981; --accent-color-light: #d1fae5;">
+                <div class="flex items-center mb-4">
+                    <div class="p-3 rounded-full stat-icon mr-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700">Ouvrages Numériques</h3>
+                        <p class="text-sm text-gray-500">Livres en format numérique</p>
+                    </div>
+                </div>
+                <div class="flex items-baseline">
+                    <span class="text-3xl stat-value counter-animation">{{ digital_books|default:"0" }}</span>
+                    <span class="ml-2 text-sm text-gray-500">livres</span>
+                </div>
+            </div>
+            
+            <!-- Borrowed Books Card -->
+            <div class="stat-card bg-white rounded-lg shadow-sm p-6 border border-gray-200 animate-fade-in animate-delay-300" style="--accent-color: #f59e0b; --accent-color-light: #fef3c7;">
+                <div class="flex items-center mb-4">
+                    <div class="p-3 rounded-full stat-icon mr-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700">Livres Prêtés</h3>
+                        <p class="text-sm text-gray-500">Actuellement empruntés</p>
+                    </div>
+                </div>
+                <div class="flex items-baseline">
+                    <span class="text-3xl stat-value counter-animation">{{ active_member_loans|default:"0" }}</span>
+                    <span class="ml-2 text-sm text-gray-500">livres</span>
+                </div>
+            </div>
+            
+            <!-- Scanned Books Card -->
+            <div class="stat-card bg-white rounded-lg shadow-sm p-6 border border-gray-200 animate-fade-in animate-delay-400" style="--accent-color: #8b5cf6; --accent-color-light: #ede9fe;">
+                <div class="flex items-center mb-4">
+                    <div class="p-3 rounded-full stat-icon mr-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700">Livres Scannés</h3>
+                        <p class="text-sm text-gray-500">Documents numérisés</p>
+                    </div>
+                </div>
+                <div class="flex items-baseline">
+                    <span class="text-3xl stat-value counter-animation">{{ scanned_books|default:"0" }}</span>
+                    <span class="ml-2 text-sm text-gray-500">livres</span>
+                </div>
+            </div>
+            
+            <!-- Available Trainings Card -->
+            <div class="stat-card bg-white rounded-lg shadow-sm p-6 border border-gray-200 animate-fade-in animate-delay-500" style="--accent-color: #ec4899; --accent-color-light: #fce7f3;">
+                <div class="flex items-center mb-4">
+                    <div class="p-3 rounded-full stat-icon mr-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700">Formations</h3>
+                        <p class="text-sm text-gray-500">Formations disponibles</p>
+                    </div>
+                </div>
+                <div class="flex items-baseline">
+                    <span class="text-3xl stat-value counter-animation">{{ available_trainings|default:"0" }}</span>
+                    <span class="ml-2 text-sm text-gray-500">formations</span>
+                </div>
+            </div>
+            
+            <!-- Unread Notifications Card -->
+            <div class="stat-card bg-white rounded-lg shadow-sm p-6 border border-gray-200 animate-fade-in animate-delay-600" style="--accent-color: #ef4444; --accent-color-light: #fee2e2;">
+                <div class="flex items-center mb-4">
+                    <div class="p-3 rounded-full stat-icon mr-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700">Notifications</h3>
+                        <p class="text-sm text-gray-500">Non lues</p>
+                    </div>
+                </div>
+                <div class="flex items-baseline">
+                    <span class="text-3xl stat-value counter-animation">{{ unread_notifications|default:"0" }}</span>
+                    <span class="ml-2 text-sm text-gray-500">notifications</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Reading Progress Chart -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-fade-in animate-delay-700">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800">Suivi des Lectures</h3>
+                    <div class="flex items-center">
+                        <select class="text-sm border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <option>Cette année</option>
+                            <option>6 derniers mois</option>
+                            <option>3 derniers mois</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="h-64">
+                    <canvas id="readingProgressChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Completed Trainings Chart -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-fade-in animate-delay-800">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800">Formations Complétées</h3>
+                    <div class="flex items-center">
+                        <select class="text-sm border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <option>Cette année</option>
+                            <option>6 derniers mois</option>
+                            <option>3 derniers mois</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="h-64">
+                    <canvas id="completedTrainingsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-fade-in animate-delay-900 mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-semibold text-gray-800">Activités Récentes</h3>
+                <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800">Voir tout</a>
+            </div>
+            <div class="space-y-4">
+                {% if recent_activities %}
+                    {% for activity in recent_activities %}
+                    <div class="flex items-start p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150">
+                        <div class="flex-shrink-0 mr-4">
+                            {% if activity.type == 'book' %}
+                            <div class="p-2 bg-blue-100 rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                </svg>
+                            </div>
+                            {% elif activity.type == 'training' %}
+                            <div class="p-2 bg-green-100 rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                </svg>
+                            </div>
+                            {% elif activity.type == 'message' %}
+                            <div class="p-2 bg-purple-100 rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                </svg>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm text-gray-800">{{ activity.description }}</p>
+                            <p class="text-xs text-gray-500 mt-1">{{ activity.timestamp }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <p class="text-gray-600">Aucune activité récente à afficher</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content" id="resources-tab">
+        <!-- Books Section -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8 animate-fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl funnel-sans-bold text-gray-800">Livres</h2>
+                <a href="#" class="text-sm text-blue-600 hover:underline">Voir tout</a>
+            </div>
+
+            <!-- Search and Filters -->
+            <div class="flex flex-col md:flex-row gap-4 mb-6">
+                <div class="relative flex-grow">
+                    <form method="get" action="{% url 'center_panel:dashboard' %}">
+                        <div class="relative">
+                            <input type="text" name="q" value="{{ search_query|default:'' }}" placeholder="Rechercher un livre par titre, auteur..." class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            </div>
+                        </div>
+                        <!-- The submit button is implicit, pressing Enter will submit the form -->
+                    </form>
+                    <div class="mt-4 flex items-center space-x-4">
+                        <span class="text-sm font-medium text-gray-700">Filtres:</span>
+                        <button class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm hover:bg-gray-300">Catégorie</button>
+                        <button class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm hover:bg-gray-300">Auteur</button>
+                        <button class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm hover:bg-gray-300">Disponibilité</button>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition dm-sans-medium">Filtres</button>
+                    <button class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition dm-sans-medium">Rechercher</button>
+                </div>
+            </div>
+
+            <!-- Book Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {% for book in books %}
+                <div class="bg-white rounded-lg shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300">
+                    {% if book.cover_image %}
+                        <img src="{{ book.cover_image.url }}" alt="Couverture de {{ book.title }}" class="w-full h-48 object-cover">
+                    {% else %}
+                        <img src="https://via.placeholder.com/300x400.png?text={{ book.title|urlencode }}" alt="Couverture non disponible" class="w-full h-48 object-cover">
+                    {% endif %}
+                    <div class="p-4">
+                        <h4 class="text-lg font-semibold text-gray-800 truncate" title="{{ book.title }}">{{ book.title }}</h4>
+                        <p class="text-sm text-gray-600 mt-1">
+                            {% for author in book.authors.all %}
+                                {{ author.full_name }}{% if not forloop.last %}, {% endif %}
+                            {% empty %}
+                                Auteur inconnu
+                            {% endfor %}
+                        </p>
+                        {% if book.literary_genre %}
+                        <p class="text-xs text-gray-500 mt-2 bg-gray-100 inline-block px-2 py-1 rounded">{{ book.literary_genre.name }}</p>
+                        {% endif %}
+                        <div class="mt-4 text-right">
+                            <a href="{% url 'center_panel:book_detail' book.pk %}" class="text-sm font-medium text-indigo-600 hover:text-indigo-800">Voir détails</a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-span-full text-center py-12">
+                    <p class="text-gray-500">Aucun livre disponible pour le moment.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Trainings Section -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8 animate-fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl funnel-sans-bold text-gray-800">Formations</h2>
+                <a href="#" class="text-sm text-blue-600 hover:underline">Voir toutes</a>
+            </div>
+            <!-- Training List -->
+            <div class="space-y-4">
+                <!-- Training Item Placeholder 1 -->
+                <div class="border border-gray-200 rounded-lg p-4 flex items-center justify-between hover:shadow-md transition-shadow duration-300">
+                    <div>
+                        <h3 class="text-lg funnel-sans-semibold text-gray-800">Introduction à Django</h3>
+                        <p class="text-sm text-gray-500 dm-sans-regular">Prochaine session: 15/09/2025</p>
+                    </div>
+                    <a href="#" class="text-blue-600 hover:underline dm-sans-medium text-sm">S'inscrire</a>
+                </div>
+                <!-- Training Item Placeholder 2 -->
+                <div class="border border-gray-200 rounded-lg p-4 flex items-center justify-between hover:shadow-md transition-shadow duration-300">
+                    <div>
+                        <h3 class="text-lg funnel-sans-semibold text-gray-800">Développement Frontend avec React</h3>
+                        <p class="text-sm text-gray-500 dm-sans-regular">Prochaine session: 22/09/2025</p>
+                    </div>
+                    <a href="#" class="text-blue-600 hover:underline dm-sans-medium text-sm">S'inscrire</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Book Loans Section -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-fade-in">
+            <h2 class="text-2xl funnel-sans-bold text-gray-800 mb-4">Mes Prêts de Livres</h2>
+            {% if member_loans %}
+            <!-- Loan List -->
+            <div class="space-y-4">
+                {% for loan in member_loans|slice:":5" %}
+                <div class="border border-gray-200 rounded-lg p-4 flex items-center justify-between hover:shadow-md transition-shadow duration-300">
+                    <div>
+                        <h3 class="text-lg funnel-sans-semibold text-gray-800">{{ loan.book.title }}</h3>
+                        <p class="text-sm text-gray-500 dm-sans-regular">
+                            {% if loan.return_date %}
+                                Retourné le: {{ loan.return_date|date:"d/m/Y" }}
+                            {% else %}
+                                Date de retour: {{ loan.due_date|date:"d/m/Y" }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    <span class="text-sm font-medium {% if loan.return_date %}text-green-600 bg-green-100{% elif loan.due_date < date.today %}text-red-600 bg-red-100{% else %}text-yellow-600 bg-yellow-100{% endif %} px-2 py-1 rounded-full">
+                        {% if loan.return_date %}
+                            Retourné
+                        {% elif loan.due_date < date.today %}
+                            En retard
+                        {% else %}
+                            En cours
+                        {% endif %}
+                    </span>
+                </div>
+                {% endfor %}
+                {% if total_member_loans > 5 %}
+                <div class="text-center mt-4">
+                    <a href="{% url 'center_panel:member_loans' %}" class="text-blue-600 hover:underline dm-sans-medium text-sm">Voir tous les prêts ({{ total_member_loans }})</a>
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="text-center py-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <p class="text-gray-600">Vous n'avez aucun prêt en cours.</p>
+                <a href="{% url 'center_panel:books' %}" class="mt-4 inline-block text-blue-600 hover:underline">Explorer les livres</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="tab-content" id="messages-tab">
+        <!-- Messages content will be added here -->
+        <div class="text-center py-12 text-gray-500">
+            <p>La section des messages est en cours de construction.</p>
+        </div>
+    </div>
+
+    <div class="tab-content" id="chat-tab">
+        <!-- Chat content will be added here -->
+        <div class="text-center py-12 text-gray-500">
+            <p>La section de chat est en cours de construction.</p>
+        </div>
+    </div>
+
+    <div class="tab-content" id="profile-tab">
+        <!-- Profile content will be added here -->
+        <div class="text-center py-12 text-gray-500">
+            <p>La section du profil est en cours de construction.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Navigation Bar -->
+<div class="md:hidden mobile-nav">
+    <div class="grid grid-cols-5">
+        <div class="mobile-nav-item active" data-tab="dashboard-tab">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+            <span class="text-xs mt-1">Tableau</span>
+            <div class="active-indicator"></div>
+        </div>
+        <div class="mobile-nav-item" data-tab="resources-tab">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            <span class="text-xs mt-1">Ressources</span>
+            <div class="active-indicator"></div>
+        </div>
+        <div class="mobile-nav-item" data-tab="messages-tab">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+            </svg>
+            <span class="text-xs mt-1">Messages</span>
+            <div class="active-indicator"></div>
+        </div>
+        <div class="mobile-nav-item" data-tab="chat-tab">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            <span class="text-xs mt-1">Chat</span>
+            <div class="active-indicator"></div>
+        </div>
+        <div class="mobile-nav-item" data-tab="profile-tab">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span class="text-xs mt-1">Profil</span>
+            <div class="active-indicator"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Reading Progress Chart
+        const readingProgressCtx = document.getElementById('readingProgressChart').getContext('2d');
+        const readingProgressChart = new Chart(readingProgressCtx, {
+            type: 'line',
+            data: {
+                labels: {{ reading_progress_labels|safe }},
+                datasets: [{
+                    label: 'Livres lus',
+                    data: {{ reading_progress_data|safe }},
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#3b82f6',
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            precision: 0
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // Initialize Completed Trainings Chart
+        const completedTrainingsCtx = document.getElementById('completedTrainingsChart').getContext('2d');
+        const completedTrainingsChart = new Chart(completedTrainingsCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ completed_trainings_labels|safe }},
+                datasets: [{
+                    label: 'Formations complétées',
+                    data: {{ completed_trainings_data|safe }},
+                    backgroundColor: [
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(16, 185, 129, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgb(16, 185, 129)',
+                        'rgb(16, 185, 129)',
+                        'rgb(16, 185, 129)',
+                        'rgb(16, 185, 129)',
+                        'rgb(16, 185, 129)',
+                        'rgb(16, 185, 129)',
+                        'rgb(16, 185, 129)',
+                        'rgb(16, 185, 129)',
+                        'rgb(16, 185, 129)',
+                        'rgb(16, 185, 129)',
+                        'rgb(16, 185, 129)',
+                        'rgb(16, 185, 129)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            precision: 0
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // Mobile navigation functionality
+        const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        mobileNavItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                
+                // Update active nav item
+                mobileNavItems.forEach(navItem => {
+                    navItem.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // Show active tab content
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+    });
+</script>
+{% endblock %}

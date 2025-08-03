@@ -32,5 +32,19 @@ class EmailOrUsernameModelBackend(ModelBackend):
             return None
         else:
             if user.check_password(password) and self.user_can_authenticate(user):
+                # Log user login with group information
+                self.log_user_login(user)
                 return user
         return None
+    
+    def log_user_login(self, user):
+        """
+        Log user login with their group information.
+        """
+        import logging
+        logger = logging.getLogger('auth')
+        
+        # Get user groups
+        user_groups = list(user.groups.values_list('name', flat=True))
+        
+        logger.info(f"User '{user.username}' (ID: {user.id}) logged in. Groups: {user_groups}")

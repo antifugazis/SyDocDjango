@@ -1,0 +1,179 @@
+{% extends 'center_panel/base.html' %}
+{% load static %}
+
+{% block title %}Mes Prêts - SYDOC Center Panel{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Custom styles for DataTables */
+    .dataTables_wrapper .dataTables_length select {
+        @apply border border-gray-300 rounded-md shadow-sm py-1 pl-2 pr-8 text-sm focus:ring-blue-500 focus:border-blue-500;
+    }
+    
+    .dataTables_wrapper .dataTables_filter input {
+        @apply ml-2 border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm focus:ring-blue-500 focus:border-blue-500;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        @apply px-3 py-1 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 mx-1;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        @apply bg-blue-600 text-white hover:bg-blue-700;
+    }
+    
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_filter label {
+        @apply text-sm text-gray-700;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-4 md:mb-0">Mes Prêts</h1>
+        <div class="flex flex-col sm:flex-row gap-4">
+            <div class="flex space-x-2">
+                <a href="{% url 'center_panel:member_loans' %}" class="px-3 py-2 rounded-md text-sm font-medium {% if not request.GET.status %}bg-blue-100 text-blue-800{% else %}bg-white text-gray-700 hover:bg-gray-50{% endif %}">
+                    Tous ({{ total_loans }})
+                </a>
+                <a href="?status=active" class="px-3 py-2 rounded-md text-sm font-medium {% if request.GET.status == 'active' %}bg-blue-100 text-blue-800{% else %}bg-white text-gray-700 hover:bg-gray-50{% endif %}">
+                    Actifs ({{ active_loans }})
+                </a>
+                <a href="?status=overdue" class="px-3 py-2 rounded-md text-sm font-medium {% if request.GET.status == 'overdue' %}bg-blue-100 text-blue-800{% else %}bg-white text-gray-700 hover:bg-gray-50{% endif %}">
+                    En retard ({{ overdue_loans }})
+                </a>
+                <a href="?status=returned" class="px-3 py-2 rounded-md text-sm font-medium {% if request.GET.status == 'returned' %}bg-blue-100 text-blue-800{% else %}bg-white text-gray-700 hover:bg-gray-50{% endif %}">
+                    Retournés ({{ returned_loans }})
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loans Table -->
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="overflow-x-auto">
+            <table id="loans-table" class="min-w-full divide-y divide-gray-200" data-datatable>
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Livre</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date d'emprunt</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date de retour prévue</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantité</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for loan in loans %}
+                    <tr class="hover:bg-gray-50">
+                        <!-- Book Info with Cover -->
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                {% if loan.book.cover_image %}
+                                <div class="flex-shrink-0 h-16 w-12">
+                                    <img class="h-full w-full object-cover rounded" src="{{ loan.book.cover_image.url }}" alt="Couverture de {{ loan.book.title }}">
+                                </div>
+                                {% else %}
+                                <div class="flex-shrink-0 h-16 w-12 bg-gray-200 rounded flex items-center justify-center">
+                                    <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                    </svg>
+                                </div>
+                                {% endif %}
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">{{ loan.book.title }}</div>
+                                    <div class="text-sm text-gray-500">{{ loan.book.author|default:"Auteur inconnu" }}</div>
+                                    <div class="text-xs text-gray-400">ISBN: {{ loan.book.isbn|default:"N/A" }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <!-- Loan Date -->
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ loan.loan_date|date:"d/m/Y" }}
+                        </td>
+                        
+                        <!-- Due Date -->
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ loan.due_date|date:"d/m/Y" }}
+                        </td>
+                        
+                        <!-- Quantity -->
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ loan.quantity }}
+                        </td>
+                        
+                        <!-- Status -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if loan.return_date %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    Retourné
+                                </span>
+                            {% elif loan.due_date < today %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    En retard
+                                </span>
+                            {% else %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                    En cours
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                            Aucun prêt trouvé.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if DataTable is already initialized
+        let table;
+        if ($.fn.DataTable.isDataTable('#loans-table')) {
+            // Table is already initialized, get the instance
+            table = $('#loans-table').DataTable();
+        } else {
+            // Initialize DataTable with French language and custom options
+            table = new DataTable('#loans-table', {
+                language: {
+                    url: '{% static 'center_panel/js/dataTables.french.json' %}'
+                },
+                responsive: true,
+                pageLength: 25,
+                order: [[1, 'desc']], // Default sort by loan date (column index 1)
+                columnDefs: [
+                    { responsivePriority: 1, targets: 0 }, // Book info
+                    { orderable: false, targets: [] } // No columns are unsortable
+                ],
+                dom: '<"flex flex-col md:flex-row md:items-center md:justify-between"<"mb-4"l><"mb-4 md:mb-0"f>>rt<"flex flex-col md:flex-row md:items-center md:justify-between"<"mb-2"i><"mb-2 md:mb-0"p>>',
+                initComplete: function() {
+                    // Add custom class to search input
+                    $('.dataTables_filter input').addClass('form-input w-full md:w-auto');
+                    // Add custom class to length select
+                    $('.dataTables_length select').addClass('form-select');
+                }
+            });
+            
+            // Add custom styling to pagination buttons
+            $('.dataTables_paginate .paginate_button').on('mouseover', function() {
+                $(this).addClass('hover:bg-gray-100');
+            }).on('mouseout', function() {
+                if (!$(this).hasClass('current')) {
+                    $(this).removeClass('hover:bg-gray-100');
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

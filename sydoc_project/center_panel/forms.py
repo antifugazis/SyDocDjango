@@ -3,6 +3,7 @@
 from django import forms
 from django.forms.models import modelformset_factory, inlineformset_factory
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from core.models import LiteraryGenre, SubGenre, Theme, SousTheme
 from django.utils.translation import gettext_lazy as _
 from core.models import Book, BookVolume, Author, Member, Loan, Staff, Activity, ArchivalDocument, TrainingSubject, TrainingModule, Lesson, Question, Answer, Communique, Role, Profile, BookDigitization, DigitizedPage, Language, DeletedBook
@@ -117,7 +118,7 @@ BookVolumeFormSet = inlineformset_factory(
 
 
 class LoanForm(forms.ModelForm):
-    """Enhanced loan form with age verification and volume selection"""
+    """Enhanced loan form with age verification"""
     # Add a field for age verification that's not in the model
     member_age_verification = forms.IntegerField(
         label="Âge du membre",
@@ -129,8 +130,8 @@ class LoanForm(forms.ModelForm):
     class Meta:
         model = Loan
         fields = [
-            'book', 'member', 'loan_date', 'due_date', 'volume',
-            'member_age', 'age_verified', 'quantity'
+            'book', 'member', 'loan_date', 'due_date',
+            'age_verified', 'quantity'
         ]
         widgets = {
             'loan_date': forms.DateInput(attrs={'type': 'date'}),
@@ -143,8 +144,6 @@ class LoanForm(forms.ModelForm):
             'member': 'Membre',
             'loan_date': "Date d'emprunt",
             'due_date': 'Date de retour prévue',
-            'volume': 'Tome/Volume',
-            'member_age': 'Âge du membre',
             'age_verified': 'Âge vérifié',
             'quantity': 'Quantité'
         }
@@ -169,48 +168,142 @@ class LoanForm(forms.ModelForm):
                 is_active=True
             ).order_by('last_name', 'first_name')
         
-        # Initially disable volume field until a book is selected
-        self.fields['volume'].widget.attrs['disabled'] = 'disabled'
-        self.fields['volume'].required = False
-        
-        # If we're editing an existing loan and it has a book with volumes
-        if self.instance and self.instance.pk and self.instance.book and self.instance.book.has_volumes:
-            self.fields['volume'].queryset = BookVolume.objects.filter(
-                book=self.instance.book
-            ).order_by('volume_number')
-            self.fields['volume'].widget.attrs.pop('disabled', None)
-            self.fields['volume'].required = True
+        # No volume field needed anymore
+    
+    # Add a field for temporary date of birth
+    temp_date_of_birth = forms.DateField(
+        label="Date de naissance temporaire",
+        required=False,
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+        })
+    )
     
     def clean(self):
+        import logging
+        from datetime import date
+        logger = logging.getLogger(__name__)
+        
         cleaned_data = super().clean()
         book = cleaned_data.get('book')
         member = cleaned_data.get('member')
-        member_age = cleaned_data.get('member_age')
         age_verified = cleaned_data.get('age_verified')
-        volume = cleaned_data.get('volume')
+        temp_date_of_birth = cleaned_data.get('temp_date_of_birth')
         
-        # Age verification checks
-        if book and book.minimum_age_required > 0:
-            if not age_verified:
-                self.add_error('age_verified', "L'âge du membre doit être vérifié pour ce livre.")
+        # Debug logging
+        logger.info(f"LoanForm clean() - Book: {book}, Member: {member}")
+        if book:
+            logger.info(f"Book min_age: {book.minimum_age_required}")
+        
+        # Skip validation if essential fields are missing
+        if not book or not member:
+            logger.info("Skipping validation - missing book or member")
+            return cleaned_data
+        
+        # Age verification checks - only if minimum age is actually required
+        if book and book.minimum_age_required and book.minimum_age_required > 0:
+            # If member doesn't have date_of_birth but temp_date_of_birth is provided, use it
+            use_date_of_birth = member.date_of_birth
+            if not use_date_of_birth and temp_date_of_birth:
+                use_date_of_birth = temp_date_of_birth
+                # Update the member with this date of birth for future use
+                member.date_of_birth = temp_date_of_birth
+                member.save(update_fields=['date_of_birth'])
+                logger.info(f"Updated member {member.id} with date of birth: {temp_date_of_birth}")
             
-            if not member_age:
-                self.add_error('member_age', "L'âge du membre est requis pour ce livre.")
-            elif member_age < book.minimum_age_required:
-                self.add_error('member_age', f"Le membre doit avoir au moins {book.minimum_age_required} ans pour emprunter ce livre.")
+            # Calculate member's actual age from date_of_birth
+            if use_date_of_birth:
+                today = date.today()
+                member_age = today.year - use_date_of_birth.year - ((today.month, today.day) < (use_date_of_birth.month, use_date_of_birth.day))
+                # Store the age in a variable but don't add to cleaned_data since it's not a form field
+                logger.info(f"Age verification needed. Verified: {age_verified}, Calculated Age: {member_age}")
+                self.calculated_member_age = member_age
+                
+                # If member's age meets the requirement, we can auto-verify
+                if member_age >= book.minimum_age_required:
+                    logger.info(f"Member age {member_age} >= required age {book.minimum_age_required}, auto-verifying")
+                    cleaned_data['age_verified'] = True
+                    logger.info(f"Auto-verified age. New age_verified value: {cleaned_data.get('age_verified')}")
+                else:
+                    logger.info(f"Member age {member_age} < required age {book.minimum_age_required}, showing error")
+                    self.add_error('age_verified', f"Le membre doit avoir au moins {book.minimum_age_required} ans pour emprunter ce livre. Âge actuel: {member_age} ans.")
+                    
+                    # Still require manual verification in case of special exceptions
+                    # Check the updated value in cleaned_data, not the original age_verified variable
+                    if not cleaned_data.get('age_verified', False):
+                        self.add_error('age_verified', "L'âge du membre doit être vérifié pour ce livre.")
+            else:
+                self.add_error('temp_date_of_birth', "Veuillez fournir une date de naissance temporaire pour ce membre afin de vérifier l'âge requis pour ce livre.")
         
-        # Volume validation for multi-volume books
-        if book and book.has_volumes and not volume:
-            self.add_error('volume', "Veuillez sélectionner un tome/volume pour ce livre.")
-        
-        # Check if the book or volume is available
+        # Check if the book is available
         quantity = cleaned_data.get('quantity', 1)
-        if book and not book.has_volumes and book.quantity_available < quantity:
-            self.add_error('quantity', f"Seulement {book.quantity_available} exemplaires disponibles pour ce livre.")
-        elif book and book.has_volumes and volume and volume.quantity_available < quantity:
-            self.add_error('quantity', f"Seulement {volume.quantity_available} exemplaires disponibles pour ce tome/volume.")
+        if not quantity or quantity < 1:
+            quantity = 1
+            cleaned_data['quantity'] = 1
+        
+        logger.info(f"Quantity check: {quantity}")
+        
+        # Check book availability
+        if book and hasattr(book, 'quantity_available'):
+            logger.info(f"Book quantity available: {book.quantity_available}")
+            if book.quantity_available < quantity:
+                self.add_error('quantity', f"Seulement {book.quantity_available} exemplaires disponibles pour ce livre.")
+        
+        # Log any form errors
+        if self.errors:
+            logger.error(f"Form validation errors: {self.errors}")
         
         return cleaned_data
+        
+    def _update_errors(self, errors):
+        """Override to handle model validation errors that reference fields not in the form"""
+        # Handle model validation errors that reference fields not in the form
+        if hasattr(errors, 'error_dict'):
+            # Make a copy of the error_dict to avoid modifying the original
+            error_dict = errors.error_dict.copy()
+            errors.error_dict = {}
+            
+            for field, field_errors in error_dict.items():
+                # If the field doesn't exist in the form, add the error to a related field
+                if field not in self.fields:
+                    if field == 'member_age':
+                        # Add member_age errors to age_verified field
+                        for error in field_errors:
+                            self.add_error('age_verified', error)
+                    else:
+                        # For other fields, add to non-field errors
+                        for error in field_errors:
+                            self.add_error(None, error)
+                else:
+                    # Add error to the appropriate field
+                    for error in field_errors:
+                        self.add_error(field, error)
+        else:
+            # Call the parent method for non-dict validation errors
+            super()._update_errors(errors)
+            
+    def _post_clean(self):
+        """Override to handle model validation errors that reference fields not in the form"""
+        # Set member_age before model validation runs
+        if hasattr(self, 'calculated_member_age'):
+            self.instance.member_age = self.calculated_member_age
+        
+        # Call the parent _post_clean to perform model validation
+        super()._post_clean()
+        
+    def save(self, commit=True):
+        """Save the form and set the member_age field if available"""
+        loan = super().save(commit=False)
+        
+        # Set the member_age field if we calculated it
+        if hasattr(self, 'calculated_member_age'):
+            loan.member_age = self.calculated_member_age
+        
+        if commit:
+            loan.save()
+            
+        return loan
 
 
 class LoanCancellationForm(forms.Form):
@@ -273,10 +366,11 @@ class MemberForm(forms.ModelForm):
         model = Member
         fields = [
             'first_name', 'last_name', 'email', 'phone_number', 'address',
-            'membership_type', 'is_active'
+            'date_of_birth', 'membership_type', 'is_active'
         ]
         widgets = {
             'address': forms.Textarea(attrs={'rows': 3}),
+            'date_of_birth': forms.DateInput(attrs={'type': 'date', 'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm', 'required': 'required'}),
             'membership_type': forms.Select(choices=Member.MEMBERSHIP_CHOICES),
             'is_active': forms.CheckboxInput(attrs={'class': 'h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded'})
         }
@@ -286,9 +380,16 @@ class MemberForm(forms.ModelForm):
             'email': 'E-mail',
             'phone_number': 'Téléphone',
             'address': 'Adresse',
+            'date_of_birth': 'Date de Naissance (obligatoire)',
             'membership_type': 'Type d\'adhésion',
             'is_active': 'Actif',
         }
+        
+    def clean_date_of_birth(self):
+        date_of_birth = self.cleaned_data.get('date_of_birth')
+        if not date_of_birth:
+            raise forms.ValidationError('La date de naissance est obligatoire pour vérifier l\'âge lors des emprunts de livres.')
+        return date_of_birth
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
