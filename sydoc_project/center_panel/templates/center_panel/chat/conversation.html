@@ -1,0 +1,87 @@
+{% extends 'center_panel/base.html' %}
+{% load static %}
+
+{% block title %}Conversation avec {{ other_user.get_full_name|default:other_user.username }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <!-- Header -->
+        <div class="bg-blue-600 text-white p-4 flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="{% url 'center_panel:chat_inbox' %}" class="mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </a>
+                <div class="flex items-center">
+                    <div class="w-10 h-10 rounded-full bg-white text-blue-600 flex items-center justify-center font-bold">
+                        {{ other_user.username|slice:":2"|upper }}
+                    </div>
+                    <div class="ml-3">
+                        <h1 class="text-lg font-bold">{{ other_user.get_full_name|default:other_user.username }}</h1>
+                        <p class="text-sm opacity-75">{{ other_user.email }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Messages Container -->
+        <div id="messages-container" class="p-4 h-[calc(100vh-350px)] overflow-y-auto bg-gray-50">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="mb-4 {% if message.sender == request.user %}flex justify-end{% endif %}">
+                        <div class="{% if message.sender == request.user %}bg-blue-500 text-white{% else %}bg-gray-200 text-gray-800{% endif %} rounded-lg px-4 py-2 max-w-[80%]">
+                            <p>{{ message.content }}</p>
+                            <p class="text-xs mt-1 opacity-75 text-right">{{ message.formatted_timestamp }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="flex items-center justify-center h-full">
+                    <div class="text-center text-gray-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        <p>Aucun message. Commencez la conversation!</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Message Input -->
+        <div class="border-t border-gray-200 p-4">
+            <form action="{% url 'center_panel:chat_conversation' user_id=other_user.id %}" method="post" id="message-form">
+                {% csrf_token %}
+                <div class="flex">
+                    <input type="text" name="content" id="message-input" class="flex-grow px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tapez votre message..." required>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-r-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Scroll to bottom of messages container
+        const messagesContainer = document.getElementById('messages-container');
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        // Focus on message input
+        document.getElementById('message-input').focus();
+        
+        // Submit form on Enter key (but allow Shift+Enter for new line)
+        document.getElementById('message-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('message-form').submit();
+            }
+        });
+    });
+</script>
+{% endblock %}

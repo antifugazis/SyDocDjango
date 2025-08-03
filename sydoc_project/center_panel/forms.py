@@ -4,9 +4,10 @@ from django import forms
 from django.forms.models import modelformset_factory, inlineformset_factory
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from core.models import LiteraryGenre, SubGenre, Theme, SousTheme
+from core.models import LiteraryGenre, SubGenre, Theme, SousTheme, Book, BookVolume, Author, Member, Loan, Staff, Activity, ArchivalDocument, TrainingSubject, TrainingModule, Lesson, Question, Answer, Communique, Role, Profile, BookDigitization, DigitizedPage, Language, DeletedBook
+from .models import AgeVerificationFailure, Complaint
 from django.utils.translation import gettext_lazy as _
-from core.models import Book, BookVolume, Author, Member, Loan, Staff, Activity, ArchivalDocument, TrainingSubject, TrainingModule, Lesson, Question, Answer, Communique, Role, Profile, BookDigitization, DigitizedPage, Language, DeletedBook
+from django.contrib.auth.forms import UserCreationForm
 
 class BookForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -762,3 +763,49 @@ class DeletionJustificationForm(forms.Form):
         label='Je confirme que je souhaite supprimer cet élément de façon permanente',
         required=True
     )
+
+
+class ComplaintForm(forms.ModelForm):
+    """
+    Form for submitting complaints/help requests.
+    """
+    class Meta:
+        model = Complaint
+        fields = ['full_name', 'email', 'phone1', 'phone2', 'request']
+        labels = {
+            'full_name': 'Nom complet',
+            'email': 'Email',
+            'phone1': 'Téléphone 1',
+            'phone2': 'Téléphone 2 (optionnel)',
+            'request': 'Votre requête',
+        }
+        widgets = {
+            'full_name': forms.TextInput(attrs={
+                'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
+                'placeholder': 'Entrez votre nom complet'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
+                'placeholder': 'Entrez votre adresse email'
+            }),
+            'phone1': forms.TextInput(attrs={
+                'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
+                'placeholder': 'Entrez votre numéro de téléphone principal'
+            }),
+            'phone2': forms.TextInput(attrs={
+                'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
+                'placeholder': 'Entrez un numéro de téléphone secondaire (optionnel)'
+            }),
+            'request': forms.Textarea(attrs={
+                'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
+                'rows': 5,
+                'placeholder': 'Décrivez votre requête en détail...'
+            }),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make all fields required except phone2
+        for field_name, field in self.fields.items():
+            if field_name != 'phone2':
+                field.required = True

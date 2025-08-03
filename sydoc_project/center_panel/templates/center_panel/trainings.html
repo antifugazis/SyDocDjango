@@ -1,4 +1,5 @@
 {% extends 'center_panel/base.html' %}
+{% load custom_tags %}
 {% load static %}
 
 {% block title %}Formations{% endblock %}
@@ -7,10 +8,12 @@
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Gestion des Formations</h1>
+        {% if not user|has_group:'Member' %}
         <a href="{% url 'center_panel:add_training' %}" class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow transition duration-150 ease-in-out">
             <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
             Créer une nouvelle formation
         </a>
+        {% endif %}
     </div>
     <div class="bg-white shadow-md rounded-lg overflow-x-auto">
         <table id="trainings-table" class="min-w-full divide-y divide-gray-200">
@@ -49,8 +52,10 @@
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div class="flex justify-end space-x-2">
     <a href="{% url 'center_panel:training_detail' training.id %}" class="text-indigo-600 hover:text-indigo-800 px-3 py-1 rounded transition border border-indigo-200 bg-indigo-50 font-semibold">Consulter</a>
+    {% if not user|has_group:'Member' %}
     <a href="/center/trainings/{{ training.id }}/edit/" class="text-amber-600 hover:text-amber-800 px-3 py-1 rounded transition">Modifier</a>
     <a href="/center/trainings/{{ training.id }}/delete/" class="text-red-600 hover:text-red-800 px-3 py-1 rounded transition">Supprimer</a>
+    {% endif %}
 </div>
                     </td>
                 </tr>

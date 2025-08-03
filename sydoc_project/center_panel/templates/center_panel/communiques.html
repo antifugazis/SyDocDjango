@@ -6,6 +6,35 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
+    <!-- Search and Filter Bar -->
+    <div class="mb-6 bg-white p-4 rounded-lg shadow-md">
+        <div class="flex flex-col md:flex-row justify-between gap-4">
+            <!-- Search Bar -->
+            <div class="flex-grow">
+                <form method="get" action="{% url 'center_panel:communiques' %}" class="flex">
+                    <input type="text" name="search" placeholder="Rechercher par titre ou objectif..." 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           value="{{ request.GET.search|default:'' }}">
+                    <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-r-md hover:bg-indigo-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Filter Options -->
+            <div class="flex flex-wrap gap-2">
+                <a href="{% url 'center_panel:communiques' %}" class="px-3 py-2 text-sm font-medium rounded-md {% if not request.GET.filter %}bg-indigo-100 text-indigo-800{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Tous</a>
+                <a href="{% url 'center_panel:communiques' %}?filter=recent" class="px-3 py-2 text-sm font-medium rounded-md {% if request.GET.filter == 'recent' %}bg-indigo-100 text-indigo-800{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Récents</a>
+                <a href="{% url 'center_panel:communiques' %}?filter=modified" class="px-3 py-2 text-sm font-medium rounded-md {% if request.GET.filter == 'modified' %}bg-indigo-100 text-indigo-800{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Modifiés récemment</a>
+                <a href="{% url 'center_panel:communiques' %}?filter=most_liked" class="px-3 py-2 text-sm font-medium rounded-md {% if request.GET.filter == 'most_liked' %}bg-indigo-100 text-indigo-800{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Plus appréciés</a>
+                <a href="{% url 'center_panel:communiques' %}?filter=least_liked" class="px-3 py-2 text-sm font-medium rounded-md {% if request.GET.filter == 'least_liked' %}bg-indigo-100 text-indigo-800{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Moins appréciés</a>
+                <a href="{% url 'center_panel:communiques' %}?filter=most_viewed" class="px-3 py-2 text-sm font-medium rounded-md {% if request.GET.filter == 'most_viewed' %}bg-indigo-100 text-indigo-800{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Plus vus</a>
+                <a href="{% url 'center_panel:communiques' %}?filter=least_viewed" class="px-3 py-2 text-sm font-medium rounded-md {% if request.GET.filter == 'least_viewed' %}bg-indigo-100 text-indigo-800{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %}">Moins vus</a>
+            </div>
+        </div>
+    </div>
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Communiqués Officiels</h1>
         {% if not user|has_group:'Member' %}
@@ -21,18 +50,78 @@
             {% for communique in communiques %}
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-300">
                     <!-- Card Header -->
-                    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                        <h3 class="text-lg font-bold text-gray-800 truncate">{{ communique.title }}</h3>
-                        <span class="text-sm text-gray-500">{{ communique.publication_date|date:"d F Y" }}</span>
+                    <div class="px-6 py-4 border-b border-gray-100">
+                        <div class="flex justify-between">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-800 truncate mb-1">{{ communique.title }}</h3>
+                                <div class="flex justify-between items-center text-sm text-gray-500">
+                                    <span>Publié le: {{ communique.publication_date|date:"d F Y" }} à {{ communique.publication_date|time:"H:i" }}</span>
+                                    <span>Créé le: {{ communique.created_at|date:"d F Y" }} à {{ communique.created_at|time:"H:i" }}</span>
+                                </div>
+                            </div>
+                            
+                            {% if not user|has_group:'Member' %}
+                            <div class="flex space-x-1">
+                                <a href="{% url 'center_panel:edit_communique' communique.id %}" class="text-gray-500 hover:text-indigo-600" title="Modifier">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </a>
+                                <a href="{% url 'center_panel:delete_communique' communique.id %}" class="text-gray-500 hover:text-red-600" title="Supprimer">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
                     
                     <!-- Card Body -->
                     <div class="px-6 py-4">
-                        <p class="text-gray-600 line-clamp-3">{{ communique.objective }}</p>
+                        <p class="text-gray-600 line-clamp-3 mb-3">{{ communique.objective }}</p>
+                        
+                        <!-- Stats Bar -->
+                        <div class="flex items-center justify-between mt-4 text-sm text-gray-500">
+                            <!-- View Count -->
+                            <div class="flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                <span>{{ communique.view_count }} vues</span>
+                            </div>
+                            
+                            <!-- Like/Dislike Count -->
+                            <div class="flex items-center space-x-4">
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"></path>
+                                    </svg>
+                                    <span>{{ communique.get_like_count }}</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M18 9.5a1.5 1.5 0 11-3 0v-6a1.5 1.5 0 013 0v6zM14 9.667v-5.43a2 2 0 00-1.105-1.79l-.05-.025A4 4 0 0011.055 2H5.64a2 2 0 00-1.962 1.608l-1.2 6A2 2 0 004.44 12H8v4a2 2 0 002 2 1 1 0 001-1v-.667a4 4 0 01.8-2.4l1.4-1.866a4 4 0 00.8-2.4z"></path>
+                                    </svg>
+                                    <span>{{ communique.get_dislike_count }}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Card Footer -->
-                    <div class="px-6 py-3 bg-gray-50 flex justify-end">
+                    <div class="px-6 py-3 bg-gray-50 flex justify-between items-center">
+                        <form method="post" action="{% url 'center_panel:increment_view_communique' communique.id %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-gray-600 hover:text-gray-800 text-sm flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                Voir
+                            </button>
+                        </form>
                         <a href="{% url 'center_panel:communique_detail' communique.id %}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium text-sm">
                             Lire la suite
                             <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -51,6 +140,62 @@
             <h3 class="text-lg font-medium text-gray-700 mb-2">Aucun communiqué disponible</h3>
             <p class="text-gray-500">Aucun communiqué n'a été publié pour le moment.</p>
         </div>
+    {% endif %}
+    
+    <!-- Pagination Controls -->
+    {% if communiques.paginator.num_pages > 1 %}
+    <div class="mt-8">
+        <nav class="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0">
+            <div class="-mt-px flex w-0 flex-1">
+                {% if communiques.has_previous %}
+                <a href="?page={{ communiques.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_option %}&filter={{ filter_option }}{% endif %}" 
+                   class="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
+                    <svg class="mr-3 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M18 10a.75.75 0 01-.75.75H4.66l2.1 1.95a.75.75 0 11-1.02 1.1l-3.5-3.25a.75.75 0 010-1.1l3.5-3.25a.75.75 0 111.02 1.1l-2.1 1.95h12.59A.75.75 0 0118 10z" clip-rule="evenodd" />
+                    </svg>
+                    Précédent
+                </a>
+                {% else %}
+                <span class="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-300">
+                    <svg class="mr-3 h-5 w-5 text-gray-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M18 10a.75.75 0 01-.75.75H4.66l2.1 1.95a.75.75 0 11-1.02 1.1l-3.5-3.25a.75.75 0 010-1.1l3.5-3.25a.75.75 0 111.02 1.1l-2.1 1.95h12.59A.75.75 0 0118 10z" clip-rule="evenodd" />
+                    </svg>
+                    Précédent
+                </span>
+                {% endif %}
+            </div>
+            
+            <div class="hidden md:-mt-px md:flex">
+                {% for i in communiques.paginator.page_range %}
+                    {% if communiques.number == i %}
+                    <span class="inline-flex items-center border-t-2 border-indigo-500 px-4 pt-4 text-sm font-medium text-indigo-600" aria-current="page">{{ i }}</span>
+                    {% elif i > communiques.number|add:'-3' and i < communiques.number|add:'3' %}
+                    <a href="?page={{ i }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_option %}&filter={{ filter_option }}{% endif %}" 
+                       class="inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">{{ i }}</a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            
+            <div class="-mt-px flex w-0 flex-1 justify-end">
+                {% if communiques.has_next %}
+                <a href="?page={{ communiques.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_option %}&filter={{ filter_option }}{% endif %}" 
+                   class="inline-flex items-center border-t-2 border-transparent pl-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
+                    Suivant
+                    <svg class="ml-3 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M2 10a.75.75 0 01.75-.75h12.59l-2.1-1.95a.75.75 0 111.02-1.1l3.5 3.25a.75.75 0 010 1.1l-3.5 3.25a.75.75 0 11-1.02-1.1l2.1-1.95H2.75A.75.75 0 012 10z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+                {% else %}
+                <span class="inline-flex items-center border-t-2 border-transparent pl-1 pt-4 text-sm font-medium text-gray-300">
+                    Suivant
+                    <svg class="ml-3 h-5 w-5 text-gray-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M2 10a.75.75 0 01.75-.75h12.59l-2.1-1.95a.75.75 0 111.02-1.1l3.5 3.25a.75.75 0 010 1.1l-3.5 3.25a.75.75 0 11-1.02-1.1l2.1-1.95H2.75A.75.75 0 012 10z" clip-rule="evenodd" />
+                    </svg>
+                </span>
+                {% endif %}
+            </div>
+        </nav>
+    </div>
     {% endif %}
 </div>
 {% endblock %}

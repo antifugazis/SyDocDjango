@@ -1,0 +1,161 @@
+{% extends 'center_panel/base.html' %}
+{% load static %}
+
+{% block title %}Ressources Spirituelles{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Ressources Spirituelles</h1>
+    </div>
+
+    <!-- Resources Tabs -->
+    <div class="mb-6">
+        <div class="border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <button id="chant-fr-tab" class="tab-button border-indigo-500 text-indigo-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" aria-current="page">
+                    Chant d'Espérance (Français)
+                </button>
+                <button id="chant-ht-tab" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    Chant d'Espérance (Créole)
+                </button>
+                <button id="bible-fr-tab" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    Bible (Français)
+                </button>
+                <button id="bible-ht-tab" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    Bible (Créole)
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Content Sections -->
+    <div class="tab-content-container">
+        <!-- Chant d'Espérance French Tab -->
+        <div id="chant-fr-content" class="tab-content">
+            <div class="bg-white shadow overflow-hidden rounded-lg">
+                <div class="p-4 sm:p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Chant d'Espérance (Français)</h2>
+                    <p class="text-gray-600 mb-6">Explorez les chants du recueil Chant d'Espérance en français. Découvrez les paroles et mélodies de cantiques chrétiens.</p>
+                    
+                    <!-- Iframe Container with responsive height -->
+                    <div class="w-full h-screen border border-gray-300 rounded-lg overflow-hidden">
+                        <iframe src="https://cesperance.com/book/chant-desperance?lang=fr" 
+                                class="w-full h-full" 
+                                title="Chant d'Espérance en Français"
+                                sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+                                loading="lazy">
+                            Votre navigateur ne prend pas en charge les iframes.
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chant d'Espérance Creole Tab -->
+        <div id="chant-ht-content" class="tab-content hidden">
+            <div class="bg-white shadow overflow-hidden rounded-lg">
+                <div class="p-4 sm:p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Chant d'Espérance (Créole)</h2>
+                    <p class="text-gray-600 mb-6">Explorez les chants du recueil Chant d'Espérance en créole haïtien. Découvrez les paroles et mélodies de cantiques chrétiens.</p>
+                    
+                    <!-- Iframe Container with responsive height -->
+                    <div class="w-full h-screen border border-gray-300 rounded-lg overflow-hidden">
+                        <iframe src="https://cesperance.com/book/chant-desperance?lang=ht" 
+                                class="w-full h-full" 
+                                title="Chant d'Espérance en Créole"
+                                sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+                                loading="lazy">
+                            Votre navigateur ne prend pas en charge les iframes.
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bible Français Tab -->
+        <div id="bible-fr-content" class="tab-content hidden">
+            <div class="bg-white shadow overflow-hidden rounded-lg">
+                <div class="p-4 sm:p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Bible en Français</h2>
+                    <p class="text-gray-600 mb-6">Consultez la Bible en français, accessible à tous les membres.</p>
+                    
+                    <!-- Iframe Container with responsive height -->
+                    <div class="w-full h-screen border border-gray-300 rounded-lg overflow-hidden">
+                        <iframe src="https://www.bible.com/fr/bible/93/GEN.1.LSG" 
+                                class="w-full h-full" 
+                                title="Bible en Français"
+                                sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+                                loading="lazy">
+                            Votre navigateur ne prend pas en charge les iframes.
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bible Créole Tab -->
+        <div id="bible-ht-content" class="tab-content hidden">
+            <div class="bg-white shadow overflow-hidden rounded-lg">
+                <div class="p-4 sm:p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Bible en Créole</h2>
+                    <p class="text-gray-600 mb-6">Consultez la Bible en créole haïtien, accessible à tous les membres.</p>
+                    
+                    <!-- Iframe Container with responsive height -->
+                    <div class="w-full h-screen border border-gray-300 rounded-lg overflow-hidden">
+                        <iframe src="https://www.bible.com/bible/3821/JHN.1.BSA" 
+                                class="w-full h-full" 
+                                title="Bible en Créole"
+                                sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+                                loading="lazy">
+                            Votre navigateur ne prend pas en charge les iframes.
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        function setActiveTab(tabId) {
+            // Remove active class from all tabs
+            tabButtons.forEach(button => {
+                button.classList.remove('border-indigo-500', 'text-indigo-600');
+                button.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+            });
+            
+            // Hide all tab contents
+            tabContents.forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Set active tab
+            const activeButton = document.getElementById(tabId);
+            activeButton.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+            activeButton.classList.add('border-indigo-500', 'text-indigo-600');
+            
+            // Show active content
+            const contentId = tabId.replace('-tab', '-content');
+            document.getElementById(contentId).classList.remove('hidden');
+        }
+        
+        // Add click event to tab buttons
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                setActiveTab(this.id);
+            });
+        });
+        
+        // Set default active tab
+        setActiveTab('chant-fr-tab');
+    });
+</script>
+{% endblock %}
+{% endblock %}

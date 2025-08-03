@@ -1,23 +1,32 @@
 {% extends 'center_panel/base.html' %}
 
-{% block title %}Rédiger un communiqué{% endblock %}
+{% block title %}{% if is_edit %}Modifier le communiqué{% else %}Rédiger un communiqué{% endif %}{% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <!-- Back button -->
     <div class="mb-6">
+        {% if is_edit %}
+        <a href="{% url 'center_panel:communique_detail' communique.id %}" class="inline-flex items-center text-gray-600 hover:text-gray-800">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Retour au communiqué
+        </a>
+        {% else %}
         <a href="{% url 'center_panel:communiques' %}" class="inline-flex items-center text-gray-600 hover:text-gray-800">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
             </svg>
             Retour aux communiqués
         </a>
+        {% endif %}
     </div>
     
     <div class="bg-white shadow-md rounded-lg overflow-hidden max-w-3xl mx-auto">
         <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-            <h1 class="text-xl font-bold text-gray-800">Rédiger un nouveau communiqué</h1>
-            <p class="text-sm text-gray-600 mt-1">Créez un message officiel pour le personnel du centre de documentation.</p>
+            <h1 class="text-xl font-bold text-gray-800">{% if is_edit %}Modifier le communiqué{% else %}Rédiger un nouveau communiqué{% endif %}</h1>
+            <p class="text-sm text-gray-600 mt-1">{% if is_edit %}Modifiez les informations du communiqué existant.{% else %}Créez un message officiel pour le personnel du centre de documentation.{% endif %}</p>
         </div>
         
         <div class="p-6">
@@ -84,7 +93,7 @@
                         <svg class="w-5 h-5 mr-2 -ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
                         </svg>
-                        Publier le communiqué
+                        {% if is_edit %}Enregistrer les modifications{% else %}Publier le communiqué{% endif %}
                     </button>
                 </div>
             </form>

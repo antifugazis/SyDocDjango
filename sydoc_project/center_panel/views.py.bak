@@ -20,8 +20,7 @@ from core.models import (DocumentationCenter, Book, BookVolume, Member, Loan, St
                         TrainingModule, Activity, TrainingSubject, TrainingModule, Lesson, Communique, 
                         Question, Answer, StaffTrainingRecord, Quiz, Author, Role, Profile, LiteraryGenre, 
                         BookDigitization, DigitizedPage, SubGenre, Theme, SousTheme, DeletedBook, Language,
-                        BookLike, BookDislike, BookRead, Notification, ChatMessage)
-from .models import AgeVerificationFailure, Complaint
+                        BookLike, BookDislike, BookRead)
 from core.utils import get_user_group_names, is_user_in_group, get_user_highest_privilege_group, require_groups
 
 
@@ -50,7 +49,7 @@ def get_redirect_url_for_user(user):
 from .forms import (BookForm, BookVolumeForm, BookVolumeFormSet, MemberForm, LoanForm, LoanCancellationForm, 
                   StaffForm, ActivityForm, ArchiveForm, TrainingSubjectForm, TrainingModuleForm, 
                   LessonFormSet, CommuniqueForm, TrainingModuleForm, LessonForm, QuestionFormSet, 
-                  AuthorForm, RoleForm, UserForm, ProfileForm, DeletedBookRestoreForm, ComplaintForm)
+                  AuthorForm, RoleForm, UserForm, ProfileForm, DeletedBookRestoreForm)
 from django.db.models import Sum, Count, F, Q, Case, When, Value, IntegerField, ExpressionWrapper, DateTimeField
 from django.utils import timezone
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -939,14 +938,24 @@ def loan_list(request):
     if not current_center:
         messages.error(request, "Aucun centre de documentation trouvé.")
         return redirect('admin:index')
+    
+    # If user is only a member (not admin/super admin/doc center), redirect to member loans view
+    if request.user.groups.filter(name='Member').exists() and not (
+        request.user.groups.filter(name__in=['Admin', 'Super Admin', 'Documentation Center']).exists()
+    ):
+        return redirect('center_panel:member_loans')
         
-    # Get base queryset
-    loans = Loan.objects.filter(book__documentation_center=current_center)
+    # Get base queryset - admins see all loans
+    all_loans = Loan.objects.filter(book__documentation_center=current_center)
+    
+    # For admin users, only show list view (per requirements)
+    # Admins, super admins, and documentation center staff should only see list view
+    view_type = 'list'  # Default to list view for admins
     
     # Apply search filter if provided
     search_query = request.GET.get('search', '')
     if search_query:
-        loans = loans.filter(
+        all_loans = all_loans.filter(
             Q(book__title__icontains=search_query) |
             Q(book__isbn__icontains=search_query) |
             Q(member__first_name__icontains=search_query) |
@@ -954,7 +963,90 @@ def loan_list(request):
             Q(member__member_id__icontains=search_query)
         )
     
-    # Apply status filter if provided
+    # Get active tab from request
+    active_tab = request.GET.get('tab', 'recent')
+    
+    # Prepare data for each tab
+    # 1. Recent loans (most recent first, regardless of status)
+    recent_loans = all_loans.order_by('-loan_date')[:20]  # Limit to 20 most recent
+    
+    # 2. Not returned loans (active loans)
+    not_returned_loans = all_loans.filter(return_date__isnull=True, status__in=['borrowed', 'approved'])
+    
+    # 3. Returned books
+    returned_loans = all_loans.filter(return_date__isnull=False, status='returned')
+    
+    # 4. Age not suitable (rejected loans due to age restrictions)
+    age_rejected_loans = all_loans.filter(
+        status='rejected',
+        cancellation_reason='age_restriction'
+    )
+    
+    # 5. Overdue loans
+    overdue_loans = all_loans.filter(
+        return_date__isnull=True,
+        due_date__lt=timezone.now().date(),
+        status__in=['borrowed', 'overdue']
+    )
+    
+    # Counts for each tab
+    recent_count = recent_loans.count()
+    not_returned_count = not_returned_loans.count()
+    returned_count = returned_loans.count()
+    age_rejected_count = age_rejected_loans.count()
+    overdue_count = overdue_loans.count()
+    total_loans = all_loans.count()
+    
+    context = {
+        'current_center': current_center,
+        'active_tab': active_tab,
+        'search_query': search_query,
+        'view_type': view_type,  # Add view_type to context
+        
+        # Loan data for each tab
+        'recent_loans': recent_loans,
+        'not_returned_loans': not_returned_loans,
+        'returned_loans': returned_loans,
+        'age_rejected_loans': age_rejected_loans,
+        'overdue_loans': overdue_loans,
+        
+        # Counts
+        'recent_count': recent_count,
+        'not_returned_count': not_returned_count,
+        'returned_count': returned_count,
+        'age_rejected_count': age_rejected_count,
+        'overdue_count': overdue_count,
+        'total_loans': total_loans,
+        'today': timezone.now().date(),  # Add today's date for due date comparisons
+    }
+    
+    # For admins, use the template with permissions already set up
+    # Get view type from request parameter (default to list view)
+    view_type = request.GET.get('view', 'list')
+    context['view_type'] = view_type
+    
+    # Render the appropriate template based on view type
+    if view_type == 'card':
+        return render(request, 'center_panel/member_loans_card.html', context)
+    else:  # Default to list view
+        return render(request, 'center_panel/member_loans.html', context)
+
+
+@login_required
+def member_loans(request):
+    current_center = DocumentationCenter.objects.first()
+    if not current_center:
+        messages.error(request, "Aucun centre de documentation trouvé.")
+        return redirect('admin:index')
+    
+    try:
+        member = request.user.member_profile
+    except Member.DoesNotExist:
+        messages.error(request, "Aucun profil de membre trouvé pour votre compte.")
+        return redirect('center_panel:dashboard')
+    
+    loans = Loan.objects.filter(member=member).order_by('-loan_date')
+    
     status_filter = request.GET.get('status', '')
     if status_filter == 'active':
         loans = loans.filter(return_date__isnull=True)
@@ -963,34 +1055,36 @@ def loan_list(request):
     elif status_filter == 'returned':
         loans = loans.filter(return_date__isnull=False)
     
-    # Order by due date (overdue first, then by due date, then by loan date)
-    loans = loans.order_by(
-        'return_date',  # Returned loans last
-        'due_date',     # Then by due date
-        '-loan_date'    # Most recent loans first
-    )
-    
-    # Counts for status filters
     total_loans = loans.count()
     active_loans = loans.filter(return_date__isnull=True).count()
     overdue_loans = loans.filter(return_date__isnull=True, due_date__lt=timezone.now().date()).count()
     returned_loans = loans.filter(return_date__isnull=False).count()
     
+    # Get view type from request parameter (default to list view)
+    view_type = request.GET.get('view', 'list')
+    
     context = {
         'current_center': current_center,
         'loans': loans,
-        'search_query': search_query,
         'status_filter': status_filter,
         'total_loans': total_loans,
         'active_loans': active_loans,
         'overdue_loans': overdue_loans,
         'returned_loans': returned_loans,
+        'member': member,
+        'today': timezone.now().date(),
+        'view_type': view_type,  # Add view_type to context
     }
-    return render(request, 'center_panel/loans.html', context)
+    
+    # Render the appropriate template based on view type
+    if view_type == 'card':
+        return render(request, 'center_panel/member_loans_card.html', context)
+    else:  # Default to list view
+        return render(request, 'center_panel/member_loans.html', context)
 
 
 @login_required
-def member_loans(request):
+def member_loans_card(request):
     # Get the current center
     current_center = DocumentationCenter.objects.first()
     if not current_center:
@@ -1031,86 +1125,9 @@ def member_loans(request):
         'overdue_loans': overdue_loans,
         'returned_loans': returned_loans,
         'member': member,
+        'today': timezone.now().date(),
     }
-    return render(request, 'center_panel/member_loans.html', context)
-
-
-@login_required
-def my_loans(request):
-    # Get the current center
-    current_center = DocumentationCenter.objects.first()
-    if not current_center:
-        messages.error(request, "Aucun centre de documentation trouvé.")
-        return redirect('admin:index')
-    
-    # Get the member associated with the current user
-    try:
-        member = request.user.member_profile
-    except Member.DoesNotExist:
-        messages.error(request, "Aucun profil de membre trouvé pour votre compte.")
-        return redirect('center_panel:dashboard')
-    
-    # Get all loans for this member
-    all_loans = Loan.objects.filter(member=member).order_by('-loan_date')
-    
-    # Get today's date for overdue calculations
-    today = timezone.now().date()
-    
-    # Filter loans for each tab
-    # Recent loans (all loans, most recent first)
-    recent_loans = all_loans
-    
-    # Not returned loans (active loans)
-    not_returned_loans = all_loans.filter(return_date__isnull=True)
-    
-    # Returned loans
-    returned_loans = all_loans.filter(return_date__isnull=False)
-    
-    # Overdue loans
-    overdue_loans = all_loans.filter(return_date__isnull=True, due_date__lt=today)
-    
-    # Calculate days overdue for overdue loans
-    for loan in overdue_loans:
-        loan.days_overdue = (today - loan.due_date).days
-    
-    # Get age unsuitable loan attempts (refused due to age)
-    age_unsuitable_loans = AgeVerificationFailure.objects.filter(member=member).order_by('-attempted_at')
-    
-    # Count variables for tabs
-    recent_count = recent_loans.count()
-    not_returned_count = not_returned_loans.count()
-    returned_count = returned_loans.count()
-    overdue_count = overdue_loans.count()
-    age_unsuitable_count = age_unsuitable_loans.count()
-    
-    context = {
-        'recent_loans': recent_loans,
-        'not_returned_loans': not_returned_loans,
-        'returned_loans': returned_loans,
-        'overdue_loans': overdue_loans,
-        'age_unsuitable_loans': age_unsuitable_loans,
-        'recent_count': recent_count,
-        'not_returned_count': not_returned_count,
-        'returned_count': returned_count,
-        'overdue_count': overdue_count,
-        'age_unsuitable_count': age_unsuitable_count,
-        'today': today,
-    }
-    
-    return render(request, 'center_panel/my_loans.html', context)
-
-
-@login_required
-def spiritual_resources(request):
-    """
-    View for spiritual resources (Chant d'Espérance and Bible) available to all members.
-    """
-    context = {
-        'title': 'Ressources Spirituelles',
-    }
-    return render(request, 'center_panel/spiritual_resources.html', context)
-
-
+    return render(request, 'center_panel/member_loans_card.html', context)
 @login_required
 def add_loan(request):
     current_center = DocumentationCenter.objects.first()
@@ -1349,176 +1366,14 @@ def notification_list(request):
     if not current_center:
         messages.error(request, "Aucun centre de documentation trouvé.")
         return redirect('admin:index')
-    
-    # Get notifications for this user
-    notifications = []
-    
-    # If user is staff, get their staff-specific notifications
-    if hasattr(request.user, 'staff_profile'):
-        staff_notifications = Notification.objects.filter(recipient_staff=request.user.staff_profile)
-        notifications.extend(staff_notifications)
-    
-    # If user is a superuser, also get center-wide notifications
-    if request.user.is_superuser:
-        center_notifications = Notification.objects.filter(recipient_center=current_center)
-        notifications.extend(center_notifications)
-    
-    # Remove duplicates and sort by creation date
-    notifications = sorted(set(notifications), key=lambda x: x.created_at, reverse=True)
-    
-    # Mark notifications as read if requested
-    if request.method == 'POST' and 'mark_all_read' in request.POST:
-        for notification in notifications:
-            notification.is_read = True
-            notification.save()
-        messages.success(request, "Toutes les notifications ont été marquées comme lues.")
-        return redirect('center_panel:notifications')
-    
+        
     context = {
         'current_center': current_center,
-        'notifications': notifications,
-        'unread_count': sum(1 for n in notifications if not n.is_read)
+        'notifications': [] # Placeholder for notifications
     }
     return render(request, 'center_panel/notifications.html', context)
 
 @login_required
-def mark_notification_read(request, notification_id):
-    notification = get_object_or_404(Notification, id=notification_id)
-    
-    # Check if the user has permission to mark this notification as read
-    if (notification.recipient_staff and request.user == notification.recipient_staff.user) or \
-       (notification.recipient_center and request.user.is_superuser):
-        notification.is_read = True
-        notification.save()
-        messages.success(request, "Notification marquée comme lue.")
-    else:
-        messages.error(request, "Vous n'avez pas la permission de marquer cette notification comme lue.")
-    
-    # Redirect back to notifications list
-    return redirect('center_panel:notifications')
-
-
-# Chat System Views
-@login_required
-def chat_inbox(request):
-    """
-    Display the chat inbox with conversation previews
-    """
-    current_center = DocumentationCenter.objects.first()
-    if not current_center:
-        messages.error(request, "Aucun centre de documentation trouvé.")
-        return redirect('admin:index')
-    
-    # Get all users the current user has chatted with
-    sent_to_users = User.objects.filter(
-        id__in=ChatMessage.objects.filter(sender=request.user).values_list('recipient', flat=True).distinct()
-    )
-    received_from_users = User.objects.filter(
-        id__in=ChatMessage.objects.filter(recipient=request.user).values_list('sender', flat=True).distinct()
-    )
-    
-    # Combine and remove duplicates
-    chat_users = sent_to_users.union(received_from_users).order_by('username')
-    
-    # Get the latest message for each conversation
-    conversations = []
-    for user in chat_users:
-        latest_message = ChatMessage.objects.filter(
-            (Q(sender=request.user) & Q(recipient=user)) | 
-            (Q(sender=user) & Q(recipient=request.user))
-        ).order_by('-timestamp').first()
-        
-        if latest_message:
-            conversations.append({
-                'user': user,
-                'latest_message': latest_message,
-                'unread_count': ChatMessage.objects.filter(sender=user, recipient=request.user, is_read=False).count()
-            })
-    
-    # Sort conversations by latest message timestamp
-    conversations.sort(key=lambda x: x['latest_message'].timestamp, reverse=True)
-    
-    # Get all staff users for the new message form
-    all_users = User.objects.filter(is_active=True).exclude(id=request.user.id).order_by('username')
-    
-    context = {
-        'current_center': current_center,
-        'conversations': conversations,
-        'all_users': all_users,
-        'total_unread': sum(conv['unread_count'] for conv in conversations)
-    }
-    
-    return render(request, 'center_panel/chat/inbox.html', context)
-
-@login_required
-def chat_conversation(request, user_id):
-    """
-    Display and handle a conversation with a specific user
-    """
-    current_center = DocumentationCenter.objects.first()
-    if not current_center:
-        messages.error(request, "Aucun centre de documentation trouvé.")
-        return redirect('admin:index')
-    
-    other_user = get_object_or_404(User, id=user_id)
-    
-    # Get all messages between the two users
-    messages_list = ChatMessage.objects.filter(
-        (Q(sender=request.user) & Q(recipient=other_user)) | 
-        (Q(sender=other_user) & Q(recipient=request.user))
-    ).order_by('timestamp')
-    
-    # Mark all messages from the other user as read
-    unread_messages = messages_list.filter(sender=other_user, recipient=request.user, is_read=False)
-    for msg in unread_messages:
-        msg.is_read = True
-        msg.save()
-    
-    # Handle new message submission
-    if request.method == 'POST':
-        content = request.POST.get('content', '').strip()
-        if content:
-            ChatMessage.objects.create(
-                sender=request.user,
-                recipient=other_user,
-                content=content
-            )
-            return redirect('center_panel:chat_conversation', user_id=user_id)
-    
-    context = {
-        'current_center': current_center,
-        'other_user': other_user,
-        'messages': messages_list,
-    }
-    
-    return render(request, 'center_panel/chat/conversation.html', context)
-
-@login_required
-def send_new_message(request):
-    """
-    Send a new message to a user who you haven't chatted with before
-    """
-    if request.method == 'POST':
-        recipient_id = request.POST.get('recipient')
-        content = request.POST.get('content', '').strip()
-        
-        if recipient_id and content:
-            try:
-                recipient = User.objects.get(id=recipient_id)
-                ChatMessage.objects.create(
-                    sender=request.user,
-                    recipient=recipient,
-                    content=content
-                )
-                messages.success(request, f"Message envoyé à {recipient.username}")
-                return redirect('center_panel:chat_conversation', user_id=recipient_id)
-            except User.DoesNotExist:
-                messages.error(request, "Utilisateur non trouvé.")
-        else:
-            messages.error(request, "Veuillez sélectionner un destinataire et saisir un message.")
-    
-    return redirect('center_panel:chat_inbox')
-
 def activity_list(request):
     current_center = DocumentationCenter.objects.first()
     activities = Activity.objects.filter(documentation_center=current_center)
@@ -3317,75 +3172,3 @@ def api_subthemes(request):
     
     sub_themes = SousTheme.objects.filter(theme_id=theme_id).values('id', 'name')
     return JsonResponse(list(sub_themes), safe=False)
-
-
-from .models import Complaint
-from .forms import ComplaintForm
-from django.contrib import messages
-
-@login_required
-def help_center(request):
-    """
-    View for the help center page with complaint form.
-    """
-    if request.method == 'POST':
-        form = ComplaintForm(request.POST)
-        if form.is_valid():
-            complaint = form.save(commit=False)
-            # Set the documentation center (for now, using the first one)
-            complaint.documentation_center = DocumentationCenter.objects.first()
-            # Set the user if logged in
-            if request.user.is_authenticated:
-                complaint.created_by = request.user
-            complaint.save()
-            messages.success(request, 'Votre doléance a été soumise avec succès. Merci pour votre feedback!')
-            return redirect('center_panel:help_center')
-    else:
-        # Pre-fill form with user data if available
-        initial_data = {}
-        if request.user.is_authenticated:
-            initial_data['full_name'] = f"{request.user.first_name} {request.user.last_name}".strip()
-            initial_data['email'] = request.user.email
-        form = ComplaintForm(initial=initial_data)
-    
-    return render(request, 'center_panel/help_center.html', {
-        'form': form,
-    })
-
-
-@login_required
-def admin_complaints(request):
-    """
-    Admin view to see all complaints.
-    """
-    complaints = Complaint.objects.all().order_by('-created_at')
-    
-    # Filter by resolved status if requested
-    status_filter = request.GET.get('status')
-    if status_filter == 'resolved':
-        complaints = complaints.filter(is_resolved=True)
-    elif status_filter == 'unresolved':
-        complaints = complaints.filter(is_resolved=False)
-    
-    return render(request, 'center_panel/admin/complaint_list.html', {
-        'complaints': complaints,
-        'status_filter': status_filter,
-    })
-
-
-@login_required
-def resolve_complaint(request, complaint_id):
-    """
-    Admin view to resolve a complaint.
-    """
-    complaint = get_object_or_404(Complaint, id=complaint_id)
-    
-    if request.method == 'POST':
-        notes = request.POST.get('resolution_notes', '')
-        complaint.resolve(request.user, notes)
-        messages.success(request, f'La doléance de {complaint.full_name} a été marquée comme résolue.')
-        return redirect('center_panel:admin_complaints')
-    
-    return render(request, 'center_panel/admin/resolve_complaint.html', {
-        'complaint': complaint,
-    })

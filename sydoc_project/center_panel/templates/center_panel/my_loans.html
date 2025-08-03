@@ -1,0 +1,470 @@
+{% extends 'center_panel/base.html' %}
+{% load static %}
+
+{% block title %}Mes Prêts - SYDOC Center Panel{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Tab styling */
+    .tab-content {
+        display: none;
+    }
+    .tab-content.active {
+        display: block;
+    }
+    .tab-button {
+        position: relative;
+        padding-bottom: 0.5rem;
+        color: #6B7280;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    .tab-button.active {
+        color: #4F46E5;
+        font-weight: 600;
+    }
+    .tab-button.active:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #4F46E5;
+        border-radius: 1px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">Mes Prêts</h1>
+    
+    <!-- Tabs Navigation -->
+    <div class="border-b border-gray-200 mb-6">
+        <nav class="-mb-px flex space-x-4 overflow-x-auto pb-1" aria-label="Tabs">
+            <button type="button" class="tab-button active whitespace-nowrap py-2 px-4 border-b-2 font-medium text-sm focus:outline-none" data-tab="recent">
+                Prêts récemment
+            </button>
+            <button type="button" class="tab-button whitespace-nowrap py-2 px-4 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none" data-tab="not-returned">
+                Non remis
+            </button>
+            <button type="button" class="tab-button whitespace-nowrap py-2 px-4 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none" data-tab="returned">
+                Ouvrages remis
+            </button>
+            <button type="button" class="tab-button whitespace-nowrap py-2 px-4 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none" data-tab="age-not-suitable">
+                Âge non convenu
+            </button>
+            <button type="button" class="tab-button whitespace-nowrap py-2 px-4 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none" data-tab="overdue">
+                En retard
+            </button>
+        </nav>
+    </div>
+
+    <!-- Tab Content -->
+    <!-- Recent Loans Tab -->
+    <div id="recent" class="tab-content active">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for loan in recent_loans %}
+        <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300">
+            <!-- Book Cover -->
+            <div class="h-48 bg-gray-100 flex items-center justify-center">
+                {% if loan.book.cover_image %}
+                <img src="{{ loan.book.cover_image.url }}" alt="Couverture de {{ loan.book.title }}" class="h-full w-full object-cover">
+                {% else %}
+                <div class="text-center p-4">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    <p class="mt-2 text-sm text-gray-500">Pas d'image disponible</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Loan Details -->
+            <div class="p-4">
+                <h3 class="text-lg font-semibold text-gray-800 truncate" title="{{ loan.book.title }}">{{ loan.book.title }}</h3>
+                <p class="text-sm text-gray-600 mt-1">{{ loan.book.author|default:"Auteur inconnu" }}</p>
+                
+                <div class="mt-4 space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Emprunté le:</span>
+                        <span class="font-medium">{{ loan.loan_date|date:"d/m/Y" }}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Retour prévu:</span>
+                        <span class="font-medium">{{ loan.due_date|date:"d/m/Y" }}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Quantité:</span>
+                        <span class="font-medium">{{ loan.quantity }}</span>
+                    </div>
+                    
+                    <!-- Status Badge -->
+                    <div class="mt-3">
+                        {% if loan.return_date %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Retourné
+                        </span>
+                        {% elif loan.due_date < today %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            En retard
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            En cours
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Return Date (if returned) -->
+                {% if loan.return_date %}
+                <div class="mt-3 pt-3 border-t border-gray-100">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500">Retourné le:</span>
+                        <span class="font-medium">{{ loan.return_date|date:"d/m/Y" }}</span>
+                    </div>
+                    <div class="mt-1">
+                        {% if loan.return_date <= loan.due_date %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                            Retourné à temps
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                            Retourné en retard
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun prêt trouvé</h3>
+            <p class="mt-1 text-sm text-gray-500">Vous n'avez aucun prêt pour le moment.</p>
+        </div>
+        {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Not Returned Tab -->
+    <div id="not-returned" class="tab-content">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for loan in not_returned_loans %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300">
+                <!-- Book Cover -->
+                <div class="h-48 bg-gray-100 flex items-center justify-center">
+                    {% if loan.book.cover_image %}
+                    <img src="{{ loan.book.cover_image.url }}" alt="Couverture de {{ loan.book.title }}" class="h-full w-full object-cover">
+                    {% else %}
+                    <div class="text-center p-4">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                        <p class="mt-2 text-sm text-gray-500">Pas d'image disponible</p>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Loan Details -->
+                <div class="p-4">
+                    <h3 class="text-lg font-semibold text-gray-800 truncate" title="{{ loan.book.title }}">{{ loan.book.title }}</h3>
+                    <p class="text-sm text-gray-600 mt-1">{{ loan.book.author|default:"Auteur inconnu" }}</p>
+                    
+                    <div class="mt-4 space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">Emprunté le:</span>
+                            <span class="font-medium">{{ loan.loan_date|date:"d/m/Y" }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">Retour prévu:</span>
+                            <span class="font-medium">{{ loan.due_date|date:"d/m/Y" }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">Quantité:</span>
+                            <span class="font-medium">{{ loan.quantity }}</span>
+                        </div>
+                        
+                        <!-- Status Badge -->
+                        <div class="mt-3">
+                            {% if loan.due_date < today %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                En retard
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                En cours
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun prêt en cours</h3>
+                <p class="mt-1 text-sm text-gray-500">Vous n'avez aucun prêt non retourné pour le moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Returned Books Tab -->
+    <div id="returned" class="tab-content">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for loan in returned_loans %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300">
+                <!-- Book Cover -->
+                <div class="h-48 bg-gray-100 flex items-center justify-center">
+                    {% if loan.book.cover_image %}
+                    <img src="{{ loan.book.cover_image.url }}" alt="Couverture de {{ loan.book.title }}" class="h-full w-full object-cover">
+                    {% else %}
+                    <div class="text-center p-4">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                        <p class="mt-2 text-sm text-gray-500">Pas d'image disponible</p>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Loan Details -->
+                <div class="p-4">
+                    <h3 class="text-lg font-semibold text-gray-800 truncate" title="{{ loan.book.title }}">{{ loan.book.title }}</h3>
+                    <p class="text-sm text-gray-600 mt-1">{{ loan.book.author|default:"Auteur inconnu" }}</p>
+                    
+                    <div class="mt-4 space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">Emprunté le:</span>
+                            <span class="font-medium">{{ loan.loan_date|date:"d/m/Y" }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">Retour prévu:</span>
+                            <span class="font-medium">{{ loan.due_date|date:"d/m/Y" }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">Retourné le:</span>
+                            <span class="font-medium">{{ loan.return_date|date:"d/m/Y" }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">Quantité:</span>
+                            <span class="font-medium">{{ loan.quantity }}</span>
+                        </div>
+                        
+                        <!-- Return Status Badge -->
+                        <div class="mt-3">
+                            {% if loan.return_date <= loan.due_date %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Retourné à temps
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                Retourné en retard
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun prêt retourné</h3>
+                <p class="mt-1 text-sm text-gray-500">Vous n'avez aucun prêt retourné pour le moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Age Not Suitable Tab -->
+    <div id="age-not-suitable" class="tab-content">
+        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+            <table class="min-w-full divide-y divide-gray-300">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Date</th>
+                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Heure</th>
+                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Ouvrages</th>
+                        <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                            <span class="sr-only">Détails</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 bg-white">
+                    {% for failure in age_unsuitable_loans %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="py-3 px-4 text-sm text-gray-700">{{ failure.attempted_at|date:"d/m/Y" }}</td>
+                        <td class="py-3 px-4 text-sm text-gray-700">{{ failure.attempted_at|time:"H:i" }}</td>
+                        <td class="py-3 px-4 text-sm text-gray-700">{{ failure.book.title }}</td>
+                        <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                            <button onclick="showAgeDetails({{ failure.id }})" class="text-indigo-600 hover:text-indigo-900">
+                                Détails
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="py-8 text-center text-sm text-gray-500">
+                            <p>Aucun prêt refusé pour restriction d'âge.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Overdue Tab -->
+    <div id="overdue" class="tab-content">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for loan in overdue_loans %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300">
+                <!-- Book Cover -->
+                <div class="h-48 bg-gray-100 flex items-center justify-center">
+                    {% if loan.book.cover_image %}
+                    <img src="{{ loan.book.cover_image.url }}" alt="Couverture de {{ loan.book.title }}" class="h-full w-full object-cover">
+                    {% else %}
+                    <div class="text-center p-4">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                        <p class="mt-2 text-sm text-gray-500">Pas d'image disponible</p>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Loan Details -->
+                <div class="p-4">
+                    <h3 class="text-lg font-semibold text-gray-800 truncate" title="{{ loan.book.title }}">{{ loan.book.title }}</h3>
+                    <p class="text-sm text-gray-600 mt-1">{{ loan.book.author|default:"Auteur inconnu" }}</p>
+                    
+                    <div class="mt-4 space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">Emprunté le:</span>
+                            <span class="font-medium">{{ loan.loan_date|date:"d/m/Y" }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">Retour prévu:</span>
+                            <span class="font-medium">{{ loan.due_date|date:"d/m/Y" }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">Jours de retard:</span>
+                            <span class="font-medium text-red-600">{{ loan.days_overdue }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500">Quantité:</span>
+                            <span class="font-medium">{{ loan.quantity }}</span>
+                        </div>
+                        
+                        <!-- Status Badge -->
+                        <div class="mt-3">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                En retard
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun prêt en retard</h3>
+                <p class="mt-1 text-sm text-gray-500">Vous n'avez aucun prêt en retard pour le moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Age Details Modal -->
+<div id="age-details-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50" tabindex="-1" role="dialog" aria-labelledby="age-details-modal-title" aria-hidden="true">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4" id="age-details-modal-title">
+                Prêt refusé à cause de l'âge
+            </h3>
+            <div class="mt-4 px-7 py-3 text-left" id="age-details-content">
+                <!-- Details will be loaded here -->
+            </div>
+            <div class="items-center px-4 py-3">
+                <button id="close-age-modal" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Tab Switching -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get all tab buttons and content
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        // Add click event to each tab button
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons and contents
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Show corresponding content
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // Age details modal functionality
+        const ageDetailsModal = document.getElementById('age-details-modal');
+        const closeAgeModalBtn = document.getElementById('close-age-modal');
+        
+        // Function to show age details modal
+        window.showAgeDetails = function(failureId) {
+            // In a real implementation, you would fetch the details via AJAX
+            // For now, we'll show a placeholder message
+            const contentDiv = document.getElementById('age-details-content');
+            contentDiv.innerHTML = `
+                <p class="text-sm text-gray-500 mb-2">Détails du prêt refusé à cause de l'âge :</p>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm">Cette fonctionnalité nécessite une implémentation backend supplémentaire pour récupérer les détails complets.</p>
+                    <p class="text-sm mt-2">ID de l'échec : ${failureId}</p>
+                </div>
+            `;
+            ageDetailsModal.classList.remove('hidden');
+        };
+        
+        // Close modal when close button is clicked
+        closeAgeModalBtn.addEventListener('click', function() {
+            ageDetailsModal.classList.add('hidden');
+        });
+        
+        // Close modal when clicking outside the modal content
+        window.addEventListener('click', function(event) {
+            if (event.target === ageDetailsModal) {
+                ageDetailsModal.classList.add('hidden');
+            }
+        });
+    });
+</script>
+{% endblock %}

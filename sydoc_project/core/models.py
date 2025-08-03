@@ -1083,6 +1083,41 @@ class ArchivalDocument(models.Model):
         verbose_name_plural = "Archival Documents"
         ordering = ['-created_at']
 
+
+class ChatMessage(models.Model):
+    """
+    Model for direct messages between users
+    """
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages', verbose_name='Expéditeur')
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages', verbose_name='Destinataire')
+    content = models.TextField(verbose_name='Contenu du Message')
+    timestamp = models.DateTimeField(auto_now_add=True, verbose_name='Horodatage')
+    is_read = models.BooleanField(default=False, verbose_name='Lu')
+    
+    class Meta:
+        verbose_name = 'Message de Chat'
+        verbose_name_plural = 'Messages de Chat'
+        ordering = ['timestamp']
+    
+    def __str__(self):
+        return f"Message de {self.sender.username} à {self.recipient.username} - {self.timestamp.strftime('%d/%m/%Y %H:%M')}"
+
+    @property
+    def formatted_timestamp(self):
+        """
+        Returns a formatted timestamp for display
+        """
+        return self.timestamp.strftime('%d/%m/%Y %H:%M')
+        
+    @property
+    def short_content(self):
+        """
+        Returns a shortened version of the content for previews
+        """
+        if len(self.content) > 50:
+            return f"{self.content[:50]}..."
+        return self.content
+
 class TrainingSubject(models.Model):
     """
     A category or subject for grouping Training Modules.
@@ -1290,16 +1325,115 @@ class Communique(models.Model):
         help_text="Send only to staff in these activities. Leave blank to send to all."
     )
 
+    # Publication and creation timestamps
     publication_date = models.DateTimeField(default=timezone.now)
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    # View count tracking
+    view_count = models.PositiveIntegerField(default=0, help_text="Number of times this communique has been viewed")
+    
+    # Users who have viewed this communique
+    viewers = models.ManyToManyField(
+        'auth.User', 
+        related_name='viewed_communiques',
+        blank=True,
+        help_text="Users who have viewed this communique"
+    )
 
     def __str__(self):
         return self.title
-
+        
+    def increment_view_count(self, user=None):
+        """Increment the view count and add user to viewers if provided"""
+        self.view_count += 1
+        self.save(update_fields=['view_count'])
+        if user and user.is_authenticated and user not in self.viewers.all():
+            self.viewers.add(user)
+    
+    def get_like_count(self):
+        """Get the number of likes for this communique"""
+        return self.reactions.filter(reaction_type='like').count()
+    
+    def get_dislike_count(self):
+        """Get the number of dislikes for this communique"""
+        return self.reactions.filter(reaction_type='dislike').count()
+    
+    def get_user_reaction(self, user):
+        """Get the current user's reaction to this communique"""
+        if not user or not user.is_authenticated:
+            return None
+        try:
+            return self.reactions.get(user=user).reaction_type
+        except CommuniqueReaction.DoesNotExist:
+            return None
+            
+    def remove_user_reaction(self, user):
+        """Remove a user's reaction to this communique"""
+        if not user or not user.is_authenticated:
+            return False
+        try:
+            reaction = self.reactions.get(user=user)
+            # Check if the user can change their reaction (within 10 minutes)
+            if not reaction.can_change_reaction():
+                return False
+            reaction.delete()
+            return True
+        except CommuniqueReaction.DoesNotExist:
+            # No reaction to remove
+            return True
+    
+    def set_user_reaction(self, user, reaction_type):
+        """Set or update a user's reaction to this communique"""
+        if not user or not user.is_authenticated or reaction_type not in ['like', 'dislike', None]:
+            return False
+            
+        # Remove reaction if None is passed
+        if reaction_type is None:
+            self.reactions.filter(user=user).delete()
+            return True
+            
+        # Get or create the reaction
+        try:
+            reaction = self.reactions.get(user=user)
+            # Check if the user can change their reaction (within 10 minutes)
+            if not reaction.can_change_reaction() and reaction.reaction_type != reaction_type:
+                return False
+            reaction.reaction_type = reaction_type
+            reaction.save()
+        except CommuniqueReaction.DoesNotExist:
+            self.reactions.create(user=user, reaction_type=reaction_type)
+        return True
+            
     class Meta:
         verbose_name = "Communiqué"
         verbose_name_plural = "Communiqués"
         ordering = ['-publication_date']
+
+
+class CommuniqueReaction(models.Model):
+    """
+    Tracks user reactions (likes/dislikes) to communiques with a 10-minute change window
+    """
+    REACTION_CHOICES = (
+        ('like', 'Like'),
+        ('dislike', 'Dislike'),
+    )
+    
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='communique_reactions')
+    communique = models.ForeignKey(Communique, on_delete=models.CASCADE, related_name='reactions')
+    reaction_type = models.CharField(max_length=10, choices=REACTION_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('user', 'communique')
+        verbose_name = "Communiqué Reaction"
+        verbose_name_plural = "Communiqué Reactions"
+    
+    def can_change_reaction(self):
+        """Check if the reaction can still be changed (within 10 minutes)"""
+        time_elapsed = timezone.now() - self.created_at
+        return time_elapsed.total_seconds() < 600  # 10 minutes in seconds
 
 
 class Profile(models.Model):

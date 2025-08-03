@@ -39,8 +39,10 @@ urlpatterns = [
     path('loans/<int:loan_id>/cancel/', views.cancel_loan, name='cancel_loan'),
     path('loans/<int:loan_id>/delete/', views.delete_loan, name='delete_loan'),
     
-    # Member Loans (for members to view their own loans)
-    path('my-loans/', views.member_loans, name='member_loans'),
+    # Member loans (for members to view their own loans)
+    path('my-loans/', views.my_loans, name='my_loans'),
+    path('spiritual_resources/', views.spiritual_resources, name='spiritual_resources'),
+    path('member-loans/', views.member_loans, name='member_loans'),
     
     # API Endpoints
     path('api/books/<int:book_id>/details/', views.get_book_details, name='book_details_api'),
@@ -79,17 +81,27 @@ urlpatterns = [
 
     # Notifications
     path('notifications/', views.notification_list, name='notifications'),
+    path('notifications/<int:notification_id>/mark-read/', views.mark_notification_read, name='mark_notification_read'),
 
     # Activity Management
     path('activities/', views.activity_list, name='activities'),
     path('activities/add/', views.add_activity, name='add_activity'),
     path('activities/<int:pk>/edit/', views.edit_activity, name='edit_activity'),
     path('activities/<int:pk>/delete/', views.delete_activity, name='delete_activity'),
+    
+    # Chat System
+    path('chat/', views.chat_inbox, name='chat_inbox'),
+    path('chat/<int:user_id>/', views.chat_conversation, name='chat_conversation'),
+    path('chat/send/', views.send_new_message, name='send_new_message'),
 
     # Communiques
     path('communiques/', views.communique_list, name='communiques'),
     path('communiques/add/', views.add_communique, name='add_communique'),
     path('communiques/<int:pk>/', views.communique_detail, name='communique_detail'),
+    path('communiques/<int:pk>/edit/', views.edit_communique, name='edit_communique'),
+    path('communiques/<int:pk>/delete/', views.delete_communique, name='delete_communique'),
+    path('communiques/<int:pk>/view/', views.increment_view_communique, name='increment_view_communique'),
+    path('communiques/<int:pk>/reaction/', views.communique_reaction, name='communique_reaction'),
 
     # Quiz & Results
     path('results/<int:pk>/', views.quiz_results, name='quiz_results'),
@@ -151,6 +163,10 @@ urlpatterns = [
     path('profiles/<int:pk>/edit/', views.edit_profile, name='edit_profile'),
     path('profiles/<int:pk>/delete/', views.delete_profile, name='delete_profile'),
     
+    # Complaints Management
+    path('complaints/', views.admin_complaints, name='admin_complaints'),
+    path('complaints/<int:complaint_id>/resolve/', views.resolve_complaint, name='resolve_complaint'),
+    
     # Admin Panel
     path('admin/', views.admin_panel, name='admin_panel'),
     
@@ -171,4 +187,7 @@ urlpatterns = [
     
     # Login Success - Group-based redirect
     path('login-success/', views_login.login_success, name='login_success'),
+    
+    # Help Center
+    path('help-center/', views.help_center, name='help_center'),
 ]

@@ -3,6 +3,94 @@
 {% block title %}Notifications{% endblock %}
 
 {% block content %}
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">Liste des notifications</h1>
-    <p>Ceci est la page d'espace réservé pour les notifications.</p>
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Notifications</h1>
+        
+        {% if notifications %}
+        <form method="POST" action="{% url 'center_panel:notifications' %}">
+            {% csrf_token %}
+            <button type="submit" name="mark_all_read" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Marquer tout comme lu
+            </button>
+        </form>
+        {% endif %}
+    </div>
+    
+    {% if notifications %}
+    <div class="bg-white shadow overflow-hidden sm:rounded-md">
+        <ul class="divide-y divide-gray-200">
+            {% for notification in notifications %}
+            <li class="{% if not notification.is_read %}bg-blue-50{% endif %}">
+                <div class="px-4 py-4 sm:px-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            {% if notification.notification_type == 'alert' %}
+                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
+                                <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            {% elif notification.notification_type == 'system' %}
+                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                <svg class="h-6 w-6 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                                </svg>
+                            </div>
+                            {% else %}
+                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                <svg class="h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            {% endif %}
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">
+                                    {{ notification.message }}
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    {% if notification.sender_user %}
+                                    De: {{ notification.sender_user.get_full_name|default:notification.sender_user.username }}
+                                    {% else %}
+                                    De: Système
+                                    {% endif %}
+                                    • {{ notification.created_at|date:"d/m/Y H:i" }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ml-2 flex-shrink-0 flex space-x-2">
+                            {% if notification.is_read %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                Lu
+                            </span>
+                            {% else %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                Non lu
+                            </span>
+                            <form method="POST" action="{% url 'center_panel:mark_notification_read' notification.id %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" class="text-xs text-indigo-600 hover:text-indigo-800 underline">
+                                    Marquer comme lu
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% else %}
+    <div class="bg-white shadow overflow-hidden sm:rounded-md p-6 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">Aucune notification</h3>
+        <p class="mt-1 text-sm text-gray-500">
+            Vous n'avez pas de notifications pour le moment.
+        </p>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}
