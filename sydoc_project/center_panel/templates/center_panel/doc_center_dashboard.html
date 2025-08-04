@@ -1,0 +1,838 @@
+{% extends 'center_panel/base.html' %}
+{% load static %}
+
+{% block title %}Tableau de bord - Centre de Documentation{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Funnel+Sans:ital,wght@0,300..800;1,300..800&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+<style>
+  /* Chart.js styles */
+  .chartjs-size-monitor,
+  .chartjs-size-monitor-shrink,
+  .chartjs-size-monitor-expand {
+    position: absolute;
+    direction: ltr;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    z-index: -1;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .chartjs-size-monitor-shrink,
+  .chartjs-size-monitor-expand {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+  .chartjs-size-monitor-shrink:before,
+  .chartjs-size-monitor-expand:before {
+    content: '';
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+  }
+</style>
+<style>
+    /* Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Roboto+Mono:wght@400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Funnel+Sans:wght@400;500;600;700&display=swap');
+    
+    /* Font Classes */
+    .dm-sans-regular { font-family: 'DM Sans', sans-serif; font-weight: 400; }
+    .dm-sans-medium { font-family: 'DM Sans', sans-serif; font-weight: 500; }
+    .dm-sans-bold { font-family: 'DM Sans', sans-serif; font-weight: 700; }
+    
+    .roboto-mono-regular { font-family: 'Roboto Mono', monospace; font-weight: 400; }
+    .roboto-mono-medium { font-family: 'Roboto Mono', monospace; font-weight: 500; }
+    .roboto-mono-semibold { font-family: 'Roboto Mono', monospace; font-weight: 600; }
+    
+    .funnel-sans-regular { font-family: 'Funnel Sans', sans-serif; font-weight: 400; }
+    .funnel-sans-medium { font-family: 'Funnel Sans', sans-serif; font-weight: 500; }
+    .funnel-sans-semibold { font-family: 'Funnel Sans', sans-serif; font-weight: 600; }
+    .funnel-sans-bold { font-family: 'Funnel Sans', sans-serif; font-weight: 700; }
+    
+    /* Animation Classes */
+    .animate-fade-in {
+        animation: fadeIn 0.6s ease-in-out forwards;
+        opacity: 0;
+    }
+    
+    .animate-delay-100 { animation-delay: 0.1s; }
+    .animate-delay-200 { animation-delay: 0.2s; }
+    .animate-delay-300 { animation-delay: 0.3s; }
+    .animate-delay-400 { animation-delay: 0.4s; }
+    .animate-delay-500 { animation-delay: 0.5s; }
+    .animate-delay-600 { animation-delay: 0.6s; }
+    .animate-delay-700 { animation-delay: 0.7s; }
+    .animate-delay-800 { animation-delay: 0.8s; }
+    .animate-delay-900 { animation-delay: 0.9s; }
+    .animate-delay-1000 { animation-delay: 1s; }
+    .animate-delay-1100 { animation-delay: 1.1s; }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Stat Cards */
+    .stat-card {
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    
+    .stat-card .stat-icon {
+        background-color: var(--accent-color-light);
+        color: var(--accent-color);
+    }
+    
+    .stat-card .stat-value {
+        color: var(--accent-color);
+        font-family: 'Roboto Mono', monospace;
+        font-weight: 600;
+    }
+    
+    /* Chart Cards */
+    .chart-card {
+        transition: all 0.3s ease;
+    }
+    
+    .chart-card:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    
+    .chart-loading {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(99, 102, 241, 0.1);
+        border-radius: 50%;
+        border-top-color: #6366f1;
+        animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    /* Activity Cards */
+    .activity-card {
+        transition: all 0.2s ease;
+    }
+    
+    .activity-card:hover {
+        background-color: #f9fafb;
+    }
+    
+    /* Status Badges */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.125rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .status-badge-green {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+    
+    .status-badge-yellow {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+    
+    .status-badge-red {
+        background-color: #fee2e2;
+        color: #b91c1c;
+    }
+    
+    .status-badge-blue {
+        background-color: #dbeafe;
+        color: #1e40af;
+    }
+    
+    .status-badge-purple {
+        background-color: #ede9fe;
+        color: #5b21b6;
+    }
+    
+    .status-badge-gray {
+        background-color: #f3f4f6;
+        color: #374151;
+    }
+    
+    /* Haitian Gourde Symbol */
+    .gourde-symbol {
+        display: inline-block;
+        font-weight: bold;
+        margin-right: 2px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Main Dashboard Container -->
+<div class="px-1 py-4 sm:px-3 md:px-6 max-w-7xl mx-auto">
+    <!-- Header Section with Center Info and Date -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 animate-fade-in">
+        <div class="mb-4 md:mb-0">
+            <h1 class="text-3xl md:text-4xl funnel-sans-bold text-gray-800 mb-1">Tableau de bord</h1>
+            <p class="text-xl dm-sans-regular text-gray-600">Centre de Documentation</p>
+        </div>
+        
+        <!-- Current Date -->
+        <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm w-full md:w-auto">
+            <div class="flex items-center">
+                <div class="p-2 rounded-full bg-indigo-100 mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-700">{{ current_date|date:"l"|capfirst }}</p>
+                    <p class="text-base font-semibold text-indigo-600">{{ current_date|date:"d F Y" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- First Row: Book Format Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        <!-- Physical Books Card -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-100" style="--accent-color: #4f46e5; --accent-color-light: #e0e7ff;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Manuels d'ouvrages</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-3xl counter-animation">{{ stats.physical_books|default:"0" }}</span>
+                        <span class="ml-1 text-sm text-gray-500">livres</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">Format physique</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Digital Books Card -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-200" style="--accent-color: #8b5cf6; --accent-color-light: #ede9fe;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Livres numériques</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-3xl counter-animation">{{ stats.digital_books|default:"0" }}</span>
+                        <span class="ml-1 text-sm text-gray-500">ouvrages</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">Format numérique</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Cost Card -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-300" style="--accent-color: #ec4899; --accent-color-light: #fce7f3;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Coût total</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-3xl counter-animation">{{ stats.total_cost|default:"0" }}</span>
+                        <span class="ml-1 text-sm text-gray-500">HTG</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">Valeur des acquisitions</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Low Quantity Alert Card -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-400" style="--accent-color: #ef4444; --accent-color-light: #fee2e2;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Quantité insuffisante</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-3xl counter-animation">{{ stats.low_quantity_books|default:"0" }}</span>
+                        <span class="ml-1 text-sm text-gray-500">livres</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">Incluant les prêts actifs</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Second Row: Cost Estimate Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+        <!-- Total Cost Card -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-500" style="--accent-color: #059669; --accent-color-light: #d1fae5;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Coût total estimé</h3>
+                    <div class="flex items-baseline">
+                        <span class="gourde-symbol">G</span>
+                        <span class="stat-value text-3xl counter-animation">{{ stats.total_cost|default:"0" }}</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">Tous formats confondus</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Physical Books Cost Card -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-600" style="--accent-color: #0891b2; --accent-color-light: #cffafe;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Coût format physique</h3>
+                    <div class="flex items-baseline">
+                        <span class="gourde-symbol">G</span>
+                        <span class="stat-value text-3xl counter-animation">{{ stats.physical_cost|default:"0" }}</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">Ouvrages physiques</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Digital Books Cost Card -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-700" style="--accent-color: #7c3aed; --accent-color-light: #ede9fe;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Coût format numérique</h3>
+                    <div class="flex items-baseline">
+                        <span class="gourde-symbol">G</span>
+                        <span class="stat-value text-3xl counter-animation">{{ stats.digital_cost|default:"0" }}</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">E-books et numériques</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Third Row: Subscription and Loans -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        <!-- Subscription Status Card -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-800" style="--accent-color: #0369a1; --accent-color-light: #e0f2fe;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Abonnement mensuel</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-xl">{{ stats.subscription_status|default:"Non payé" }}</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">Pour le mois en cours</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Current Loans Card -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-900" style="--accent-color: #d97706; --accent-color-light: #fef3c7;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Livres prêtés</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-3xl counter-animation">{{ stats.current_loans|default:"0" }}</span>
+                        <span class="ml-1 text-sm text-gray-500">actifs</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">En cours de prêt</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Book Stock Card -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-1000" style="--accent-color: #0d9488; --accent-color-light: #ccfbf1;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Stock total</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-3xl counter-animation">{{ stats.total_stock|default:"0" }}</span>
+                        <span class="ml-1 text-sm text-gray-500">exemplaires</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">Estimation totale</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Activities Card -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-1100" style="--accent-color: #4f46e5; --accent-color-light: #e0e7ff;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Activités</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-3xl counter-animation">{{ stats.activities_count|default:"0" }}</span>
+                        <span class="ml-1 text-sm text-gray-500">créées</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">Activités totales</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Fourth Row: Roles and Users -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+        <!-- Roles Card -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-100" style="--accent-color: #6366f1; --accent-color-light: #e0e7ff;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Postes et rôles</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-3xl counter-animation">{{ stats.roles_count|default:"0" }}</span>
+                        <span class="ml-1 text-sm text-gray-500">rôles</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">Rôles associés aux postes</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- User Statistics Card -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-200" style="--accent-color: #8b5cf6; --accent-color-light: #ede9fe;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Utilisateurs</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-3xl counter-animation">{{ stats.total_users|default:"0" }}</span>
+                        <span class="ml-1 text-sm text-gray-500">inscrits</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-green-500 font-medium">{{ stats.online_users|default:"0" }} en ligne</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Notifications Card -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-300" style="--accent-color: #f59e0b; --accent-color-light: #fef3c7;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Notifications</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-3xl counter-animation">{{ stats.notifications_count|default:"0" }}</span>
+                        <span class="ml-1 text-sm text-gray-500">nouvelles</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">Temps réel</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Fifth Row: Nubo Conversions and Archives -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        <!-- Nubo Converted Books Card -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-400" style="--accent-color: #0891b2; --accent-color-light: #cffafe;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Ouvrages convertis</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-3xl counter-animation">{{ stats.nubo_converted|default:"0" }}</span>
+                        <span class="ml-1 text-sm text-gray-500">livres</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">Via option Nubo</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Nubo Non-Converted Books Card -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-500" style="--accent-color: #db2777; --accent-color-light: #fce7f3;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Non convertis</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-3xl counter-animation">{{ stats.nubo_not_converted|default:"0" }}</span>
+                        <span class="ml-1 text-sm text-gray-500">livres</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">En attente de conversion</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Archives Card -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-600" style="--accent-color: #4b5563; --accent-color-light: #f3f4f6;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Archives</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-3xl counter-animation">{{ stats.archives_count|default:"0" }}</span>
+                        <span class="ml-1 text-sm text-gray-500">fichiers</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">Dossiers et fichiers</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Training Categories Card -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-700" style="--accent-color: #059669; --accent-color-light: #d1fae5;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Catégories</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-3xl counter-animation">{{ stats.training_categories|default:"0" }}</span>
+                        <span class="ml-1 text-sm text-gray-500">catégories</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">Pour formations</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sixth Row: Training Status -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+        <!-- Total Trainings Card -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-800" style="--accent-color: #0d9488; --accent-color-light: #ccfbf1;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Formations totales</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-3xl counter-animation">{{ stats.total_trainings|default:"0" }}</span>
+                        <span class="ml-1 text-sm text-gray-500">formations</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">Disponibles</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pending Trainings Card -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-900" style="--accent-color: #f59e0b; --accent-color-light: #fef3c7;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">En attente</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-3xl counter-animation">{{ stats.pending_trainings|default:"0" }}</span>
+                        <span class="ml-1 text-sm text-gray-500">formations</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">En attente de validation</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Confirmed Trainings Card -->
+        <div class="stat-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-1000" style="--accent-color: #10b981; --accent-color-light: #d1fae5;">
+            <div class="flex items-center">
+                <div class="stat-icon p-3 rounded-full mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Confirmées</h3>
+                    <div class="flex items-baseline">
+                        <span class="stat-value text-3xl counter-animation">{{ stats.confirmed_trainings|default:"0" }}</span>
+                        <span class="ml-1 text-sm text-gray-500">formations</span>
+                    </div>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-gray-500">Accessibles au personnel</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
+        <!-- Monthly Loans Chart -->
+        <div class="chart-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-300">
+            <h3 class="text-lg font-medium text-gray-700 mb-4">Prêts mensuels</h3>
+            <div class="relative" style="height: 300px;">
+                <canvas id="monthlyLoansChart"></canvas>
+                <div class="chart-loading absolute inset-0 flex items-center justify-center bg-white bg-opacity-80">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- User Activity Chart -->
+        <div class="chart-card bg-white rounded-lg p-5 shadow-md animate-fade-in animate-delay-400">
+            <h3 class="text-lg font-medium text-gray-700 mb-4">Activité utilisateurs</h3>
+            <div class="relative" style="height: 300px;">
+                <canvas id="userActivityChart"></canvas>
+                <div class="chart-loading absolute inset-0 flex items-center justify-center bg-white bg-opacity-80">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Counter animation for stat values
+        const counterElements = document.querySelectorAll('.counter-animation');
+        
+        counterElements.forEach(counter => {
+            const target = parseInt(counter.textContent);
+            const duration = 1500;
+            const step = Math.ceil(target / (duration / 16));
+            let current = 0;
+            
+            const updateCounter = () => {
+                current += step;
+                if (current > target) {
+                    counter.textContent = target;
+                    return;
+                }
+                counter.textContent = current;
+                requestAnimationFrame(updateCounter);
+            };
+            
+            if (target > 0) {
+                counter.textContent = '0';
+                setTimeout(() => {
+                    requestAnimationFrame(updateCounter);
+                }, parseFloat(counter.closest('.animate-fade-in').style.animationDelay) * 1000 || 0);
+            }
+        });
+        
+        // Initialize Charts
+        Chart.register(ChartDataLabels);
+        
+        // Monthly Loans Chart
+        const monthlyLoansCtx = document.getElementById('monthlyLoansChart').getContext('2d');
+        const monthlyLoansChart = new Chart(monthlyLoansCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'],
+                datasets: [{
+                    label: 'Prêts',
+                    data: {{ monthly_loans|default:"[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]" }},
+                    backgroundColor: 'rgba(79, 70, 229, 0.6)',
+                    borderColor: 'rgba(79, 70, 229, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    datalabels: {
+                        color: '#4b5563',
+                        font: {
+                            weight: 'bold'
+                        },
+                        formatter: (value) => {
+                            return value > 0 ? value : '';
+                        }
+                    },
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Prêts mensuels pour l\'année en cours'
+                    }
+                }
+            }
+        });
+        
+        // User Activity Chart
+        const userActivityCtx = document.getElementById('userActivityChart').getContext('2d');
+        const userActivityChart = new Chart(userActivityCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'],
+                datasets: [{
+                    label: 'Utilisateurs actifs',
+                    data: {{ user_activity|default:"[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]" }},
+                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                    borderColor: 'rgba(16, 185, 129, 1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    datalabels: {
+                        display: false
+                    },
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Activité utilisateurs par mois'
+                    }
+                }
+            }
+        });
+        
+        // Hide loading spinners after charts are loaded
+        setTimeout(() => {
+            document.querySelectorAll('.chart-loading').forEach(loader => {
+                loader.style.opacity = 0;
+                setTimeout(() => loader.style.display = 'none', 300);
+            });
+        }, 1000);
+    });
+</script>
+{% endblock %}
+
+

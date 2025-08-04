@@ -87,6 +87,9 @@
                                 Nom du Genre
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Sous-Genres
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Description
                             </th>
                             <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -99,6 +102,22 @@
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-medium text-gray-900">{{ literary_genre.name }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-500">
+                                    {% if literary_genre.sous_genres.all %}
+                                        <ul class="list-disc list-inside">
+                                            {% for subgenre in literary_genre.sous_genres.all|slice:":3" %}
+                                                <li>{{ subgenre.name }}</li>
+                                            {% endfor %}
+                                            {% if literary_genre.sous_genres.count > 3 %}
+                                                <li class="text-gray-400">+ {{ literary_genre.sous_genres.count|add:"-3" }} de plus</li>
+                                            {% endif %}
+                                        </ul>
+                                    {% else %}
+                                        <span class="text-gray-400">Aucun sous-genre</span>
+                                    {% endif %}
+                                </div>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="text-sm text-gray-500">{{ literary_genre.description|truncatechars:50 }}</div>
@@ -133,7 +152,7 @@
             },
             "order": [[0, "asc"]],
             "columnDefs": [
-                { "orderable": false, "targets": [2] } // Disable sorting on actions column
+                { "orderable": false, "targets": [1, 3] } // Disable sorting on subgenres and actions columns
             ],
             "responsive": true,
             "pageLength": 25,

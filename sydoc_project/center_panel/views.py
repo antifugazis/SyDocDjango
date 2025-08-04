@@ -1,14 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Count
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
 from django.http import HttpResponse, JsonResponse, FileResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 import os
 import io
 import tempfile
@@ -16,13 +19,83 @@ import shutil
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, letter
 from PIL import Image, ImageEnhance
-from core.models import (DocumentationCenter, Book, BookVolume, Member, Loan, Staff, ArchivalDocument, 
-                        TrainingModule, Activity, TrainingSubject, TrainingModule, Lesson, Communique, 
-                        Question, Answer, StaffTrainingRecord, Quiz, Author, Role, Profile, LiteraryGenre, 
-                        BookDigitization, DigitizedPage, SubGenre, Theme, SousTheme, DeletedBook, Language,
-                        BookLike, BookDislike, BookRead, Notification, ChatMessage)
+from core.models import (User, Member, Staff, Book, BookVolume, Author, Loan, LiteraryGenre, SubGenre, 
+                        Theme, SousTheme, DocumentationCenter, Activity, ActivityGroupAssignment, 
+                        ArchivalDocument, TrainingSubject, TrainingModule, Lesson, Question, Answer, 
+                        Role, Profile, Communique, BookDigitization, DigitizedPage, Language, 
+                        StaffTrainingRecord, Quiz, DeletedBook, BookLike, BookDislike, BookRead, 
+                        Notification, ChatMessage)
 from .models import AgeVerificationFailure, Complaint
-from core.utils import get_user_group_names, is_user_in_group, get_user_highest_privilege_group, require_groups
+from core.utils import get_user_group_names, is_user_in_group, get_user_highest_privilege_group, require_groups, require_groups_decorator
+import logging
+
+# Set up logging
+logger = logging.getLogger(__name__)
+
+
+def send_member_credentials_email(user, password):
+    """
+    Send email with login credentials to a newly created member
+    
+    Args:
+        user (User): Django User object with member information
+        password (str): The user's password
+        
+    Returns:
+        bool: True if email was sent successfully, False otherwise
+    """
+    try:
+        if not user or not password:
+            logger.error(f'Invalid user or password for sending credentials email')
+            return False
+            
+        subject = _('Vos identifiants de connexion SYDOC')
+        
+        # Build absolute login URL
+        login_url = f"{settings.BASE_URL if hasattr(settings, 'BASE_URL') else ''}{ reverse('login') }"
+        
+        context = {
+            'username': user.username,
+            'password': password,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'login_url': login_url
+        }
+        
+        text_content = render_to_string('core/emails/member_credentials.txt', context)
+        html_content = render_to_string('core/emails/member_credentials.html', context)
+        
+        # For development, just print to console
+        if settings.DEBUG:
+            logger.info(f'[DEV] Credentials Email would be sent to {user.email} with username {user.username}')
+            # Even in debug mode, try to send the actual email unless explicitly using console backend
+            if hasattr(settings, 'EMAIL_BACKEND') and settings.EMAIL_BACKEND.endswith('console.EmailBackend'):
+                logger.info(f'Using console backend, not sending actual email')
+                return True
+            
+        # Attempt to send the actual email
+        try:
+            email_message = EmailMultiAlternatives(
+                subject,
+                text_content,
+                settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'noreply@sydoc.com',
+                [user.email]
+            )
+            email_message.attach_alternative(html_content, "text/html")
+            email_message.send(fail_silently=False)
+            
+            logger.info(f'Credentials email sent successfully to {user.email}')
+            return True
+        except Exception as email_error:
+            logger.error(f'SMTP Error sending credentials email: {str(email_error)}', exc_info=True)
+            # If in debug mode, consider it sent anyway so testing can continue
+            if settings.DEBUG:
+                logger.warning('In DEBUG mode, continuing despite email error')
+                return True
+            return False
+    except Exception as e:
+        logger.error(f'Failed to send credentials email to {user.email if user else "unknown"}: {str(e)}', exc_info=True)
+        return False
 
 
 def get_redirect_url_for_user(user):
@@ -41,7 +114,7 @@ def get_redirect_url_for_user(user):
     elif is_user_in_group(user, 'Admin'):
         return 'center_panel:dashboard'
     elif is_user_in_group(user, 'Documentation Center'):
-        return 'center_panel:dashboard'
+        return 'center_panel:doc_center_dashboard'
     elif is_user_in_group(user, 'Member'):
         return 'center_panel:dashboard'  # Members will see the member panel through the dashboard view
     else:
@@ -478,7 +551,10 @@ def center_dashboard(request):
         'current_date': timezone.localdate(),
     }
     # Check user group to render the correct dashboard
-    if request.user.groups.filter(name='Member').exists():
+    if request.user.groups.filter(name='Documentation Center').exists():
+        # Redirect Documentation Center users to their specialized dashboard
+        return redirect('center_panel:doc_center_dashboard')
+    elif request.user.groups.filter(name='Member').exists():
         # --- Member Panel Context ---
         search_query = request.GET.get('q', '')
         books = Book.objects.filter(documentation_center=current_center, status='available')
@@ -829,7 +905,7 @@ def add_member(request):
     current_center = DocumentationCenter.objects.first()
     
     if request.method == 'POST':
-        form = MemberForm(request.POST)
+        form = MemberForm(request.POST, current_user=request.user)
         if form.is_valid():
             # Create Django User
             user_type = form.cleaned_data['user_type']
@@ -856,7 +932,7 @@ def add_member(request):
             try:
                 group = Group.objects.get(name=user_type)
                 user.groups.add(group)
-                messages.success(request, f"L'utilisateur a été ajouté au groupe '{user_type}'.")
+                messages.success(request, f"L'utilisateur a été ajouté au groupe '{user_type}'.") 
                 # Log the success
                 logger.info(f"User {user.username} (ID: {user.id}) successfully added to group '{user_type}'")
             except Group.DoesNotExist:
@@ -875,13 +951,16 @@ def add_member(request):
                 member.member_id = f"MEM-{member.id:04d}"
                 member.save(update_fields=['member_id'])
             
+            # Send email with credentials to the new member
+            send_member_credentials_email(user, password)
+            
             messages.success(
                 request, 
-                f"Le membre {member.first_name} {member.last_name} a été ajouté avec succès."
+                f"Le membre {member.first_name} {member.last_name} a été ajouté avec succès. Un email avec les identifiants de connexion a été envoyé."
             )
             return redirect('center_panel:members')
     else:
-        form = MemberForm()
+        form = MemberForm(current_user=request.user)
 
     context = {
         'form': form,
@@ -1521,10 +1600,39 @@ def send_new_message(request):
 
 def activity_list(request):
     current_center = DocumentationCenter.objects.first()
-    activities = Activity.objects.filter(documentation_center=current_center)
+    activities = Activity.objects.filter(documentation_center=current_center).prefetch_related('group_assignments__group')
+    
+    # Filter by status if provided
+    status_filter = request.GET.get('status')
+    if status_filter:
+        if status_filter == 'active':
+            activities = activities.filter(status=Activity.Status.ACTIVE)
+        elif status_filter == 'planned':
+            activities = activities.filter(status=Activity.Status.PLANNED)
+        elif status_filter == 'suspended':
+            activities = activities.filter(status=Activity.Status.SUSPENDED)
+        elif status_filter == 'completed':
+            activities = activities.filter(status=Activity.Status.COMPLETED)
+        elif status_filter == 'deleted':
+            activities = activities.filter(is_deleted=True)
+    
+    # Search by name or description if provided
+    search_query = request.GET.get('search')
+    if search_query:
+        activities = activities.filter(
+            Q(name__icontains=search_query) | 
+            Q(description__icontains=search_query)
+        )
+    
+    # Exclude deleted activities by default unless specifically requested
+    if status_filter != 'deleted':
+        activities = activities.exclude(is_deleted=True)
+    
     context = {
         'current_center': current_center,
-        'activities': activities
+        'activities': activities,
+        'status_filter': status_filter,
+        'search_query': search_query,
     }
     return render(request, 'center_panel/activities.html', context)
 
@@ -1546,6 +1654,18 @@ def add_activity(request):
             activity = form.save(commit=False)
             activity.documentation_center = current_center
             activity.save()
+            
+            # Handle group assignments
+            assigned_groups = form.cleaned_data.get('assigned_groups', [])
+            # Import ActivityGroupAssignment here to ensure it's available
+            from core.models import ActivityGroupAssignment
+            for group in assigned_groups:
+                ActivityGroupAssignment.objects.create(
+                    activity=activity,
+                    group=group,
+                    assigned_by=request.user
+                )
+                
             messages.success(request, "L'activité a été créée avec succès.")
             return redirect('center_panel:activities')
     else:
@@ -1565,6 +1685,20 @@ def edit_activity(request, pk):
         form = ActivityForm(request.POST, instance=activity)
         if form.is_valid():
             form.save()
+            
+            # Handle group assignments
+            # First, remove all existing group assignments
+            ActivityGroupAssignment.objects.filter(activity=activity).delete()
+            
+            # Then add the new group assignments
+            assigned_groups = form.cleaned_data.get('assigned_groups', [])
+            for group in assigned_groups:
+                ActivityGroupAssignment.objects.create(
+                    activity=activity,
+                    group=group,
+                    assigned_by=request.user
+                )
+                
             messages.success(request, "L'activité a été mise à jour.")
             return redirect('center_panel:activities')
     else:
@@ -1593,7 +1727,8 @@ def delete_activity(request, pk):
         request.session['activity_delete_submitted'] = True
         
         activity_name = activity.name
-        activity.delete()
+        reason = request.POST.get('reason', '')
+        activity.soft_delete(reason=reason, deleted_by=request.user)
         messages.success(request, f"L'activité '{activity_name}' a été supprimée.")
         return redirect('center_panel:activities')
 
@@ -1602,6 +1737,54 @@ def delete_activity(request, pk):
         'current_center': current_center,
     }
     return render(request, 'center_panel/admin/delete_activity_confirm.html', context)
+
+
+@login_required
+def suspend_activity(request, pk):
+    current_center = DocumentationCenter.objects.first()
+    activity = get_object_or_404(Activity, pk=pk, documentation_center=current_center)
+    
+    if request.method == 'POST':
+        reason = request.POST.get('reason', '')
+        activity.suspend(reason=reason, suspended_by=request.user)
+        
+        # Check if this is an AJAX request
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
+            return JsonResponse({'success': True, 'message': f"L'activité '{activity.name}' a été suspendue."})
+        
+        messages.success(request, f"L'activité '{activity.name}' a été suspendue.")
+        return redirect('center_panel:activities')
+    
+    context = {
+        'activity': activity,
+        'current_center': current_center,
+        'action': 'suspend'
+    }
+    return render(request, 'center_panel/admin/activity_status_confirm.html', context)
+
+
+@login_required
+def restore_activity(request, pk):
+    current_center = DocumentationCenter.objects.first()
+    activity = get_object_or_404(Activity, pk=pk, documentation_center=current_center)
+    
+    if request.method == 'POST':
+        reason = request.POST.get('reason', '')
+        activity.restore(reason=reason, restored_by=request.user)
+        
+        # Check if this is an AJAX request
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.headers.get('Accept', ''):
+            return JsonResponse({'success': True, 'message': f"L'activité '{activity.name}' a été restaurée."})
+            
+        messages.success(request, f"L'activité '{activity.name}' a été restaurée.")
+        return redirect('center_panel:activities')
+    
+    context = {
+        'activity': activity,
+        'current_center': current_center,
+        'action': 'restore'
+    }
+    return render(request, 'center_panel/admin/activity_status_confirm.html', context)
 
 @login_required
 def archive_list(request):
@@ -2304,9 +2487,9 @@ def lesson_quiz_api(request, pk):
 # Literary Genre CRUD Views
 @login_required
 def literary_genre_list(request):
-    """Display all literary genres."""
+    """Display all literary genres with their subgenres."""
     current_center = DocumentationCenter.objects.first()
-    literary_genres = LiteraryGenre.objects.all().order_by('name')
+    literary_genres = LiteraryGenre.objects.prefetch_related('sous_genres').all().order_by('name')
     
     context = {
         'literary_genres': literary_genres,
@@ -3319,6 +3502,128 @@ def api_subthemes(request):
     return JsonResponse(list(sub_themes), safe=False)
 
 
+@login_required
+@require_groups_decorator(['Administrateur', 'Bibliothécaire', 'Gestionnaire', 'Documentation Center'])
+def doc_center_dashboard(request):
+    """
+    View for the Documentation Center dashboard with comprehensive statistics.
+    """
+    try:
+        # Get the current documentation center
+        current_center = DocumentationCenter.objects.first()
+        current_date = timezone.now()
+        
+        # Initialize stats dictionary
+        stats = {}
+        
+        # Book format statistics
+        stats['physical_books'] = Book.objects.filter(is_digital=False).count()
+        stats['digital_books'] = Book.objects.filter(is_digital=True).count()
+        # Remove website format statistics as they're not applicable with the current model
+        
+        # Low quantity books (less than 3 copies available)
+        stats['low_quantity_books'] = BookVolume.objects.filter(quantity_available__lt=3).count()
+        
+        # Cost statistics
+        book_costs = Book.objects.aggregate(total_cost=Sum('price'))
+        stats['total_cost'] = book_costs['total_cost'] or 0
+        
+        physical_costs = Book.objects.filter(is_digital=False).aggregate(total=Sum('price'))
+        stats['physical_cost'] = physical_costs['total'] or 0
+        
+        digital_costs = Book.objects.filter(is_digital=True).aggregate(total=Sum('price'))
+        stats['digital_cost'] = digital_costs['total'] or 0
+        
+        # Subscription status - check if current month's payment is recorded
+        current_month = current_date.month
+        current_year = current_date.year
+        # This is a placeholder - adjust based on your actual subscription model
+        stats['subscription_status'] = 'Payé'  # or 'Non payé' based on actual logic
+        
+        # Current loans
+        stats['current_loans'] = Loan.objects.filter(
+            status='approved',
+            return_date__isnull=True
+        ).count()
+        
+        # Total book stock
+        stats['total_stock'] = BookVolume.objects.aggregate(total=Sum('total_quantity'))['total'] or 0
+        
+        # Activities
+        stats['activities_count'] = Activity.objects.count()
+        
+        # Roles
+        stats['roles_count'] = Role.objects.count()
+        
+        # Users
+        stats['total_users'] = User.objects.count()
+        
+        # Online users (active in last 15 minutes)
+        fifteen_mins_ago = timezone.now() - timedelta(minutes=15)
+        stats['online_users'] = User.objects.filter(last_login__gte=fifteen_mins_ago).count()
+        
+        # Notifications
+        stats['notifications_count'] = Notification.objects.filter(
+            is_read=False
+        ).count()
+        
+        # Nubo conversions
+        stats['nubo_converted'] = BookDigitization.objects.filter(
+            status='completed'
+        ).count()
+        stats['not_converted'] = Book.objects.count() - stats['nubo_converted']
+        
+        # Archives
+        stats['archives_count'] = ArchivalDocument.objects.count()
+        
+        # Training categories
+        stats['training_categories'] = TrainingSubject.objects.count()
+        
+        # Training statistics
+        stats['total_trainings'] = TrainingModule.objects.count()
+        stats['pending_trainings'] = TrainingModule.objects.filter(status='pending').count()
+        stats['confirmed_trainings'] = TrainingModule.objects.filter(status='confirmed').count()
+        
+        # Monthly loans data for chart
+        monthly_loans = [0] * 12  # Initialize with zeros for all months
+        
+        # Get loans for current year grouped by month
+        loans_by_month = Loan.objects.filter(
+            loan_date__year=current_year
+        ).values('loan_date__month').annotate(count=Count('id'))
+        
+        # Fill in the actual data
+        for month_data in loans_by_month:
+            month_idx = month_data['loan_date__month'] - 1  # Convert 1-12 to 0-11 for array indexing
+            monthly_loans[month_idx] = month_data['count']
+        
+        # Monthly user activity data for chart
+        # This is a placeholder - adjust based on your actual user activity tracking
+        user_activity = [0] * 12
+        
+        # Get user registrations by month as a proxy for activity
+        users_by_month = User.objects.filter(
+            date_joined__year=current_year
+        ).values('date_joined__month').annotate(count=Count('id'))
+        
+        # Fill in the actual data
+        for month_data in users_by_month:
+            month_idx = month_data['date_joined__month'] - 1
+            user_activity[month_idx] = month_data['count']
+        
+        return render(request, 'center_panel/doc_center_dashboard.html', {
+            'stats': stats,
+            'monthly_loans': monthly_loans,
+            'user_activity': user_activity,
+            'current_date': current_date,
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in doc_center_dashboard view: {str(e)}", exc_info=True)
+        messages.error(request, "Une erreur s'est produite lors du chargement du tableau de bord.")
+        return redirect('center_panel:dashboard')
+
+
 from .models import Complaint
 from .forms import ComplaintForm
 from django.contrib import messages
@@ -3388,4 +3693,42 @@ def resolve_complaint(request, complaint_id):
     
     return render(request, 'center_panel/admin/resolve_complaint.html', {
         'complaint': complaint,
+    })
+
+
+@login_required
+def suspend_member(request, member_id):
+    """
+    Admin view to suspend a member.
+    """
+    member = get_object_or_404(Member, id=member_id)
+    
+    if request.method == 'POST':
+        reason = request.POST.get('reason', '')
+        member.suspend(reason=reason, suspended_by=request.user)
+        messages.success(request, f'Le membre {member.full_name} a été suspendu.')
+        return redirect('center_panel:members')
+    
+    return render(request, 'center_panel/admin/suspend_member.html', {
+        'member': member,
+        'action': 'suspend'
+    })
+
+
+@login_required
+def unsuspend_member(request, member_id):
+    """
+    Admin view to unsuspend a member.
+    """
+    member = get_object_or_404(Member, id=member_id)
+    
+    if request.method == 'POST':
+        reason = request.POST.get('reason', '')
+        member.unsuspend(reason=reason, unsuspended_by=request.user)
+        messages.success(request, f'Le membre {member.full_name} a été réactivé.')
+        return redirect('center_panel:members')
+    
+    return render(request, 'center_panel/admin/suspend_member.html', {
+        'member': member,
+        'action': 'unsuspend'
     })

@@ -2,7 +2,7 @@
 
 from django import forms
 from django.forms.models import modelformset_factory, inlineformset_factory
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
 from core.models import LiteraryGenre, SubGenre, Theme, SousTheme, Book, BookVolume, Author, Member, Loan, Staff, Activity, ArchivalDocument, TrainingSubject, TrainingModule, Lesson, Question, Answer, Communique, Role, Profile, BookDigitization, DigitizedPage, Language, DeletedBook
 from .models import AgeVerificationFailure, Complaint
@@ -347,6 +347,22 @@ class MemberForm(forms.ModelForm):
         })
     )
     
+    def __init__(self, *args, **kwargs):
+        self.current_user = kwargs.pop('current_user', None)
+        super().__init__(*args, **kwargs)
+        
+        # Restrict user type choices based on current user's group
+        if self.current_user and hasattr(self.current_user, 'groups'):
+            # If current user is in Documentation Center group, only allow Member type
+            if self.current_user.groups.filter(name='Documentation Center').exists():
+                self.fields['user_type'].choices = [('Member', 'Member')]
+                self.fields['user_type'].initial = 'Member'
+        
+        # Apply Tailwind CSS classes to all form fields for consistent styling
+        for field_name, field in self.fields.items():
+            if field_name not in ['is_active', 'user_type', 'password', 'confirm_password']:  # Skip fields with custom classes
+                field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+    
     password = forms.CharField(
         label='Mot de passe',
         widget=forms.PasswordInput(attrs={
@@ -391,13 +407,6 @@ class MemberForm(forms.ModelForm):
         if not date_of_birth:
             raise forms.ValidationError('La date de naissance est obligatoire pour vérifier l\'âge lors des emprunts de livres.')
         return date_of_birth
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Apply consistent Tailwind CSS classes
-        for field_name, field in self.fields.items():
-            if field_name not in ['is_active', 'user_type', 'password', 'confirm_password']:  # Skip fields with custom classes
-                field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
     
     def clean(self):
         cleaned_data = super().clean()
@@ -477,6 +486,14 @@ class StaffForm(forms.ModelForm):
                 field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
             
 class ActivityForm(forms.ModelForm):
+    assigned_groups = forms.ModelMultipleChoiceField(
+        queryset=Group.objects.all(),
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        label="Groupes assignés",
+        help_text="Sélectionnez les groupes qui auront accès à cette activité."
+    )
+    
     class Meta:
         model = Activity
         fields = ['name', 'description', 'start_date', 'end_date', 'status']
@@ -490,7 +507,14 @@ class ActivityForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Apply consistent Tailwind CSS classes
         for field_name, field in self.fields.items():
-            field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm' 
+            if field_name != 'assigned_groups':  # Skip the checkbox widget
+                field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+        
+        # If we're editing an existing activity, set initial values for assigned groups
+        if self.instance.pk:
+            self.fields['assigned_groups'].initial = Group.objects.filter(
+                activity_assignments__activity=self.instance
+            )
 
 class ArchiveForm(forms.ModelForm):
     class Meta:

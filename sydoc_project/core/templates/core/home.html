@@ -6,11 +6,56 @@
 {% block header %}{% endblock %}
 {% block navigation %}{% endblock %}
 {% block content %}
+<!-- Loading Animation -->
+<div id="loading-animation" class="fixed inset-0 flex items-center justify-center bg-white z-50">
+    <div id="logo-bounce" class="flex flex-col items-center">
+        <img src="{% static 'center_panel/logohuh.png' %}" alt="SYDOC Logo" class="h-24 w-auto mb-4">
+        <div class="w-32 h-1 bg-gray-200 rounded-full overflow-hidden">
+            <div id="loading-bar" class="h-full bg-blue-500 rounded-full w-0"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const loadingAnimation = document.getElementById('loading-animation');
+        const logo = document.getElementById('logo-bounce');
+        const loadingBar = document.getElementById('loading-bar');
+        
+        // Bouncing animation for the logo
+        gsap.to(logo, {
+            y: -20,
+            duration: 0.8,
+            repeat: -1,
+            yoyo: true,
+            ease: "power1.inOut"
+        });
+        
+        // Loading bar animation
+        gsap.to(loadingBar, {
+            width: "100%",
+            duration: 2,
+            ease: "power1.inOut",
+            onComplete: function() {
+                // Fade out the loading animation
+                gsap.to(loadingAnimation, {
+                    opacity: 0,
+                    duration: 0.5,
+                    onComplete: function() {
+                        loadingAnimation.style.display = 'none';
+                    }
+                });
+            }
+        });
+    });
+</script>
+
 <div class="absolute inset-0 flex flex-col">
     <div class="flex flex-col justify-center items-center flex-grow px-4 py-8">
         <div class="max-w-7xl w-full text-center">
             <div class="mb-8 flex justify-center">
-                <img src="{% static 'center_panel/logohuh.jpeg' %}" alt="SyDoc Logo" class="max-h-32 max-w-full h-auto">
+                <img src="{% static 'center_panel/logohuh.png' %}" alt="SyDoc Logo" class="max-h-32 max-w-full h-auto">
             </div>
             <h1 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">
                 {% trans 'Bienvenue sur SyDoc' %}
@@ -74,30 +119,7 @@
 {% endblock %}
 
 {% block footer %}
-    <footer class="bg-white border-t border-gray-200 py-6 px-4">
-        <div class="container mx-auto">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="mb-4 md:mb-0">
-                    <div class="flex items-center">
-                        <div class="mr-2 p-1.5 bg-indigo-100 rounded-md">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                            </svg>
-                        </div>
-                        <span class="text-sm funnel-sans-medium text-gray-800">SYDOC</span>
-                    </div>
-                    <p class="text-xs dm-sans-regular text-gray-500 mt-1">&copy; 2025 SyDoc. Tous droits réservés.</p>
-                </div>
-                <div class="flex space-x-6">
-                    <a href="#" class="text-sm dm-sans-medium text-gray-600 hover:text-indigo-600 transition-colors">Aide</a>
-                    <a href="#" class="text-sm dm-sans-medium text-gray-600 hover:text-indigo-600 transition-colors">Contact</a>
-                    <a href="#" class="text-sm dm-sans-medium text-gray-600 hover:text-indigo-600 transition-colors">Confidentialité</a>
-                    <a href="#" class="text-sm dm-sans-medium text-gray-600 hover:text-indigo-600 transition-colors">Conditions</a>
-                </div>
-            </div>
-        </div>
-    </footer>
+    {% include 'partials/footer.html' %}
 {% endblock %}
 
 {% block bottom_nav %}{% endblock %}
-

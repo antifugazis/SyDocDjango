@@ -759,6 +759,32 @@ class Member(models.Model):
             today = date.today()
             return today.year - self.date_of_birth.year - ((today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day))
         return None
+    
+    def suspend(self, reason=None, suspended_by=None):
+        """Suspend the member and log the action"""
+        self.is_active = False
+        self.save()
+        
+        # Log the suspension
+        MemberStatusLog.objects.create(
+            member=self,
+            change_type='suspended',
+            reason=reason,
+            changed_by=suspended_by
+        )
+    
+    def unsuspend(self, reason=None, unsuspended_by=None):
+        """Unsuspend the member and log the action"""
+        self.is_active = True
+        self.save()
+        
+        # Log the unsuspension
+        MemberStatusLog.objects.create(
+            member=self,
+            change_type='restored',
+            reason=reason,
+            changed_by=unsuspended_by
+        )
 
 
 class Loan(models.Model):
@@ -1016,6 +1042,7 @@ class Activity(models.Model):
         INACTIVE = 'inactive', 'Inactif'
         COMPLETED = 'completed', 'Terminé'
         SUSPENDED = 'suspended', 'Suspendu'
+        DELETED = 'deleted', 'Supprimé'
 
     documentation_center = models.ForeignKey(
         DocumentationCenter,
@@ -1033,14 +1060,192 @@ class Activity(models.Model):
         verbose_name="Statut"
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
+    deleted_at = models.DateTimeField(blank=True, null=True, verbose_name="Date de suppression")
+    is_deleted = models.BooleanField(default=False, verbose_name="Supprimé")
 
     def __str__(self):
         return self.name
+
+    def soft_delete(self, reason=None, deleted_by=None):
+        """
+        Soft delete the activity by marking it as deleted.
+        """
+        self.status = self.Status.DELETED
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.save()
+        
+        # Log the deletion
+        ActivityStatusLog.objects.create(
+            activity=self,
+            change_type='deleted',
+            reason=reason,
+            changed_by=deleted_by
+        )
+
+    def suspend(self, reason=None, suspended_by=None):
+        """
+        Suspend the activity.
+        """
+        self.status = self.Status.SUSPENDED
+        self.save()
+        
+        # Log the suspension
+        ActivityStatusLog.objects.create(
+            activity=self,
+            change_type='suspended',
+            reason=reason,
+            changed_by=suspended_by
+        )
+
+    def restore(self, reason=None, restored_by=None):
+        """
+        Restore a suspended or deleted activity.
+        """
+        if self.status == self.Status.DELETED:
+            self.is_deleted = False
+            self.deleted_at = None
+        self.status = self.Status.PLANNED  # Default to planned when restored
+        self.save()
+        
+        # Log the restoration
+        ActivityStatusLog.objects.create(
+            activity=self,
+            change_type='restored',
+            reason=reason,
+            changed_by=restored_by
+        )
+
+    @property
+    def is_active_status(self):
+        """
+        Check if the activity is in an active status.
+        """
+        return self.status == self.Status.ACTIVE
+
+    @property
+    def is_suspended(self):
+        """
+        Check if the activity is suspended.
+        """
+        return self.status == self.Status.SUSPENDED
+
+    @property
+    def is_deleted_status(self):
+        """
+        Check if the activity is deleted.
+        """
+        return self.status == self.Status.DELETED or self.is_deleted
 
     class Meta:
         verbose_name = "Activité"
         verbose_name_plural = "Activités"
         ordering = ['name']
+
+
+class ActivityAssignment(models.Model):
+    """
+    Model to track assignments of staff members to activities.
+    """
+    activity = models.ForeignKey(
+        Activity,
+        on_delete=models.CASCADE,
+        related_name='assignments'
+    )
+    staff_member = models.ForeignKey(
+        Staff,
+        on_delete=models.CASCADE,
+        related_name='activity_assignments'
+    )
+    assigned_at = models.DateTimeField(auto_now_add=True)
+    assigned_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='assigned_activities'
+    )
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('activity', 'staff_member')
+        verbose_name = "Affectation d'Activité"
+        verbose_name_plural = "Affectations d'Activités"
+        ordering = ['-assigned_at']
+
+    def __str__(self):
+        return f"{self.staff_member} assigned to {self.activity}"
+
+
+class ActivityStatusLog(models.Model):
+    """
+    Model to track status changes for activities.
+    """
+    activity = models.ForeignKey(
+        Activity,
+        on_delete=models.CASCADE,
+        related_name='status_logs'
+    )
+    change_type = models.CharField(
+        max_length=20,
+        choices=[
+            ('created', 'Créé'),
+            ('updated', 'Mis à jour'),
+            ('deleted', 'Supprimé'),
+            ('suspended', 'Suspendu'),
+            ('restored', 'Restauré'),
+        ]
+    )
+    reason = models.TextField(blank=True, null=True)
+    changed_at = models.DateTimeField(auto_now_add=True)
+    changed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='activity_status_changes'
+    )
+
+    class Meta:
+        verbose_name = "Journal de Statut d'Activité"
+        verbose_name_plural = "Journaux de Statut d'Activités"
+        ordering = ['-changed_at']
+
+    def __str__(self):
+        return f"{self.activity} {self.change_type} on {self.changed_at}"
+
+
+class ActivityGroupAssignment(models.Model):
+    """
+    Model to track assignments of groups to activities.
+    This allows assigning unlimited groups to each activity.
+    """
+    activity = models.ForeignKey(
+        Activity,
+        on_delete=models.CASCADE,
+        related_name='group_assignments'
+    )
+    group = models.ForeignKey(
+        'auth.Group',
+        on_delete=models.CASCADE,
+        related_name='activity_assignments',
+        verbose_name="Groupe"
+    )
+    assigned_at = models.DateTimeField(auto_now_add=True)
+    assigned_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='assigned_activity_groups'
+    )
+
+    class Meta:
+        unique_together = ('activity', 'group')
+        verbose_name = "Affectation de Groupe à une Activité"
+        verbose_name_plural = "Affectations de Groupes aux Activités"
+        ordering = ['-assigned_at']
+
+    def __str__(self):
+        return f"{self.group} assigned to {self.activity}"
+
 
 class ArchivalDocument(models.Model):
     """
@@ -1488,12 +1693,25 @@ class Profile(models.Model):
     
     updated_at = models.DateTimeField(auto_now=True, verbose_name=_('Dernière mise à jour'))
     
+    profile_picture_updated_at = models.DateTimeField(blank=True, null=True, verbose_name=_('Date de dernière modification de la photo de profil'))
+    
     class Meta:
         verbose_name = _('Profil')
         verbose_name_plural = _('Profils')
     
     def __str__(self):
         return f"Profil de {self.user.username}"
+    
+    def save(self, *args, **kwargs):
+        # Check if profile picture has changed
+        if self.pk:  # Only for existing profiles
+            old_profile = Profile.objects.get(pk=self.pk)
+            if old_profile.profile_picture != self.profile_picture:
+                self.profile_picture_updated_at = timezone.now()
+        elif self.profile_picture:  # New profile with picture
+            self.profile_picture_updated_at = timezone.now()
+        
+        super().save(*args, **kwargs)
 
 
 @receiver(post_save, sender=User)
@@ -1706,6 +1924,43 @@ class DeletionLog(models.Model):
 
     def get_absolute_url(self):
         return reverse('center_panel:deletion_detail', args=[self.pk])
+
+
+class MemberStatusLog(models.Model):
+    """
+    Model to track status changes for members.
+    """
+    member = models.ForeignKey(
+        Member,
+        on_delete=models.CASCADE,
+        related_name='status_logs'
+    )
+    change_type = models.CharField(
+        max_length=20,
+        choices=[
+            ('created', 'Créé'),
+            ('updated', 'Mis à jour'),
+            ('deleted', 'Supprimé'),
+            ('suspended', 'Suspendu'),
+            ('restored', 'Restauré'),
+        ]
+    )
+    reason = models.TextField(blank=True, null=True)
+    changed_at = models.DateTimeField(auto_now_add=True)
+    changed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='member_status_changes'
+    )
+
+    class Meta:
+        verbose_name = "Journal de Statut de Membre"
+        verbose_name_plural = "Journaux de Statut de Membres"
+        ordering = ['-changed_at']
+
+    def __str__(self):
+        return f"{self.member} {self.change_type} on {self.changed_at}"
 
 
 def log_deletion(instance, reason, deleted_by, deletion_type=None, additional_data=None):

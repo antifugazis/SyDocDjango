@@ -1,4 +1,6 @@
 from django.contrib.auth.models import Group
+from django.http import HttpResponseForbidden
+from functools import wraps
 
 
 def get_user_group_names(user):
@@ -69,3 +71,36 @@ def require_groups(user, group_names):
         group_names = [group_names]
     
     return user.groups.filter(name__in=group_names).exists()
+
+
+def require_groups_decorator(group_names):
+    """
+    Decorator that restricts access to users who belong to at least one of the specified groups.
+    Super Admin users are allowed to access all views.
+    
+    Args:
+        group_names: List of group names or a single group name string
+        
+    Returns:
+        Function decorator that checks if the user belongs to any of the specified groups
+    """
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(request, *args, **kwargs):
+            if not request.user.is_authenticated:
+                from django.shortcuts import redirect
+                return redirect('login')
+                
+            # Allow Super Admin users to access all views
+            if request.user.groups.filter(name='Super Admin').exists():
+                return view_func(request, *args, **kwargs)
+                
+            if require_groups(request.user, group_names):
+                return view_func(request, *args, **kwargs)
+            else:
+                from django.contrib import messages
+                from django.shortcuts import redirect
+                messages.error(request, "Vous n'avez pas les permissions nécessaires pour accéder à cette page.")
+                return redirect('login')
+        return _wrapped_view
+    return decorator

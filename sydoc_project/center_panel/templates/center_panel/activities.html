@@ -10,22 +10,26 @@
     .modal {
         display: none;
         position: fixed;
-        z-index: 50;
+        z-index: 1000;
         left: 0;
         top: 0;
         width: 100%;
         height: 100%;
         background-color: rgba(0, 0, 0, 0.5);
+        overflow: auto;
     }
     
     .modal-content {
         background-color: #fff;
-        margin: 15% auto;
+        margin: 10% auto;
         padding: 1.5rem;
         border-radius: 0.5rem;
         width: 90%;
         max-width: 28rem;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        position: relative;
+        z-index: 1001;
+        display: block;
     }
     
     .modal-actions {
@@ -33,6 +37,12 @@
         justify-content: flex-end;
         margin-top: 1.5rem;
         gap: 0.75rem;
+        position: relative;
+        z-index: 1002;
+    }
+    
+    .modal-actions button {
+        min-width: 100px;
     }
 </style>
 {% endblock %}
@@ -43,6 +53,13 @@
     <div class="modal-content">
         <h3 class="text-lg font-medium text-gray-900">Confirmer la suppression</h3>
         <p class="mt-2 text-sm text-gray-600">Êtes-vous sûr de vouloir supprimer cette activité ? Cette action est irréversible.</p>
+        
+        <div class="mt-4">
+            <label for="deleteReason" class="block text-sm font-medium text-gray-700">Raison de la suppression</label>
+            <textarea id="deleteReason" name="deleteReason" rows="3" 
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" 
+                      placeholder="Veuillez indiquer la raison de la suppression..."></textarea>
+        </div>
         
         <div class="modal-actions">
             <button type="button" id="cancelDelete" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
@@ -55,12 +72,101 @@
     </div>
 </div>
 
+<!-- Suspend Confirmation Modal -->
+<div id="suspendModal" class="modal">
+    <div class="modal-content">
+        <h3 class="text-lg font-medium text-gray-900">Confirmer la suspension</h3>
+        <p class="mt-2 text-sm text-gray-600">Êtes-vous sûr de vouloir suspendre cette activité ?</p>
+        
+        <div class="mt-4">
+            <label for="suspendReason" class="block text-sm font-medium text-gray-700">Raison de la suspension</label>
+            <textarea id="suspendReason" name="suspendReason" rows="3" 
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" 
+                      placeholder="Veuillez indiquer la raison de la suspension..."></textarea>
+        </div>
+        
+        <div class="modal-actions">
+            <button type="button" id="cancelSuspend" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Annuler
+            </button>
+            <button type="button" id="confirmSuspend" class="px-4 py-2 text-sm font-bold text-white bg-green-600 border border-transparent rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                Suspendre
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Restore Confirmation Modal -->
+<div id="restoreModal" class="modal">
+    <div class="modal-content">
+        <h3 class="text-lg font-medium text-gray-900">Confirmer la restauration</h3>
+        <p class="mt-2 text-sm text-gray-600">Êtes-vous sûr de vouloir restaurer cette activité ?</p>
+        
+        <div class="mt-4">
+            <label for="restoreReason" class="block text-sm font-medium text-gray-700">Raison de la restauration</label>
+            <textarea id="restoreReason" name="restoreReason" rows="3" 
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" 
+                      placeholder="Veuillez indiquer la raison de la restauration..."></textarea>
+        </div>
+        
+        <div class="modal-actions">
+            <button type="button" id="cancelRestore" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Annuler
+            </button>
+            <button type="button" id="confirmRestore" class="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                Restaurer
+            </button>
+        </div>
+    </div>
+</div>
+
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Gestion des Activités</h1>
         <a href="{% url 'center_panel:add_activity' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-150 ease-in-out">
             Créer une activité
         </a>
+    </div>
+    
+    <!-- Filters and Search -->
+    <div class="mb-6 bg-white shadow-md rounded-lg p-4">
+        <form method="GET" class="flex flex-col md:flex-row md:items-end gap-4">
+            <!-- Search -->
+            <div class="flex-1">
+                <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Rechercher</label>
+                <input type="text" name="search" id="search" value="{{ search_query|default:'' }}" 
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" 
+                       placeholder="Rechercher par nom ou description...">
+            </div>
+            
+            <!-- Status Filter -->
+            <div>
+                <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+                <select name="status" id="status" 
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <option value="">Tous les statuts</option>
+                    <option value="planned" {% if status_filter == 'planned' %}selected{% endif %}>Planifiée</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                    <option value="suspended" {% if status_filter == 'suspended' %}selected{% endif %}>Suspendue</option>
+                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Terminée</option>
+                    <option value="deleted" {% if status_filter == 'deleted' %}selected{% endif %}>Supprimée</option>
+                </select>
+            </div>
+            
+            <!-- Submit Button -->
+            <div>
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Filtrer
+                </button>
+            </div>
+            
+            <!-- Reset Button -->
+            <div>
+                <a href="{% url 'center_panel:activities' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Réinitialiser
+                </a>
+            </div>
+        </form>
     </div>
 
     <div class="bg-white shadow-md rounded-lg overflow-hidden">
@@ -73,6 +179,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date de début</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date de fin</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Groupes assignés</th>
                         {% if not user|has_group:'Member' %}
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider no-print">Actions</th>
                         {% endif %}
@@ -94,28 +201,64 @@
                             {{ activity.end_date|date:"d/m/Y" }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            {% if activity.status == 'active' %}
+                            {% if activity.is_deleted %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    Supprimée
+                                </span>
+                            {% elif activity.status == 'active' %}
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                     Active
                                 </span>
-                            {% elif activity.status == 'inactive' %}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                    Inactive
+                            {% elif activity.status == 'completed' %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    Terminée
+                                </span>
+                            {% elif activity.status == 'suspended' %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                    Suspendue
                                 </span>
                             {% else %}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
                                     Planifiée
                                 </span>
                             {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex flex-wrap gap-1">
+                                {% for assignment in activity.group_assignments.all %}
+                                    <span class="px-2 py-1 inline-flex text-xs leading-4 font-medium rounded-full bg-indigo-100 text-indigo-800">
+                                        {{ assignment.group.name }}
+                                    </span>
+                                {% empty %}
+                                    <span class="text-xs text-gray-500">Aucun groupe</span>
+                                {% endfor %}
+                            </div>
                         </td>
                         {% if not user|has_group:'Member' %}
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium no-print">
                             
                             <a href="{% url 'center_panel:edit_activity' activity.pk %}" class="text-yellow-600 hover:text-yellow-900 mr-3">Modifier</a>
+                            
+                            {% if not activity.is_deleted %}
+                                {% if activity.status == 'suspended' %}
+                                    <button type="button" 
+                                            class="text-green-600 hover:text-green-900 focus:outline-none mr-3" 
+                                            onclick="showRestoreModal({{ activity.pk }}, '{{ activity.name|escapejs }}')">
+                                        Restaurer
+                                    </button>
+                                {% else %}
+                                    <button type="button" 
+                                            class="text-orange-600 hover:text-orange-900 focus:outline-none mr-3" 
+                                            onclick="showSuspendModal({{ activity.pk }}, '{{ activity.name|escapejs }}')">
+                                        Suspendre
+                                    </button>
+                                {% endif %}
+                            {% endif %}
+                            
                             <button type="button" 
                                     class="text-red-600 hover:text-red-900 focus:outline-none" 
                                     onclick="showDeleteModal({{ activity.pk }}, '{{ activity.name|escapejs }}')">
-                                Supprimer
+                                {% if activity.is_deleted %}Supprimer définitivement{% else %}Supprimer{% endif %}
                             </button>
                             
                         </td>
@@ -136,34 +279,189 @@
 
 <script>
     let currentActivityId = null;
+    let currentAction = null;
     
     function showDeleteModal(id, name) {
         currentActivityId = id;
+        currentAction = 'delete';
         const modal = document.getElementById('deleteModal');
         const modalTitle = modal.querySelector('h3');
         modalTitle.textContent = `Supprimer l'activité "${name}"`;
         modal.style.display = 'block';
+        
+        // Clear previous reason
+        document.getElementById('deleteReason').value = '';
+    }
+    
+    function showSuspendModal(id, name) {
+        currentActivityId = id;
+        currentAction = 'suspend';
+        const modal = document.getElementById('suspendModal');
+        const modalTitle = modal.querySelector('h3');
+        modalTitle.textContent = `Suspendre l'activité "${name}"`;
+        modal.style.display = 'block';
+        
+        // Clear previous reason
+        document.getElementById('suspendReason').value = '';
+    }
+    
+    function showRestoreModal(id, name) {
+        currentActivityId = id;
+        currentAction = 'restore';
+        const modal = document.getElementById('restoreModal');
+        const modalTitle = modal.querySelector('h3');
+        modalTitle.textContent = `Restaurer l'activité "${name}"`;
+        modal.style.display = 'block';
+        
+        // Clear previous reason
+        document.getElementById('restoreReason').value = '';
     }
     
     function hideDeleteModal() {
         const modal = document.getElementById('deleteModal');
         modal.style.display = 'none';
         currentActivityId = null;
+        currentAction = null;
+    }
+    
+    function hideSuspendModal() {
+        const modal = document.getElementById('suspendModal');
+        modal.style.display = 'none';
+        currentActivityId = null;
+        currentAction = null;
+    }
+    
+    function hideRestoreModal() {
+        const modal = document.getElementById('restoreModal');
+        modal.style.display = 'none';
+        currentActivityId = null;
+        currentAction = null;
     }
     
     // Close modal when clicking the cancel button or outside the modal
     document.addEventListener('DOMContentLoaded', function() {
-        const modal = document.getElementById('deleteModal');
-        const cancelBtn = document.getElementById('cancelDelete');
-        const confirmBtn = document.getElementById('confirmDelete');
+        // Delete modal
+        const deleteModal = document.getElementById('deleteModal');
+        const cancelDeleteBtn = document.getElementById('cancelDelete');
+        const confirmDeleteBtn = document.getElementById('confirmDelete');
         
-        // Close modal when clicking the cancel button
-        cancelBtn.addEventListener('click', hideDeleteModal);
+        // Suspend modal
+        const suspendModal = document.getElementById('suspendModal');
+        const cancelSuspendBtn = document.getElementById('cancelSuspend');
+        const confirmSuspendBtn = document.getElementById('confirmSuspend');
         
-        // Close modal when clicking outside the modal content
+        // Restore modal
+        const restoreModal = document.getElementById('restoreModal');
+        const cancelRestoreBtn = document.getElementById('cancelRestore');
+        const confirmRestoreBtn = document.getElementById('confirmRestore');
+        
+        // Close modals when clicking the cancel buttons
+        cancelDeleteBtn.addEventListener('click', hideDeleteModal);
+        cancelSuspendBtn.addEventListener('click', hideSuspendModal);
+        cancelRestoreBtn.addEventListener('click', hideRestoreModal);
+        
+        // Close modals when clicking outside the modal content
         window.addEventListener('click', function(event) {
-            if (event.target === modal) {
+            if (event.target === deleteModal) {
                 hideDeleteModal();
+            } else if (event.target === suspendModal) {
+                hideSuspendModal();
+            } else if (event.target === restoreModal) {
+                hideRestoreModal();
+            }
+        });
+        
+        // Handle restore confirmation
+        confirmRestoreBtn.addEventListener('click', function() {
+            if (currentActivityId) {
+                // Show loading state
+                const originalText = confirmRestoreBtn.innerHTML;
+                confirmRestoreBtn.disabled = true;
+                confirmRestoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Restauration...';
+                
+                // Get the reason for restoration
+                const reason = document.getElementById('restoreReason').value;
+                
+                // Send restore request
+                fetch(`/center/activities/${currentActivityId}/restore/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFTTOKEN': '{{ csrf_token }}',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `csrfmiddlewaretoken={{ csrf_token }}&reason=${encodeURIComponent(reason)}`
+                })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    } else {
+                        return response.json();
+                    }
+                })
+                .then(data => {
+                    if (data && data.success) {
+                        window.location.reload();
+                    } else {
+                        alert('Une erreur est survenue lors de la restauration.');
+                        hideRestoreModal();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Une erreur est survenue lors de la restauration.');
+                    hideRestoreModal();
+                })
+                .finally(() => {
+                    confirmRestoreBtn.disabled = false;
+                    confirmRestoreBtn.innerHTML = originalText;
+                });
+            }
+        });
+        
+        // Handle suspend confirmation
+        confirmSuspendBtn.addEventListener('click', function() {
+            if (currentActivityId) {
+                // Show loading state
+                const originalText = confirmSuspendBtn.innerHTML;
+                confirmSuspendBtn.disabled = true;
+                confirmSuspendBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Suspension...';                
+                
+                // Get the reason for suspension
+                const reason = document.getElementById('suspendReason').value;
+                
+                // Send suspend request
+                fetch(`/center/activities/${currentActivityId}/suspend/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFTTOKEN': '{{ csrf_token }}',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `csrfmiddlewaretoken={{ csrf_token }}&reason=${encodeURIComponent(reason)}`
+                })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    } else {
+                        return response.json();
+                    }
+                })
+                .then(data => {
+                    if (data && data.success) {
+                        window.location.reload();
+                    } else {
+                        alert('Une erreur est survenue lors de la suspension.');
+                        hideSuspendModal();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Une erreur est survenue lors de la suspension.');
+                    hideSuspendModal();
+                })
+                .finally(() => {
+                    confirmSuspendBtn.disabled = false;
+                    confirmSuspendBtn.innerHTML = originalText;
+                });
             }
         });
         

@@ -32,8 +32,8 @@ from django.views import View
 from django.contrib.auth.views import LoginView
 
 # Local application imports
-from .forms import UserUpdateForm, ProfileUpdateForm
-from .models import Profile, OTP
+from .forms import UserUpdateForm, ProfileUpdateForm, PasswordUpdateForm
+from .models import Profile, OTP, DocumentationCenter
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -270,8 +270,12 @@ def profile(request):
     # Get or create the user's profile
     profile, created = Profile.objects.get_or_create(user=request.user)
     
+    # Get Documentation Center information
+    documentation_center = DocumentationCenter.objects.first()
+    
     context = {
         'profile': profile,
+        'documentation_center': documentation_center,
         'title': _('Mon Profil')
     }
 
@@ -286,27 +290,48 @@ def edit_profile(request):
     profile, created = Profile.objects.get_or_create(user=request.user)
     
     if request.method == 'POST':
-        u_form = UserUpdateForm(request.POST, instance=request.user)
-        p_form = ProfileUpdateForm(
-            request.POST,
-            request.FILES,
-            instance=profile
-        )
-
-        if u_form.is_valid() and p_form.is_valid():
-            u_form.save()
-            p_form.save()
-            messages.success(request, _('Votre profil a été mis à jour avec succès!'))
-            return redirect('core:profile')
+        # Check if this is a password update
+        if 'password_form' in request.POST:
+            # Handle password update
+            password_form = PasswordUpdateForm(request.user, request.POST)
+            u_form = UserUpdateForm(instance=request.user)
+            p_form = ProfileUpdateForm(instance=profile)
+            
+            if password_form.is_valid():
+                password_form.save()
+                messages.success(request, _('Votre mot de passe a été mis à jour avec succès!'), extra_tags='password')
+                return redirect('core:edit_profile')
+            else:
+                # Add password form errors to messages
+                for field, errors in password_form.errors.items():
+                    for error in errors:
+                        messages.error(request, error)
         else:
-            messages.error(request, _('Veuillez corriger les erreurs ci-dessous.'))
+            # Handle profile update
+            u_form = UserUpdateForm(request.POST, instance=request.user)
+            p_form = ProfileUpdateForm(
+                request.POST,
+                request.FILES,
+                instance=profile
+            )
+            password_form = PasswordUpdateForm(request.user)
+
+            if u_form.is_valid() and p_form.is_valid():
+                u_form.save()
+                p_form.save()
+                messages.success(request, _('Votre profil a été mis à jour avec succès!'))
+                return redirect('core:profile')
+            else:
+                messages.error(request, _('Veuillez corriger les erreurs ci-dessous.'))
     else:
         u_form = UserUpdateForm(instance=request.user)
         p_form = ProfileUpdateForm(instance=profile)
+        password_form = PasswordUpdateForm(request.user)
 
     context = {
         'u_form': u_form,
         'p_form': p_form,
+        'password_form': password_form,
         'title': _('Modifier mon profil')
     }
 

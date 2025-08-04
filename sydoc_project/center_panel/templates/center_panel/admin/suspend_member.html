@@ -1,0 +1,72 @@
+{% extends 'center_panel/base.html' %}
+
+{% block title %}{% if action == 'suspend' %}Suspendre{% else %}Réactiver{% endif %} le membre - {{ member.first_name }} {{ member.last_name }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <!-- Icon -->
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full {% if action == 'suspend' %}bg-yellow-100{% else %}bg-green-100{% endif %}">
+                {% if action == 'suspend' %}
+                <svg class="h-8 w-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                {% else %}
+                <svg class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {% endif %}
+            </div>
+            
+            <!-- Title -->
+            <h2 class="mt-4 text-center text-2xl font-extrabold {% if action == 'suspend' %}text-yellow-600{% else %}text-green-600{% endif %}">
+                {% if action == 'suspend' %}Suspendre{% else %}Réactiver{% endif %} un membre
+            </h2>
+            
+            <!-- Message -->
+            <div class="mt-4 text-center text-gray-600">
+                <p>Êtes-vous sûr de vouloir {% if action == 'suspend' %}suspendre{% else %}réactiver{% endif %} le membre : <span class="font-semibold">"{{ member.first_name }} {{ member.last_name }}"</span> ?</p>
+                {% if action == 'suspend' %}
+                <p class="mt-2">Le membre ne pourra plus se connecter au système jusqu'à ce qu'il soit réactivé.</p>
+                {% endif %}
+            </div>
+            
+            <!-- Reason Form -->
+            <form method="post" class="mt-6 space-y-6">
+                {% csrf_token %}
+                <div>
+                    <label for="reason" class="block text-sm font-medium text-gray-700">Raison {% if action == 'suspend' %}de la suspension{% else %}de la réactivation{% endif %} <span class="text-red-500">*</span></label>
+                    <div class="mt-1">
+                        <textarea id="reason" name="reason" rows="3" required class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"></textarea>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500">Veuillez fournir une raison détaillée pour cette action.</p>
+                </div>
+                
+                <!-- Buttons -->
+                <div class="mt-6 flex justify-center space-x-4">
+                    <a href="{% url 'center_panel:members' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                        <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Annuler
+                    </a>
+                    <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white {% if action == 'suspend' %}bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500{% else %}bg-green-600 hover:bg-green-700 focus:ring-green-500{% endif %} focus:outline-none focus:ring-2 focus:ring-offset-2">
+                        {% if action == 'suspend' %}
+                        <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                        Oui, suspendre
+                        {% else %}
+                        <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        Oui, réactiver
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

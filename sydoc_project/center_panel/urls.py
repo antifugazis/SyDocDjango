@@ -12,6 +12,7 @@ app_name = 'center_panel' # Namespace for this app's URLs
 urlpatterns = [
     # Dashboard
     path('dashboard/', views.center_dashboard, name='dashboard'),
+    path('doc-center-dashboard/', views.doc_center_dashboard, name='doc_center_dashboard'),
 
     # Book Management
     path('books/', views.center_book_list, name='books'),
@@ -28,6 +29,8 @@ urlpatterns = [
     path('members/add/', views.add_member, name='add_member'),
     path('members/<int:pk>/edit/', views.edit_member, name='edit_member'),
     path('members/<int:pk>/delete/', views.delete_member, name='delete_member'),
+    path('members/<int:member_id>/suspend/', views.suspend_member, name='suspend_member'),
+    path('members/<int:member_id>/unsuspend/', views.unsuspend_member, name='unsuspend_member'),
 
     # Loan Management
     path('loans/', views.loan_list, name='loans'),
@@ -88,6 +91,8 @@ urlpatterns = [
     path('activities/add/', views.add_activity, name='add_activity'),
     path('activities/<int:pk>/edit/', views.edit_activity, name='edit_activity'),
     path('activities/<int:pk>/delete/', views.delete_activity, name='delete_activity'),
+    path('activities/<int:pk>/suspend/', views.suspend_activity, name='suspend_activity'),
+    path('activities/<int:pk>/restore/', views.restore_activity, name='restore_activity'),
     
     # Chat System
     path('chat/', views.chat_inbox, name='chat_inbox'),

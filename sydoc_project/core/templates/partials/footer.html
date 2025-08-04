@@ -1,0 +1,21 @@
+{% load static %}
+<!-- Footer -->
+<footer class="bg-white border-t border-gray-200 py-6 mt-auto">
+    <div class="container mx-auto px-4">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+            <div class="mb-4 md:mb-0">
+                <div class="flex items-center">
+                    <img src="{% static 'center_panel/logohuh.png' %}" alt="SYDOC Logo" class="h-6 w-auto mr-2">
+                    <span class="text-sm funnel-sans-medium" style="color: #0A1E39;">SYDOC</span>
+                </div>
+                <p class="text-xs dm-sans-regular text-gray-500 mt-1">&copy; 2025 SyDoc. Tous droits réservés.</p>
+            </div>
+            <div class="flex flex-wrap justify-center md:justify-end">
+                <a href="{% url 'center_panel:help_center' %}" class="text-sm text-gray-600 hover:text-gray-800 mx-2 mb-2 md:mb-0">Centre d'aide</a>
+                <a href="#" class="text-sm text-gray-600 hover:text-gray-800 mx-2 mb-2 md:mb-0">Contact</a>
+                <a href="#" class="text-sm text-gray-600 hover:text-gray-800 mx-2 mb-2 md:mb-0">Confidentialité</a>
+                <a href="#" class="text-sm text-gray-600 hover:text-gray-800 mx-2 mb-2 md:mb-0">Conditions</a>
+            </div>
+        </div>
+    </div>
+</footer>

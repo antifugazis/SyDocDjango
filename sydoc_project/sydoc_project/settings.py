@@ -17,6 +17,9 @@ DEBUG = True
 ALLOWED_HOSTS = ['178.156.189.115', 'localhost', '127.0.0.1', 'sydoc.nexpns.net', 'www.sydoc.nexpns.net', 'https://sydoc.nexpns.net', 'https://www.sydoc.nexpns.net']
 CSRF_TRUSTED_ORIGINS = ['https://sydoc.nexpns.net', 'https://www.sydoc.nexpns.net']
 
+# Base URL for absolute links in emails
+BASE_URL = 'https://sydoc.nexpns.net' if not DEBUG else 'http://localhost:8000'
+
 # Email Configuration for OTP
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.hostinger.com'

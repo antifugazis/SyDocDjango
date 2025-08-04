@@ -100,7 +100,7 @@
                 </div>
 
                 <!-- Additional Information -->
-                {% if profile.bio or profile.establishment_name %}
+                {% if profile.bio or profile.establishment_name or profile.profile_picture_updated_at %}
                 <div class="border-t border-gray-200 pt-6">
                     <h3 class="text-lg font-medium text-gray-900">{% trans 'Informations supplémentaires' %}</h3>
                     <dl class="mt-4 grid grid-cols-1 gap-x-4 gap-y-4">
@@ -114,6 +114,65 @@
                         <div>
                             <dt class="text-sm font-medium text-gray-500">{% trans 'À propos' %}</dt>
                             <dd class="mt-1 text-sm text-gray-900 whitespace-pre-line">{{ profile.bio }}</dd>
+                        </div>
+                        {% endif %}
+                        {% if profile.profile_picture_updated_at %}
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">{% trans 'Dernière modification de la photo de profil' %}</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ profile.profile_picture_updated_at|date:"d/m/Y H:i" }}</dd>
+                        </div>
+                        {% endif %}
+                    </dl>
+                </div>
+                {% endif %}
+                
+                <!-- Documentation Center Information -->
+                {% if documentation_center %}
+                <div class="border-t border-gray-200 pt-6 mt-6">
+                    <h3 class="text-lg font-medium text-gray-900">{% trans 'Informations du Centre de Documentation' %}</h3>
+                    <dl class="mt-4 grid grid-cols-1 gap-x-4 gap-y-4">
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">{% trans 'Nom du Centre' %}</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ documentation_center.name }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">{% trans 'Email du Centre' %}</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ documentation_center.email }}</dd>
+                        </div>
+                        {% if documentation_center.phone1 %}
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">{% trans 'Téléphone 1' %}</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ documentation_center.phone1 }}</dd>
+                        </div>
+                        {% endif %}
+                        {% if documentation_center.phone2 %}
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">{% trans 'Téléphone 2' %}</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ documentation_center.phone2 }}</dd>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">{% trans 'Adresse Complète' %}</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ documentation_center.full_address }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">{% trans 'Responsable' %}</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ documentation_center.responsible_full_name }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">{% trans 'Email du Responsable' %}</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ documentation_center.responsible_email }}</dd>
+                        </div>
+                        {% if documentation_center.responsible_phone1 %}
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">{% trans 'Téléphone Responsable 1' %}</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ documentation_center.responsible_phone1 }}</dd>
+                        </div>
+                        {% endif %}
+                        {% if documentation_center.responsible_phone2 %}
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">{% trans 'Téléphone Responsable 2' %}</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ documentation_center.responsible_phone2 }}</dd>
                         </div>
                         {% endif %}
                     </dl>
