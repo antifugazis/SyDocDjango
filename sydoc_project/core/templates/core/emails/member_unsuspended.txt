@@ -1,0 +1,23 @@
+SYDOC - Réactivation de compte
+
+Bonjour {{ first_name }} {{ last_name }},
+
+Nous vous informons que votre compte sur la plateforme SYDOC a été réactivé avec succès.
+
+Détails de la réactivation :
+Compte : {{ username }}
+Date de réactivation : {{ unsuspension_date }}
+{% if unsuspended_by %}Réactivé par : {{ unsuspended_by }}{% endif %}
+{% if reason %}
+Raison de la réactivation :
+{{ reason }}
+{% endif %}
+
+Vous pouvez à nouveau accéder à votre compte et utiliser les services de la plateforme SYDOC.
+
+Si vous avez des questions ou besoin d'assistance, veuillez contacter l'administrateur de votre centre de documentation.
+
+Bienvenue à nouveau !
+
+© {% now "Y" %} SYDOC. Tous droits réservés.
+Cet email a été envoyé à titre informatif. Veuillez ne pas y répondre.

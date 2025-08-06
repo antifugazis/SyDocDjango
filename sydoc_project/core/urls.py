@@ -12,5 +12,10 @@ urlpatterns = [
     # Two-Factor Authentication
     path('login/verify/', views.TwoFactorVerifyView.as_view(), name='verify_2fa'),
     path('login/otp/resend/', views.resend_otp, name='otp_resend'),  # Keep for OTP resend functionality
-    path('login/otp/debug/', views.debug_otp, name='otp_debug')  # Debug endpoint
+    path('login/otp/debug/', views.debug_otp, name='otp_debug'),  # Debug endpoint
+    
+    # Password Reset with OTP
+    path('password/forgot/', views.ForgotPasswordView.as_view(), name='forgot_password'),
+    path('password/verify-otp/', views.VerifyResetOTPView.as_view(), name='verify_reset_otp'),
+    path('password/set-new/', views.SetNewPasswordView.as_view(), name='set_new_password'),
 ]

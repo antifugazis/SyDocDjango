@@ -32,7 +32,7 @@ from django.views import View
 from django.contrib.auth.views import LoginView
 
 # Local application imports
-from .forms import UserUpdateForm, ProfileUpdateForm, PasswordUpdateForm
+from .forms import UserUpdateForm, ProfileUpdateForm, PasswordUpdateForm, ForgotPasswordForm, OTPVerificationForm, SetNewPasswordForm
 from .models import Profile, OTP, DocumentationCenter
 
 # Set up logging
@@ -290,23 +290,33 @@ def edit_profile(request):
     profile, created = Profile.objects.get_or_create(user=request.user)
     
     if request.method == 'POST':
+        logger.info(f"Profile edit POST request received. POST data keys: {list(request.POST.keys())}")
+        
         # Check if this is a password update
         if 'password_form' in request.POST:
+            logger.info("Processing password update form")
             # Handle password update
             password_form = PasswordUpdateForm(request.user, request.POST)
             u_form = UserUpdateForm(instance=request.user)
             p_form = ProfileUpdateForm(instance=profile)
             
+            logger.info(f"Password form data: {request.POST}")
+            logger.info(f"Password form valid: {password_form.is_valid()}")
             if password_form.is_valid():
+                logger.info("Password form is valid, saving and redirecting")
                 password_form.save()
                 messages.success(request, _('Votre mot de passe a été mis à jour avec succès!'), extra_tags='password')
-                return redirect('core:edit_profile')
+                logger.info("Redirecting to core:profile")
+                return redirect('core:profile')
             else:
+                logger.info(f"Password form is invalid. Errors: {password_form.errors}")
                 # Add password form errors to messages
                 for field, errors in password_form.errors.items():
                     for error in errors:
                         messages.error(request, error)
         else:
+            logger.info("Processing profile update form")
+            logger.info(f"Profile form data: {request.POST}")
             # Handle profile update
             u_form = UserUpdateForm(request.POST, instance=request.user)
             p_form = ProfileUpdateForm(
@@ -316,14 +326,21 @@ def edit_profile(request):
             )
             password_form = PasswordUpdateForm(request.user)
 
-            if u_form.is_valid() and p_form.is_valid():
+            u_form_valid = u_form.is_valid()
+            p_form_valid = p_form.is_valid()
+            logger.info(f"User form valid: {u_form_valid}, Profile form valid: {p_form_valid}")
+            if u_form_valid and p_form_valid:
+                logger.info("Profile forms are valid, saving and redirecting")
                 u_form.save()
                 p_form.save()
                 messages.success(request, _('Votre profil a été mis à jour avec succès!'))
+                logger.info("Redirecting to core:profile")
                 return redirect('core:profile')
             else:
+                logger.info(f"Profile forms are invalid. User form errors: {u_form.errors}, Profile form errors: {p_form.errors}")
                 messages.error(request, _('Veuillez corriger les erreurs ci-dessous.'))
     else:
+        logger.info("Profile edit GET request received")
         u_form = UserUpdateForm(instance=request.user)
         p_form = ProfileUpdateForm(instance=profile)
         password_form = PasswordUpdateForm(request.user)
@@ -352,8 +369,8 @@ class TwoFactorLoginView(LoginView):
         # Check if remember_me is checked to bypass 2FA
         remember_me = self.request.POST.get('remember_me', False)
         
-        # Check if user belongs to groups that require 2FA (Super Admin and Admin)
-        requires_2fa = user.groups.filter(name__in=['Super Admin', 'Admin']).exists()
+        # Check if user belongs to groups that require 2FA (Super Admin, Admin, and Documentation Center)
+        requires_2fa = user.groups.filter(name__in=['Super Admin', 'Admin', 'Documentation Center']).exists()
         
         # If user doesn't require 2FA or remember_me is checked, bypass 2FA
         if not requires_2fa or remember_me:
@@ -455,6 +472,199 @@ class TwoFactorVerifyView(View):
     def _clear_2fa_session(self, request):
         """Clear 2FA-related session data"""
         for key in ['2fa_user_id', 'otp_email', 'otp_created_at']:
+            if key in request.session:
+                del request.session[key]
+        request.session.modified = True
+
+
+class ForgotPasswordView(View):
+    """
+    View for initiating password reset process.
+    """
+    def get(self, request):
+        form = ForgotPasswordForm()
+        context = {
+            'form': form,
+            'title': _('Mot de passe oublié')
+        }
+        return render(request, 'core/forgot_password.html', context)
+    
+    def post(self, request):
+        form = ForgotPasswordForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            try:
+                user = User.objects.get(email=email)
+                
+                # Generate and send OTP
+                otp_obj = OTP.create_otp_for_user(user)
+                if not send_otp_email(email, otp_obj):
+                    messages.error(request, _('Erreur lors de l\'envoi du code de vérification. Veuillez réessayer.'))
+                    return self.get(request)
+                
+                # Store data in session for verification
+                request.session['reset_user_id'] = user.id
+                request.session['reset_email'] = email
+                request.session['reset_otp_created_at'] = timezone.now().isoformat()
+                request.session.modified = True
+                
+                # Redirect to OTP verification page
+                return redirect('core:verify_reset_otp')
+                
+            except User.DoesNotExist:
+                messages.error(request, _('Aucun compte associé à cette adresse email.'))
+                return self.get(request)
+        
+        context = {
+            'form': form,
+            'title': _('Mot de passe oublié')
+        }
+        return render(request, 'core/forgot_password.html', context)
+
+
+class VerifyResetOTPView(View):
+    """
+    View for verifying OTP during password reset process.
+    """
+    def get(self, request):
+        # Check if user has initiated password reset
+        user_id = request.session.get('reset_user_id')
+        email = request.session.get('reset_email')
+        
+        if not user_id or not email:
+            messages.error(request, _('Veuillez d\'abord demander une réinitialisation de mot de passe.'))
+            return redirect('core:forgot_password')
+        
+        try:
+            user = User.objects.get(id=user_id)
+            masked_email = mask_email(email)
+            
+            form = OTPVerificationForm()
+            context = {
+                'form': form,
+                'masked_email': masked_email,
+                'title': _('Vérification du code')
+            }
+            return render(request, 'core/verify_reset_otp.html', context)
+            
+        except User.DoesNotExist:
+            self._clear_reset_session(request)
+            messages.error(request, _('Session expirée. Veuillez recommencer.'))
+            return redirect('core:forgot_password')
+    
+    def post(self, request):
+        form = OTPVerificationForm(request.POST)
+        user_id = request.session.get('reset_user_id')
+        email = request.session.get('reset_email')
+        
+        if not user_id or not email:
+            messages.error(request, _('Session expirée. Veuillez recommencer.'))
+            return redirect('core:forgot_password')
+        
+        try:
+            user = User.objects.get(id=user_id)
+            
+            if form.is_valid():
+                otp_code = form.cleaned_data['otp_code']
+                
+                # Validate OTP
+                is_valid, error_message = OTP.validate_otp(user, otp_code)
+                
+                if is_valid:
+                    # Mark the session as OTP verified
+                    request.session['reset_otp_verified'] = True
+                    request.session.modified = True
+                    
+                    # Redirect to set new password page
+                    return redirect('core:set_new_password')
+                else:
+                    messages.error(request, _(error_message))
+                    return self.get(request)
+            
+            masked_email = mask_email(email)
+            context = {
+                'form': form,
+                'masked_email': masked_email,
+                'title': _('Vérification du code')
+            }
+            return render(request, 'core/verify_reset_otp.html', context)
+            
+        except User.DoesNotExist:
+            self._clear_reset_session(request)
+            messages.error(request, _('Session expirée. Veuillez recommencer.'))
+            return redirect('core:forgot_password')
+    
+    def _clear_reset_session(self, request):
+        """Clear password reset related session data"""
+        for key in ['reset_user_id', 'reset_email', 'reset_otp_created_at', 'reset_otp_verified']:
+            if key in request.session:
+                del request.session[key]
+        request.session.modified = True
+
+
+class SetNewPasswordView(View):
+    """
+    View for setting new password after OTP verification.
+    """
+    def get(self, request):
+        # Check if user has verified OTP
+        user_id = request.session.get('reset_user_id')
+        otp_verified = request.session.get('reset_otp_verified')
+        
+        if not user_id or not otp_verified:
+            messages.error(request, _('Veuillez d\'abord vérifier votre code de sécurité.'))
+            return redirect('core:forgot_password')
+        
+        try:
+            user = User.objects.get(id=user_id)
+            form = SetNewPasswordForm(user_id=user_id, initial={'username': user.username})
+            
+            context = {
+                'form': form,
+                'title': _('Définir un nouveau mot de passe')
+            }
+            return render(request, 'core/set_new_password.html', context)
+            
+        except User.DoesNotExist:
+            self._clear_reset_session(request)
+            messages.error(request, _('Session expirée. Veuillez recommencer.'))
+            return redirect('core:forgot_password')
+    
+    def post(self, request):
+        user_id = request.session.get('reset_user_id')
+        otp_verified = request.session.get('reset_otp_verified')
+        
+        if not user_id or not otp_verified:
+            messages.error(request, _('Session expirée. Veuillez recommencer.'))
+            return redirect('core:forgot_password')
+        
+        try:
+            user = User.objects.get(id=user_id)
+            form = SetNewPasswordForm(user_id=user_id, data=request.POST)
+            
+            if form.is_valid():
+                form.save()
+                
+                # Clear session data
+                self._clear_reset_session(request)
+                
+                messages.success(request, _('Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.'))
+                return redirect('login')
+            
+            context = {
+                'form': form,
+                'title': _('Définir un nouveau mot de passe')
+            }
+            return render(request, 'core/set_new_password.html', context)
+            
+        except User.DoesNotExist:
+            self._clear_reset_session(request)
+            messages.error(request, _('Session expirée. Veuillez recommencer.'))
+            return redirect('core:forgot_password')
+    
+    def _clear_reset_session(self, request):
+        """Clear password reset related session data"""
+        for key in ['reset_user_id', 'reset_email', 'reset_otp_created_at', 'reset_otp_verified']:
             if key in request.session:
                 del request.session[key]
         request.session.modified = True

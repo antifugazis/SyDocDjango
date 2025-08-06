@@ -4,7 +4,7 @@ from django import forms
 from django.forms.models import modelformset_factory, inlineformset_factory
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
-from core.models import LiteraryGenre, SubGenre, Theme, SousTheme, Book, BookVolume, Author, Member, Loan, Staff, Activity, ArchivalDocument, TrainingSubject, TrainingModule, Lesson, Question, Answer, Communique, Role, Profile, BookDigitization, DigitizedPage, Language, DeletedBook
+from core.models import LiteraryGenre, SubGenre, Theme, SousTheme, Book, BookVolume, Author, Member, Loan, Staff, Activity, ArchivalDocument, TrainingSubject, TrainingModule, Lesson, Question, Answer, Communique, Role, Profile, BookDigitization, DigitizedPage, Language, DeletedBook, DocumentFolder, Document
 from .models import AgeVerificationFailure, Complaint
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.forms import UserCreationForm
@@ -494,6 +494,14 @@ class ActivityForm(forms.ModelForm):
         help_text="Sélectionnez les groupes qui auront accès à cette activité."
     )
     
+    assigned_members = forms.ModelMultipleChoiceField(
+        queryset=Member.objects.all(),
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        label="Membres assignés",
+        help_text="Sélectionnez les membres qui participeront à cette activité."
+    )
+    
     class Meta:
         model = Activity
         fields = ['name', 'description', 'start_date', 'end_date', 'status']
@@ -507,12 +515,15 @@ class ActivityForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Apply consistent Tailwind CSS classes
         for field_name, field in self.fields.items():
-            if field_name != 'assigned_groups':  # Skip the checkbox widget
+            if field_name not in ['assigned_groups', 'assigned_members']:  # Skip the checkbox widgets
                 field.widget.attrs['class'] = 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
         
-        # If we're editing an existing activity, set initial values for assigned groups
+        # If we're editing an existing activity, set initial values for assigned groups and members
         if self.instance.pk:
             self.fields['assigned_groups'].initial = Group.objects.filter(
+                activity_assignments__activity=self.instance
+            )
+            self.fields['assigned_members'].initial = Member.objects.filter(
                 activity_assignments__activity=self.instance
             )
 
@@ -833,3 +844,127 @@ class ComplaintForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             if field_name != 'phone2':
                 field.required = True
+
+
+class DocumentFolderForm(forms.ModelForm):
+    """
+    Form for creating and editing document folders.
+    """
+    class Meta:
+        model = DocumentFolder
+        fields = [
+            'name', 'description', 'cover_image', 'confidentiality', 
+            'activity', 'minimum_age'
+        ]
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
+                'placeholder': 'Nom du dossier'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
+                'rows': 3,
+                'placeholder': 'Description du dossier (optionnelle)'
+            }),
+            'cover_image': forms.FileInput(attrs={
+                'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+            }),
+            'minimum_age': forms.NumberInput(attrs={
+                'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
+                'min': '0'
+            }),
+        }
+        labels = {
+            'name': 'Nom du dossier',
+            'description': 'Description',
+            'cover_image': 'Image de couverture',
+            'confidentiality': 'Niveau de confidentialité',
+            'activity': 'Activité associée (optionnelle)',
+            'minimum_age': 'Âge minimum requis'
+        }
+    
+    def __init__(self, *args, **kwargs):
+        self.documentation_center = kwargs.pop('documentation_center', None)
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        # Filter activities by documentation center
+        if self.documentation_center:
+            self.fields['activity'].queryset = Activity.objects.filter(
+                documentation_center=self.documentation_center,
+                status__in=[Activity.Status.PLANNED, Activity.Status.ACTIVE]
+            )
+            self.fields['activity'].empty_label = 'Aucune activité associée'
+        
+        # Set required fields
+        self.fields['description'].required = False
+        self.fields['cover_image'].required = False
+        self.fields['activity'].required = False
+
+
+class DocumentForm(forms.ModelForm):
+    """
+    Form for uploading and editing documents.
+    """
+    class Meta:
+        model = Document
+        fields = [
+            'name', 'description', 'file', 'cover_image', 'document_date',
+            'override_folder_settings', 'confidentiality', 'minimum_age'
+        ]
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
+                'placeholder': 'Nom du document'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
+                'rows': 3,
+                'placeholder': 'Description du document (optionnelle)'
+            }),
+            'file': forms.FileInput(attrs={
+                'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+            }),
+            'cover_image': forms.FileInput(attrs={
+                'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
+            }),
+            'document_date': forms.DateInput(attrs={
+                'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
+                'type': 'date'
+            }),
+            'override_folder_settings': forms.CheckboxInput(attrs={
+                'class': 'h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded'
+            }),
+            'minimum_age': forms.NumberInput(attrs={
+                'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
+                'min': '0'
+            }),
+        }
+        labels = {
+            'name': 'Nom du document',
+            'description': 'Description',
+            'file': 'Fichier',
+            'cover_image': 'Image de couverture',
+            'document_date': 'Date du document',
+            'override_folder_settings': 'Remplacer les paramètres du dossier',
+            'confidentiality': 'Niveau de confidentialité',
+            'minimum_age': 'Âge minimum requis'
+        }
+    
+    def __init__(self, *args, **kwargs):
+        self.folder = kwargs.pop('folder', None)
+        super().__init__(*args, **kwargs)
+        
+        # Set required fields
+        self.fields['description'].required = False
+        self.fields['cover_image'].required = False
+        self.fields['document_date'].required = False
+        
+        # Hide confidentiality and minimum_age fields initially if not overriding folder settings
+        if not self.instance.pk or not self.instance.override_folder_settings:
+            self.fields['confidentiality'].widget = forms.HiddenInput()
+            self.fields['minimum_age'].widget = forms.HiddenInput()
+        
+        # If this is an existing document and we're editing it, don't require file upload again
+        if self.instance.pk:
+            self.fields['file'].required = False

@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from .models import Profile
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import RegexValidator
+import re
 
 class UserUpdateForm(UserChangeForm):
     """
@@ -152,3 +153,106 @@ class PasswordUpdateForm(forms.Form):
         if commit:
             self.user.save()
         return self.user
+
+
+class ForgotPasswordForm(forms.Form):
+    """
+    Form for requesting password reset via email.
+    """
+    email = forms.EmailField(
+        label=_('Adresse email'),
+        widget=forms.EmailInput(attrs={
+            'class': 'form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500',
+            'placeholder': _('votre@email.com')
+        })
+    )
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if not User.objects.filter(email=email).exists():
+            raise forms.ValidationError(_('Aucun compte associé à cette adresse email.'))
+        return email
+
+
+class OTPVerificationForm(forms.Form):
+    """
+    Form for verifying OTP code during password reset.
+    """
+    otp_code = forms.CharField(
+        label=_('Code de vérification'),
+        max_length=6,
+        min_length=6,
+        widget=forms.TextInput(attrs={
+            'class': 'form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500',
+            'placeholder': _('Entrez le code à 6 chiffres')
+        })
+    )
+    
+    def clean_otp_code(self):
+        otp_code = self.cleaned_data.get('otp_code')
+        if not otp_code.isdigit() or len(otp_code) != 6:
+            raise forms.ValidationError(_('Le code doit contenir exactement 6 chiffres.'))
+        return otp_code
+
+
+class SetNewPasswordForm(forms.Form):
+    """
+    Form for setting a new password after OTP verification.
+    """
+    username = forms.CharField(
+        label=_('Nom d\'utilisateur'),
+        max_length=150,
+        widget=forms.TextInput(attrs={
+            'class': 'form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500',
+            'placeholder': _('Votre nom d\'utilisateur')
+        })
+    )
+    
+    new_password1 = forms.CharField(
+        label=_('Nouveau mot de passe'),
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500',
+            'placeholder': _('Votre nouveau mot de passe'),
+            'id': 'id_new_password1',
+            'onkeyup': 'checkPasswordStrength(this.value)'
+        })
+    )
+    
+    new_password2 = forms.CharField(
+        label=_('Confirmer le nouveau mot de passe'),
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500',
+            'placeholder': _('Confirmez votre nouveau mot de passe')
+        })
+    )
+    
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if User.objects.filter(username=username).exclude(id=self.user_id).exists():
+            raise forms.ValidationError(_('Ce nom d\'utilisateur est déjà utilisé.'))
+        return username
+    
+    def clean_new_password1(self):
+        # No restrictions on password, just return it as is
+        # The strength indicator in the template will still provide feedback
+        return self.cleaned_data.get('new_password1')
+    
+    def clean_new_password2(self):
+        password1 = self.cleaned_data.get('new_password1')
+        password2 = self.cleaned_data.get('new_password2')
+        if password1 and password2:
+            if password1 != password2:
+                raise forms.ValidationError(_('Les mots de passe ne correspondent pas.'))
+        return password2
+    
+    def __init__(self, user_id=None, *args, **kwargs):
+        self.user_id = user_id
+        super().__init__(*args, **kwargs)
+        
+    def save(self, commit=True):
+        user = User.objects.get(id=self.user_id)
+        user.username = self.cleaned_data['username']
+        user.set_password(self.cleaned_data['new_password1'])
+        if commit:
+            user.save()
+        return user

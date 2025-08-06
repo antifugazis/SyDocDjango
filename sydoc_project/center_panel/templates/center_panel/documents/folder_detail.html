@@ -1,0 +1,172 @@
+{% extends 'center_panel/base.html' %}
+{% load static %}
+
+{% block title %}{{ folder.name }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <div class="mb-4">
+        <a href="{% url 'center_panel:document_folders' %}" class="text-blue-600 hover:text-blue-800">
+            <i class="fas fa-arrow-left mr-2"></i>Retour aux dossiers
+        </a>
+    </div>
+
+    {% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+        <div class="p-4 mb-4 {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %} rounded">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+        <div class="md:flex">
+            <div class="md:w-1/3 h-64 bg-gray-200">
+                {% if folder.cover_image %}
+                <img src="{{ folder.cover_image.url }}" alt="{{ folder.name }}" class="w-full h-full object-cover">
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center bg-gray-300">
+                    <i class="fas fa-folder-open text-gray-500 text-6xl"></i>
+                </div>
+                {% endif %}
+            </div>
+            <div class="md:w-2/3 p-6">
+                <div class="flex justify-between items-start">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-4">{{ folder.name }}</h1>
+                    <div class="flex space-x-2">
+                        {% if user.is_staff or 'Admin' in user_groups or 'Super Admin' in user_groups %}
+                        <a href="{% url 'center_panel:edit_document_folder' folder_id=folder.id %}" class="bg-yellow-500 hover:bg-yellow-600 text-white py-1 px-3 rounded text-sm">
+                            <i class="fas fa-edit mr-1"></i>Modifier
+                        </a>
+                        <a href="{% url 'center_panel:delete_document_folder' folder_id=folder.id %}" class="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded text-sm">
+                            <i class="fas fa-trash-alt mr-1"></i>Supprimer
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <p class="text-gray-700">{{ folder.description|default:"Aucune description" }}</p>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                    <div>
+                        <span class="font-semibold">Créé le:</span> {{ folder.created_at|date:"d/m/Y" }}
+                    </div>
+                    <div>
+                        <span class="font-semibold">Créé par:</span> {{ folder.created_by.get_full_name|default:folder.created_by.username }}
+                    </div>
+                    <div>
+                        <span class="font-semibold">Confidentialité:</span> 
+                        {% if folder.confidentiality == 'confidential' %}
+                        <span class="text-red-600"><i class="fas fa-lock mr-1"></i>Confidentiel</span>
+                        {% else %}
+                        <span class="text-green-600"><i class="fas fa-unlock mr-1"></i>Public</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <span class="font-semibold">Âge minimum:</span> 
+                        {% if folder.minimum_age > 0 %}
+                        <span class="text-yellow-600">{{ folder.minimum_age }}+ ans</span>
+                        {% else %}
+                        <span>Aucune restriction</span>
+                        {% endif %}
+                    </div>
+                    {% if folder.activity %}
+                    <div class="col-span-2">
+                        <span class="font-semibold">Activité associée:</span> {{ folder.activity.name }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Documents</h2>
+        <a href="{% url 'center_panel:add_document' folder_id=folder.id %}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            <i class="fas fa-file-upload mr-2"></i>Ajouter un document
+        </a>
+    </div>
+
+    {% if documents %}
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Document</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Taille</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for document in documents %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10 mr-3">
+                                {% if document.cover_image %}
+                                <img class="h-10 w-10 rounded object-cover" src="{{ document.cover_image.url }}" alt="{{ document.name }}">
+                                {% else %}
+                                <div class="h-10 w-10 rounded bg-gray-200 flex items-center justify-center">
+                                    <i class="fas fa-file text-gray-400"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">
+                                    <a href="{% url 'center_panel:document_detail' document_id=document.id %}" class="hover:text-blue-600">
+                                        {{ document.name }}
+                                    </a>
+                                </div>
+                                <div class="text-sm text-gray-500 truncate max-w-xs">{{ document.description|default:"" }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="text-sm text-gray-900">{{ document.file_type|default:"Inconnu" }}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="text-sm text-gray-900">{{ document.get_file_size_display }}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="text-sm text-gray-900">{{ document.document_date|date:"d/m/Y"|default:"-" }}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <div class="flex space-x-2">
+                            <a href="{% url 'center_panel:document_detail' document_id=document.id %}" class="text-blue-600 hover:text-blue-900">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'center_panel:download_document' document_id=document.id %}" class="text-green-600 hover:text-green-900">
+                                <i class="fas fa-download"></i>
+                            </a>
+                            {% if user.is_staff or 'Admin' in user_groups or 'Super Admin' in user_groups %}
+                            <a href="{% url 'center_panel:edit_document' document_id=document.id %}" class="text-yellow-600 hover:text-yellow-900">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'center_panel:delete_document' document_id=document.id %}" class="text-red-600 hover:text-red-900">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="bg-gray-100 p-8 rounded-lg text-center">
+        <i class="fas fa-file-alt text-gray-400 text-5xl mb-4"></i>
+        <p class="text-gray-600 text-lg">Aucun document dans ce dossier.</p>
+        <a href="{% url 'center_panel:add_document' folder_id=folder.id %}" class="mt-4 inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            <i class="fas fa-file-upload mr-2"></i>Ajouter un document
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

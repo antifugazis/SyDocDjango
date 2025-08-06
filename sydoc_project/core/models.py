@@ -1247,6 +1247,39 @@ class ActivityGroupAssignment(models.Model):
         return f"{self.group} assigned to {self.activity}"
 
 
+class MemberActivityAssignment(models.Model):
+    """
+    Model to track assignments of members to activities.
+    """
+    activity = models.ForeignKey(
+        Activity,
+        on_delete=models.CASCADE,
+        related_name='member_assignments'
+    )
+    member = models.ForeignKey(
+        Member,
+        on_delete=models.CASCADE,
+        related_name='activity_assignments'
+    )
+    assigned_at = models.DateTimeField(auto_now_add=True)
+    assigned_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='assigned_member_activities'
+    )
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('activity', 'member')
+        verbose_name = "Affectation de Membre à une Activité"
+        verbose_name_plural = "Affectations de Membres aux Activités"
+        ordering = ['-assigned_at']
+
+    def __str__(self):
+        return f"{self.member} assigned to {self.activity}"
+
+
 class ArchivalDocument(models.Model):
     """
     Represents a single document or file stored in the center's archives.
@@ -1986,6 +2019,7 @@ def log_deletion(instance, reason, deleted_by, deletion_type=None, additional_da
             'loan': 'loan',
             'training': 'training',
             'document': 'document',
+            'documentfolder': 'document',
         }
         deletion_type = type_mapping.get(model_name, 'other')
     
@@ -2014,3 +2048,168 @@ def log_deletion(instance, reason, deleted_by, deletion_type=None, additional_da
         deleted_by=deleted_by,
         additional_data=additional_data or {}
     )
+
+
+class DocumentFolder(models.Model):
+    """
+    Represents a folder containing multiple documents.
+    """
+    CONFIDENTIALITY_CHOICES = [
+        ('public', 'Public'),
+        ('confidential', 'Confidentiel'),
+    ]
+    
+    documentation_center = models.ForeignKey(
+        DocumentationCenter, 
+        on_delete=models.CASCADE, 
+        related_name='document_folders',
+        verbose_name=_('Centre de Documentation')
+    )
+    name = models.CharField(max_length=255, verbose_name=_('Nom du dossier'))
+    description = models.TextField(blank=True, null=True, verbose_name=_('Description'))
+    cover_image = models.ImageField(
+        upload_to='document_folders/covers/', 
+        blank=True, 
+        null=True,
+        verbose_name=_('Image de couverture')
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('Date de création'))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=_('Dernière modification'))
+    created_by = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        related_name='created_document_folders',
+        verbose_name=_('Créé par')
+    )
+    confidentiality = models.CharField(
+        max_length=20,
+        choices=CONFIDENTIALITY_CHOICES,
+        default='confidential',
+        verbose_name=_('Niveau de confidentialité')
+    )
+    is_active = models.BooleanField(default=True, verbose_name=_('Actif'))
+    
+    # Optional activity association
+    activity = models.ForeignKey(
+        Activity, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='document_folders',
+        verbose_name=_('Activité associée')
+    )
+    
+    # Access control
+    minimum_age = models.PositiveIntegerField(
+        default=0, 
+        verbose_name=_('Âge minimum requis'),
+        help_text=_('Âge minimum requis pour accéder à ce dossier (0 = aucune restriction)')
+    )
+    
+    class Meta:
+        verbose_name = _('Dossier de Documents')
+        verbose_name_plural = _('Dossiers de Documents')
+        ordering = ['-created_at']
+        unique_together = ('documentation_center', 'name')
+    
+    def __str__(self):
+        return self.name
+    
+    def document_count(self):
+        """Return the number of documents in this folder"""
+        return self.documents.count()
+    
+    def delete(self, *args, **kwargs):
+        """Override delete to handle soft delete"""
+        if 'hard_delete' in kwargs and kwargs.pop('hard_delete'):
+            # Actually delete the folder and its documents
+            return super().delete(*args, **kwargs)
+        else:
+            # Soft delete - just mark as inactive
+            self.is_active = False
+            self.save()
+    
+    def restore(self):
+        """Restore a soft-deleted folder"""
+        self.is_active = True
+        self.save()
+
+
+class Document(models.Model):
+    """
+    Represents a document file with metadata.
+    """
+    folder = models.ForeignKey(
+        DocumentFolder, 
+        on_delete=models.CASCADE, 
+        related_name='documents',
+        verbose_name=_('Dossier')
+    )
+    name = models.CharField(max_length=255, verbose_name=_('Nom du document'))
+    description = models.TextField(blank=True, null=True, verbose_name=_('Description'))
+    file = models.FileField(
+        upload_to='documents/', 
+        verbose_name=_('Fichier')
+    )
+    cover_image = models.ImageField(
+        upload_to='documents/covers/', 
+        blank=True, 
+        null=True,
+        verbose_name=_('Image de couverture')
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('Date d\'ajout'))
+    document_date = models.DateField(verbose_name=_('Date du document'), null=True, blank=True)
+    file_type = models.CharField(max_length=50, blank=True, verbose_name=_('Type de fichier'))
+    file_size = models.PositiveIntegerField(default=0, verbose_name=_('Taille du fichier (octets)'))
+    
+    # Override folder confidentiality settings
+    override_folder_settings = models.BooleanField(
+        default=False, 
+        verbose_name=_('Remplacer les paramètres du dossier'),
+        help_text=_('Si activé, les paramètres de confidentialité spécifiques à ce document seront utilisés')
+    )
+    confidentiality = models.CharField(
+        max_length=20,
+        choices=DocumentFolder.CONFIDENTIALITY_CHOICES,
+        default='confidential',
+        verbose_name=_('Niveau de confidentialité')
+    )
+    minimum_age = models.PositiveIntegerField(
+        default=0, 
+        verbose_name=_('Âge minimum requis'),
+        help_text=_('Âge minimum requis pour accéder à ce document (0 = aucune restriction)')
+    )
+    
+    class Meta:
+        verbose_name = _('Document')
+        verbose_name_plural = _('Documents')
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return self.name
+    
+    def save(self, *args, **kwargs):
+        # Set file type based on extension
+        if self.file and not self.file_type:
+            filename = self.file.name
+            extension = filename.split('.')[-1].lower() if '.' in filename else ''
+            self.file_type = extension
+        
+        # Set file size
+        if self.file and hasattr(self.file, 'size'):
+            self.file_size = self.file.size
+            
+        super().save(*args, **kwargs)
+    
+    def get_effective_confidentiality(self):
+        """Return the effective confidentiality setting for this document"""
+        if self.override_folder_settings:
+            return self.confidentiality
+        return self.folder.confidentiality
+    
+    def get_effective_minimum_age(self):
+        """Return the effective minimum age for this document"""
+        if self.override_folder_settings:
+            return self.minimum_age
+        return self.folder.minimum_age

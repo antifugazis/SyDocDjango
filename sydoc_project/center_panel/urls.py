@@ -195,4 +195,16 @@ urlpatterns = [
     
     # Help Center
     path('help-center/', views.help_center, name='help_center'),
+    
+    # Document Management
+    path('documents/', views.document_folders, name='document_folders'),
+    path('documents/folders/add/', views.add_document_folder, name='add_document_folder'),
+    path('documents/folders/<int:folder_id>/', views.document_folder_detail, name='document_folder_detail'),
+    path('documents/folders/<int:folder_id>/edit/', views.edit_document_folder, name='edit_document_folder'),
+    path('documents/folders/<int:folder_id>/delete/', views.delete_document_folder, name='delete_document_folder'),
+    path('documents/folders/<int:folder_id>/add-document/', views.add_document, name='add_document'),
+    path('documents/<int:document_id>/', views.document_detail, name='document_detail'),
+    path('documents/<int:document_id>/edit/', views.edit_document, name='edit_document'),
+    path('documents/<int:document_id>/delete/', views.delete_document, name='delete_document'),
+    path('documents/<int:document_id>/download/', views.download_document, name='download_document'),
 ]

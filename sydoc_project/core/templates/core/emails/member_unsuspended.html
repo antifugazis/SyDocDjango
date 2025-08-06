@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réactivation de compte SYDOC</title>
+    <style type="text/css">
+        /* Base styles */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #4a4a4a;
+            background-color: #f7f9fc;
+        }
+        
+        /* Container */
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Header */
+        .email-header {
+            background: linear-gradient(135deg, #10b981, #059669);
+            padding: 30px 20px;
+            text-align: center;
+            color: white;
+        }
+        
+        .email-header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        /* Content */
+        .email-content {
+            padding: 30px;
+        }
+        
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #1f2937;
+        }
+        
+        .unsuspension-info {
+            padding: 15px;
+            background-color: #f0fdf4;
+            border-left: 4px solid #10b981;
+            border-radius: 4px;
+            margin: 25px 0;
+            font-size: 14px;
+            color: #065f46;
+        }
+        
+        .reason-box {
+            padding: 15px;
+            background-color: #f1f5f9;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: #1e293b;
+        }
+        
+        /* Footer */
+        .email-footer {
+            background-color: #f9fafb;
+            padding: 20px 30px;
+            text-align: center;
+            font-size: 13px;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .logo {
+            max-width: 150px;
+            margin-bottom: 15px;
+        }
+        
+        .social-links {
+            margin: 15px 0;
+        }
+        
+        .social-links a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: #6b7280;
+        }
+        
+        .social-links a:hover {
+            color: #10b981;
+        }
+        
+        /* Responsive */
+        @media screen and (max-width: 600px) {
+            .email-content, .email-footer {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #4a4a4a; background-color: #f7f9fc;">
+    <div class="email-container" style="max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+        <!-- Header -->
+        <div class="email-header" style="background: linear-gradient(135deg, #10b981, #059669); padding: 30px 20px; text-align: center; color: white;">
+            <h1 style="margin: 0; font-size: 24px; font-weight: 600;">Réactivation de compte</h1>
+            <p style="margin: 10px 0 0; opacity: 0.9; font-size: 16px;">Notification importante</p>
+        </div>
+        
+        <!-- Content -->
+        <div class="email-content" style="padding: 30px;">
+            <p class="greeting" style="font-size: 18px; margin-bottom: 20px; color: #1f2937;">Bonjour {{ first_name }} {{ last_name }},</p>
+            
+            <p>Nous vous informons que votre compte sur la plateforme SYDOC a été <strong>réactivé</strong> avec succès.</p>
+            
+            <div class="unsuspension-info" style="padding: 15px; background-color: #f0fdf4; border-left: 4px solid #10b981; border-radius: 4px; margin: 25px 0; font-size: 14px; color: #065f46;">
+                <strong>Compte réactivé :</strong> {{ username }}<br>
+                <strong>Date de réactivation :</strong> {{ unsuspension_date }}<br>
+                {% if unsuspended_by %}
+                <strong>Réactivé par :</strong> {{ unsuspended_by }}<br>
+                {% endif %}
+            </div>
+            
+            {% if reason %}
+            <div class="reason-box" style="padding: 15px; background-color: #f1f5f9; border-radius: 4px; margin: 20px 0; font-size: 14px; color: #1e293b;">
+                <strong>Raison de la réactivation :</strong>
+                <p>{{ reason }}</p>
+            </div>
+            {% endif %}
+            
+            <p>Vous pouvez à nouveau accéder à votre compte et utiliser les services de la plateforme SYDOC.</p>
+            
+            <p>Si vous avez des questions ou besoin d'assistance, veuillez contacter l'administrateur de votre centre de documentation.</p>
+            
+            <p>Bienvenue à nouveau !</p>
+        </div>
+        
+        <!-- Footer -->
+        <div class="email-footer" style="background-color: #f9fafb; padding: 20px 30px; text-align: center; font-size: 13px; color: #6b7280; border-top: 1px solid #e5e7eb;">
+            <div class="social-links" style="margin: 15px 0;">
+                <a href="https://twitter.com/sydoc" style="margin: 0 10px; text-decoration: none; color: #6b7280;">Twitter</a>
+                <a href="https://facebook.com/sydoc" style="margin: 0 10px; text-decoration: none; color: #6b7280;">Facebook</a>
+                <a href="https://linkedin.com/company/sydoc" style="margin: 0 10px; text-decoration: none; color: #6b7280;">LinkedIn</a>
+            </div>
+            <p>© {% now "Y" %} SYDOC. Tous droits réservés.</p>
+            <p style="font-size: 12px; color: #9ca3af; margin: 10px 0 0;">
+                Cet email a été envoyé à titre informatif. Veuillez ne pas y répondre.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

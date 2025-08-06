@@ -137,6 +137,18 @@
                                     {% endif %}
                                 </div>
                             </div>
+                            
+                            <div class="sm:col-span-6">
+                                <label for="id_username" class="block text-sm font-medium text-gray-700">
+                                    {{ u_form.username.label }}
+                                </label>
+                                <div class="mt-1">
+                                    {{ u_form.username }}
+                                    {% if u_form.username.errors %}
+                                        <p class="mt-2 text-sm text-red-600">{{ u_form.username.errors|join:", " }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
                     </div>
 

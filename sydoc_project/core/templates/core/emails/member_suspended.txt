@@ -1,0 +1,23 @@
+SYDOC - Notification de suspension de compte
+
+Bonjour {{ first_name }} {{ last_name }},
+
+Nous vous informons que votre compte sur la plateforme SYDOC a été suspendu avec effet immédiat.
+
+Détails de la suspension :
+Compte : {{ username }}
+Date de suspension : {{ suspension_date }}
+{% if suspended_by %}Suspendu par : {{ suspended_by }}{% endif %}
+{% if reason %}
+Raison de la suspension :
+{{ reason }}
+{% endif %}
+
+En conséquence, vous ne pourrez plus accéder à votre compte ni utiliser les services de la plateforme jusqu'à ce que votre compte soit réactivé.
+
+Si vous pensez qu'il s'agit d'une erreur ou si vous souhaitez obtenir plus d'informations sur cette suspension, veuillez contacter l'administrateur de votre centre de documentation.
+
+Merci de votre compréhension.
+
+© {% now "Y" %} SYDOC. Tous droits réservés.
+Cet email a été envoyé à titre informatif. Veuillez ne pas y répondre.

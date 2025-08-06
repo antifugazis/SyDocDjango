@@ -1,0 +1,209 @@
+{% extends 'center_panel/base.html' %}
+{% load static %}
+
+{% block title %}
+{% if action == 'add' %}Ajouter un document{% else %}Modifier le document{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <div class="mb-4">
+        <a href="{% if document %}{% url 'center_panel:document_detail' document_id=document.id %}{% else %}{% url 'center_panel:document_folder_detail' folder_id=folder.id %}{% endif %}" class="text-blue-600 hover:text-blue-800">
+            <i class="fas fa-arrow-left mr-2"></i>Retour
+        </a>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">
+            {% if action == 'add' %}
+            Ajouter un document au dossier "{{ folder.name }}"
+            {% else %}
+            Modifier le document "{{ document.name }}"
+            {% endif %}
+        </h1>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                <p class="font-bold">Veuillez corriger les erreurs suivantes:</p>
+                <ul class="list-disc list-inside">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ field.label }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.name.label }}{% if form.name.field.required %} *{% endif %}
+                    </label>
+                    {{ form.name }}
+                    {% if form.name.help_text %}
+                    <p class="mt-1 text-sm text-gray-500">{{ form.name.help_text }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="{{ form.document_date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.document_date.label }}{% if form.document_date.field.required %} *{% endif %}
+                    </label>
+                    {{ form.document_date }}
+                    {% if form.document_date.help_text %}
+                    <p class="mt-1 text-sm text-gray-500">{{ form.document_date.help_text }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="md:col-span-2">
+                    <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.description.label }}{% if form.description.field.required %} *{% endif %}
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.help_text %}
+                    <p class="mt-1 text-sm text-gray-500">{{ form.description.help_text }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="md:col-span-2">
+                    <label for="{{ form.file.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.file.label }}{% if form.file.field.required %} *{% endif %}
+                    </label>
+                    {% if document and document.file %}
+                    <div class="mb-2">
+                        <p class="text-sm text-gray-700">Fichier actuel: <strong>{{ document.file.name|cut:"documents/" }}</strong></p>
+                        <p class="text-xs text-gray-500">Télécharger un nouveau fichier remplacera l'ancien</p>
+                    </div>
+                    {% endif %}
+                    {{ form.file }}
+                    {% if form.file.help_text %}
+                    <p class="mt-1 text-sm text-gray-500">{{ form.file.help_text }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="md:col-span-2">
+                    <label for="{{ form.cover_image.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.cover_image.label }}{% if form.cover_image.field.required %} *{% endif %}
+                    </label>
+                    {% if document and document.cover_image %}
+                    <div class="mb-2">
+                        <img src="{{ document.cover_image.url }}" alt="Image actuelle" class="h-32 object-cover rounded">
+                        <p class="text-sm text-gray-500 mt-1">Image actuelle</p>
+                    </div>
+                    {% endif %}
+                    {{ form.cover_image }}
+                    {% if form.cover_image.help_text %}
+                    <p class="mt-1 text-sm text-gray-500">{{ form.cover_image.help_text }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="md:col-span-2 pt-4 border-t border-gray-200">
+                    <div class="flex items-center mb-4">
+                        <div class="flex items-center h-5">
+                            {{ form.confidentiality_override }}
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="{{ form.confidentiality_override.id_for_label }}" class="font-medium text-gray-700">
+                                {{ form.confidentiality_override.label }}
+                            </label>
+                            {% if form.confidentiality_override.help_text %}
+                            <p class="text-gray-500">{{ form.confidentiality_override.help_text }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div id="confidentiality-section" class="{% if not document or not document.confidentiality_override %}hidden{% endif %}">
+                    <label for="{{ form.confidentiality.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.confidentiality.label }}{% if form.confidentiality.field.required %} *{% endif %}
+                    </label>
+                    {{ form.confidentiality }}
+                    {% if form.confidentiality.help_text %}
+                    <p class="mt-1 text-sm text-gray-500">{{ form.confidentiality.help_text }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="md:col-span-2">
+                    <div class="flex items-center mb-4">
+                        <div class="flex items-center h-5">
+                            {{ form.minimum_age_override }}
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="{{ form.minimum_age_override.id_for_label }}" class="font-medium text-gray-700">
+                                {{ form.minimum_age_override.label }}
+                            </label>
+                            {% if form.minimum_age_override.help_text %}
+                            <p class="text-gray-500">{{ form.minimum_age_override.help_text }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div id="minimum-age-section" class="{% if not document or not document.minimum_age_override %}hidden{% endif %}">
+                    <label for="{{ form.minimum_age.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ form.minimum_age.label }}{% if form.minimum_age.field.required %} *{% endif %}
+                    </label>
+                    {{ form.minimum_age }}
+                    {% if form.minimum_age.help_text %}
+                    <p class="mt-1 text-sm text-gray-500">{{ form.minimum_age.help_text }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                <a href="{% if document %}{% url 'center_panel:document_detail' document_id=document.id %}{% else %}{% url 'center_panel:document_folder_detail' folder_id=folder.id %}{% endif %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+                    Annuler
+                </a>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    {% if action == 'add' %}
+                    Ajouter le document
+                    {% else %}
+                    Enregistrer les modifications
+                    {% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const confidentialityOverride = document.getElementById('{{ form.confidentiality_override.id_for_label }}');
+        const confidentialitySection = document.getElementById('confidentiality-section');
+        
+        const minimumAgeOverride = document.getElementById('{{ form.minimum_age_override.id_for_label }}');
+        const minimumAgeSection = document.getElementById('minimum-age-section');
+        
+        // Initial setup
+        if (confidentialityOverride && confidentialitySection) {
+            confidentialitySection.classList.toggle('hidden', !confidentialityOverride.checked);
+        }
+        
+        if (minimumAgeOverride && minimumAgeSection) {
+            minimumAgeSection.classList.toggle('hidden', !minimumAgeOverride.checked);
+        }
+        
+        // Event listeners
+        if (confidentialityOverride) {
+            confidentialityOverride.addEventListener('change', function() {
+                confidentialitySection.classList.toggle('hidden', !this.checked);
+            });
+        }
+        
+        if (minimumAgeOverride) {
+            minimumAgeOverride.addEventListener('change', function() {
+                minimumAgeSection.classList.toggle('hidden', !this.checked);
+            });
+        }
+    });
+</script>
+{% endblock %}

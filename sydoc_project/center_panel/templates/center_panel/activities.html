@@ -224,13 +224,24 @@
                             {% endif %}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex flex-wrap gap-1">
+                            <div class="flex flex-wrap gap-1 mb-2">
+                                <div class="text-xs font-medium text-gray-500 mb-1">Groupes:</div>
                                 {% for assignment in activity.group_assignments.all %}
                                     <span class="px-2 py-1 inline-flex text-xs leading-4 font-medium rounded-full bg-indigo-100 text-indigo-800">
                                         {{ assignment.group.name }}
                                     </span>
                                 {% empty %}
                                     <span class="text-xs text-gray-500">Aucun groupe</span>
+                                {% endfor %}
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                <div class="text-xs font-medium text-gray-500 mb-1">Membres:</div>
+                                {% for assignment in activity.member_assignments.all %}
+                                    <span class="px-2 py-1 inline-flex text-xs leading-4 font-medium rounded-full bg-green-100 text-green-800">
+                                        {{ assignment.member.full_name }}
+                                    </span>
+                                {% empty %}
+                                    <span class="text-xs text-gray-500">Aucun membre</span>
                                 {% endfor %}
                             </div>
                         </td>

@@ -16,6 +16,7 @@ import os
 import io
 import tempfile
 import shutil
+import mimetypes
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, letter
 from PIL import Image, ImageEnhance
@@ -24,7 +25,7 @@ from core.models import (User, Member, Staff, Book, BookVolume, Author, Loan, Li
                         ArchivalDocument, TrainingSubject, TrainingModule, Lesson, Question, Answer, 
                         Role, Profile, Communique, BookDigitization, DigitizedPage, Language, 
                         StaffTrainingRecord, Quiz, DeletedBook, BookLike, BookDislike, BookRead, 
-                        Notification, ChatMessage)
+                        Notification, ChatMessage, DocumentFolder, Document, MemberActivityAssignment)
 from .models import AgeVerificationFailure, Complaint
 from core.utils import get_user_group_names, is_user_in_group, get_user_highest_privilege_group, require_groups, require_groups_decorator
 import logging
@@ -98,6 +99,134 @@ def send_member_credentials_email(user, password):
         return False
 
 
+def send_member_suspension_email(member, reason=None, suspended_by=None):
+    """
+    Send email notification to a member when their account is suspended
+    
+    Args:
+        member (Member): Member object that was suspended
+        reason (str): Reason for suspension
+        suspended_by (User): User who performed the suspension
+        
+    Returns:
+        bool: True if email was sent successfully, False otherwise
+    """
+    try:
+        if not member or not member.user or not member.user.email:
+            logger.error(f'Invalid member or missing email for sending suspension email')
+            return False
+            
+        subject = _('Notification de suspension de compte SYDOC')
+        
+        context = {
+            'username': member.user.username,
+            'first_name': member.user.first_name,
+            'last_name': member.user.last_name,
+            'reason': reason,
+            'suspension_date': timezone.now().strftime('%d/%m/%Y %H:%M'),
+            'suspended_by': suspended_by.get_full_name() if suspended_by else None
+        }
+        
+        text_content = render_to_string('core/emails/member_suspended.txt', context)
+        html_content = render_to_string('core/emails/member_suspended.html', context)
+        
+        # For development, just print to console
+        if settings.DEBUG:
+            logger.info(f'[DEV] Suspension Email would be sent to {member.user.email}')
+            # Even in debug mode, try to send the actual email unless explicitly using console backend
+            if hasattr(settings, 'EMAIL_BACKEND') and settings.EMAIL_BACKEND.endswith('console.EmailBackend'):
+                logger.info(f'Using console backend, not sending actual email')
+                return True
+            
+        # Attempt to send the actual email
+        try:
+            email_message = EmailMultiAlternatives(
+                subject,
+                text_content,
+                settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'noreply@sydoc.com',
+                [member.user.email]
+            )
+            email_message.attach_alternative(html_content, "text/html")
+            email_message.send(fail_silently=False)
+            
+            logger.info(f'Suspension email sent successfully to {member.user.email}')
+            return True
+        except Exception as email_error:
+            logger.error(f'SMTP Error sending suspension email: {str(email_error)}', exc_info=True)
+            # If in debug mode, consider it sent anyway so testing can continue
+            if settings.DEBUG:
+                logger.warning('In DEBUG mode, continuing despite email error')
+                return True
+            return False
+    except Exception as e:
+        logger.error(f'Failed to send suspension email to {member.user.email if member and member.user else "unknown"}: {str(e)}', exc_info=True)
+        return False
+
+
+def send_member_unsuspension_email(member, reason=None, unsuspended_by=None):
+    """
+    Send email notification to a member when their account is unsuspended
+    
+    Args:
+        member (Member): Member object that was unsuspended
+        reason (str): Reason for unsuspension
+        unsuspended_by (User): User who performed the unsuspension
+        
+    Returns:
+        bool: True if email was sent successfully, False otherwise
+    """
+    try:
+        if not member or not member.user or not member.user.email:
+            logger.error(f'Invalid member or missing email for sending unsuspension email')
+            return False
+            
+        subject = _('Réactivation de compte SYDOC')
+        
+        context = {
+            'username': member.user.username,
+            'first_name': member.user.first_name,
+            'last_name': member.user.last_name,
+            'reason': reason,
+            'unsuspension_date': timezone.now().strftime('%d/%m/%Y %H:%M'),
+            'unsuspended_by': unsuspended_by.get_full_name() if unsuspended_by else None
+        }
+        
+        text_content = render_to_string('core/emails/member_unsuspended.txt', context)
+        html_content = render_to_string('core/emails/member_unsuspended.html', context)
+        
+        # For development, just print to console
+        if settings.DEBUG:
+            logger.info(f'[DEV] Unsuspension Email would be sent to {member.user.email}')
+            # Even in debug mode, try to send the actual email unless explicitly using console backend
+            if hasattr(settings, 'EMAIL_BACKEND') and settings.EMAIL_BACKEND.endswith('console.EmailBackend'):
+                logger.info(f'Using console backend, not sending actual email')
+                return True
+            
+        # Attempt to send the actual email
+        try:
+            email_message = EmailMultiAlternatives(
+                subject,
+                text_content,
+                settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'noreply@sydoc.com',
+                [member.user.email]
+            )
+            email_message.attach_alternative(html_content, "text/html")
+            email_message.send(fail_silently=False)
+            
+            logger.info(f'Unsuspension email sent successfully to {member.user.email}')
+            return True
+        except Exception as email_error:
+            logger.error(f'SMTP Error sending unsuspension email: {str(email_error)}', exc_info=True)
+            # If in debug mode, consider it sent anyway so testing can continue
+            if settings.DEBUG:
+                logger.warning('In DEBUG mode, continuing despite email error')
+                return True
+            return False
+    except Exception as e:
+        logger.error(f'Failed to send unsuspension email to {member.user.email if member and member.user else "unknown"}: {str(e)}', exc_info=True)
+        return False
+
+
 def get_redirect_url_for_user(user):
     """
     Get the appropriate redirect URL based on user's group membership.
@@ -123,7 +252,8 @@ def get_redirect_url_for_user(user):
 from .forms import (BookForm, BookVolumeForm, BookVolumeFormSet, MemberForm, LoanForm, LoanCancellationForm, 
                   StaffForm, ActivityForm, ArchiveForm, TrainingSubjectForm, TrainingModuleForm, 
                   LessonFormSet, CommuniqueForm, TrainingModuleForm, LessonForm, QuestionFormSet, 
-                  AuthorForm, RoleForm, UserForm, ProfileForm, DeletedBookRestoreForm, ComplaintForm)
+                  AuthorForm, RoleForm, UserForm, ProfileForm, DeletedBookRestoreForm, ComplaintForm,
+                  DocumentFolderForm, DocumentForm)
 from django.db.models import Sum, Count, F, Q, Case, When, Value, IntegerField, ExpressionWrapper, DateTimeField
 from django.utils import timezone
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -1600,7 +1730,7 @@ def send_new_message(request):
 
 def activity_list(request):
     current_center = DocumentationCenter.objects.first()
-    activities = Activity.objects.filter(documentation_center=current_center).prefetch_related('group_assignments__group')
+    activities = Activity.objects.filter(documentation_center=current_center).prefetch_related('group_assignments__group', 'member_assignments__member')
     
     # Filter by status if provided
     status_filter = request.GET.get('status')
@@ -1666,6 +1796,17 @@ def add_activity(request):
                     assigned_by=request.user
                 )
                 
+            # Handle member assignments
+            assigned_members = form.cleaned_data.get('assigned_members', [])
+            # Import MemberActivityAssignment here to ensure it's available
+            from core.models import MemberActivityAssignment
+            for member in assigned_members:
+                MemberActivityAssignment.objects.create(
+                    activity=activity,
+                    member=member,
+                    assigned_by=request.user
+                )
+                
             messages.success(request, "L'activité a été créée avec succès.")
             return redirect('center_panel:activities')
     else:
@@ -1696,6 +1837,19 @@ def edit_activity(request, pk):
                 ActivityGroupAssignment.objects.create(
                     activity=activity,
                     group=group,
+                    assigned_by=request.user
+                )
+                
+            # Handle member assignments
+            # First, remove all existing member assignments
+            MemberActivityAssignment.objects.filter(activity=activity).delete()
+            
+            # Then add the new member assignments
+            assigned_members = form.cleaned_data.get('assigned_members', [])
+            for member in assigned_members:
+                MemberActivityAssignment.objects.create(
+                    activity=activity,
+                    member=member,
                     assigned_by=request.user
                 )
                 
@@ -3706,6 +3860,10 @@ def suspend_member(request, member_id):
     if request.method == 'POST':
         reason = request.POST.get('reason', '')
         member.suspend(reason=reason, suspended_by=request.user)
+        
+        # Send suspension email notification
+        send_member_suspension_email(member, reason=reason, suspended_by=request.user)
+        
         messages.success(request, f'Le membre {member.full_name} a été suspendu.')
         return redirect('center_panel:members')
     
@@ -3725,6 +3883,10 @@ def unsuspend_member(request, member_id):
     if request.method == 'POST':
         reason = request.POST.get('reason', '')
         member.unsuspend(reason=reason, unsuspended_by=request.user)
+        
+        # Send unsuspension email notification
+        send_member_unsuspension_email(member, reason=reason, unsuspended_by=request.user)
+        
         messages.success(request, f'Le membre {member.full_name} a été réactivé.')
         return redirect('center_panel:members')
     
@@ -3732,3 +3894,298 @@ def unsuspend_member(request, member_id):
         'member': member,
         'action': 'unsuspend'
     })
+
+
+# Document Management Views
+@login_required
+def document_folders(request):
+    """
+    View to list all document folders.
+    """
+    # Get the documentation center for the current user
+    doc_center = DocumentationCenter.objects.first()  # In a real app, this would be linked to the user
+    
+    # Get all active folders for this documentation center
+    folders = DocumentFolder.objects.filter(
+        documentation_center=doc_center,
+        is_active=True
+    ).order_by('-created_at')
+    
+    # Filter by confidentiality if user is not admin/staff
+    if not request.user.is_staff and not is_user_in_group(request.user, ['Admin', 'Super Admin']):
+        # Regular members can only see public folders
+        folders = folders.filter(confidentiality='public')
+    
+    # Filter by activity if specified
+    activity_id = request.GET.get('activity')
+    if activity_id:
+        folders = folders.filter(activity_id=activity_id)
+    
+    # Get activities for filter dropdown
+    activities = Activity.objects.filter(
+        documentation_center=doc_center,
+        status__in=[Activity.Status.PLANNED, Activity.Status.ACTIVE]
+    )
+    
+    return render(request, 'center_panel/documents/folder_list.html', {
+        'folders': folders,
+        'activities': activities,
+        'selected_activity': activity_id
+    })
+
+
+@login_required
+def add_document_folder(request):
+    """
+    View to create a new document folder.
+    """
+    # Get the documentation center for the current user
+    doc_center = DocumentationCenter.objects.first()  # In a real app, this would be linked to the user
+    
+    if request.method == 'POST':
+        form = DocumentFolderForm(request.POST, request.FILES, documentation_center=doc_center, user=request.user)
+        if form.is_valid():
+            folder = form.save(commit=False)
+            folder.documentation_center = doc_center
+            folder.created_by = request.user
+            folder.save()
+            messages.success(request, 'Le dossier a été créé avec succès.')
+            return redirect('center_panel:document_folder_detail', folder_id=folder.id)
+    else:
+        form = DocumentFolderForm(documentation_center=doc_center, user=request.user)
+    
+    return render(request, 'center_panel/documents/add_edit_folder.html', {
+        'form': form,
+        'action': 'add'
+    })
+
+
+@login_required
+def document_folder_detail(request, folder_id):
+    """
+    View to display a document folder and its contents.
+    """
+    folder = get_object_or_404(DocumentFolder, id=folder_id)
+    
+    # Check if user has access to this folder
+    if folder.confidentiality == 'confidential' and not (request.user.is_staff or is_user_in_group(request.user, ['Admin', 'Super Admin'])):
+        messages.error(request, 'Vous n\'avez pas accès à ce dossier confidentiel.')
+        return redirect('center_panel:document_folders')
+    
+    # Get documents in this folder
+    documents = folder.documents.all().order_by('-created_at')
+    
+    return render(request, 'center_panel/documents/folder_detail.html', {
+        'folder': folder,
+        'documents': documents
+    })
+
+
+@login_required
+def edit_document_folder(request, folder_id):
+    """
+    View to edit an existing document folder.
+    """
+    folder = get_object_or_404(DocumentFolder, id=folder_id)
+    doc_center = folder.documentation_center
+    
+    # Check if user has permission to edit
+    if not (request.user.is_staff or is_user_in_group(request.user, ['Admin', 'Super Admin'])):
+        messages.error(request, 'Vous n\'avez pas la permission de modifier ce dossier.')
+        return redirect('center_panel:document_folder_detail', folder_id=folder.id)
+    
+    if request.method == 'POST':
+        form = DocumentFolderForm(request.POST, request.FILES, instance=folder, documentation_center=doc_center, user=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Le dossier a été modifié avec succès.')
+            return redirect('center_panel:document_folder_detail', folder_id=folder.id)
+    else:
+        form = DocumentFolderForm(instance=folder, documentation_center=doc_center, user=request.user)
+    
+    return render(request, 'center_panel/documents/add_edit_folder.html', {
+        'form': form,
+        'folder': folder,
+        'action': 'edit'
+    })
+
+
+@login_required
+def delete_document_folder(request, folder_id):
+    """
+    View to delete (soft delete) a document folder.
+    """
+    folder = get_object_or_404(DocumentFolder, id=folder_id)
+    
+    # Check if user has permission to delete
+    if not (request.user.is_staff or is_user_in_group(request.user, ['Admin', 'Super Admin'])):
+        messages.error(request, 'Vous n\'avez pas la permission de supprimer ce dossier.')
+        return redirect('center_panel:document_folder_detail', folder_id=folder.id)
+    
+    if request.method == 'POST':
+        reason = request.POST.get('reason', '')
+        # Soft delete the folder
+        folder.delete()  # This calls our custom delete method which soft deletes
+        
+        # Log the deletion
+        from core.models import log_deletion
+        log_deletion(
+            instance=folder,
+            reason=reason,
+            deleted_by=request.user,
+            deletion_type='document'
+        )
+        
+        messages.success(request, 'Le dossier a été supprimé avec succès.')
+        return redirect('center_panel:document_folders')
+    
+    return render(request, 'center_panel/documents/delete_folder.html', {
+        'folder': folder
+    })
+
+
+@login_required
+def add_document(request, folder_id):
+    """
+    View to add a new document to a folder.
+    """
+    folder = get_object_or_404(DocumentFolder, id=folder_id)
+    
+    # Check if user has permission to add documents to this folder
+    if folder.confidentiality == 'confidential' and not (request.user.is_staff or is_user_in_group(request.user, ['Admin', 'Super Admin'])):
+        messages.error(request, 'Vous n\'avez pas la permission d\'ajouter des documents à ce dossier confidentiel.')
+        return redirect('center_panel:document_folder_detail', folder_id=folder.id)
+    
+    if request.method == 'POST':
+        form = DocumentForm(request.POST, request.FILES, folder=folder)
+        if form.is_valid():
+            document = form.save(commit=False)
+            document.folder = folder
+            document.save()
+            messages.success(request, 'Le document a été ajouté avec succès.')
+            return redirect('center_panel:document_folder_detail', folder_id=folder.id)
+    else:
+        form = DocumentForm(folder=folder)
+    
+    return render(request, 'center_panel/documents/add_edit_document.html', {
+        'form': form,
+        'folder': folder,
+        'action': 'add'
+    })
+
+
+@login_required
+def document_detail(request, document_id):
+    """
+    View to display a document's details.
+    """
+    document = get_object_or_404(Document, id=document_id)
+    folder = document.folder
+    
+    # Check if user has access to this document
+    effective_confidentiality = document.get_effective_confidentiality()
+    if effective_confidentiality == 'confidential' and not (request.user.is_staff or is_user_in_group(request.user, ['Admin', 'Super Admin'])):
+        messages.error(request, 'Vous n\'avez pas accès à ce document confidentiel.')
+        return redirect('center_panel:document_folder_detail', folder_id=folder.id)
+    
+    return render(request, 'center_panel/documents/document_detail.html', {
+        'document': document,
+        'folder': folder
+    })
+
+
+@login_required
+def edit_document(request, document_id):
+    """
+    View to edit an existing document.
+    """
+    document = get_object_or_404(Document, id=document_id)
+    folder = document.folder
+    
+    # Check if user has permission to edit
+    if not (request.user.is_staff or is_user_in_group(request.user, ['Admin', 'Super Admin'])):
+        messages.error(request, 'Vous n\'avez pas la permission de modifier ce document.')
+        return redirect('center_panel:document_detail', document_id=document.id)
+    
+    if request.method == 'POST':
+        form = DocumentForm(request.POST, request.FILES, instance=document, folder=folder)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Le document a été modifié avec succès.')
+            return redirect('center_panel:document_detail', document_id=document.id)
+    else:
+        form = DocumentForm(instance=document, folder=folder)
+    
+    return render(request, 'center_panel/documents/add_edit_document.html', {
+        'form': form,
+        'document': document,
+        'folder': folder,
+        'action': 'edit'
+    })
+
+
+@login_required
+def delete_document(request, document_id):
+    """
+    View to delete a document.
+    """
+    document = get_object_or_404(Document, id=document_id)
+    folder = document.folder
+    
+    # Check if user has permission to delete
+    if not (request.user.is_staff or is_user_in_group(request.user, ['Admin', 'Super Admin'])):
+        messages.error(request, 'Vous n\'avez pas la permission de supprimer ce document.')
+        return redirect('center_panel:document_detail', document_id=document.id)
+    
+    if request.method == 'POST':
+        reason = request.POST.get('reason', '')
+        folder_id = folder.id  # Store before deletion
+        
+        # Log the deletion
+        from core.models import log_deletion
+        log_deletion(
+            instance=document,
+            reason=reason,
+            deleted_by=request.user,
+            deletion_type='document'
+        )
+        
+        # Delete the document
+        document.delete()
+        
+        messages.success(request, 'Le document a été supprimé avec succès.')
+        return redirect('center_panel:document_folder_detail', folder_id=folder_id)
+    
+    return render(request, 'center_panel/documents/delete_document.html', {
+        'document': document,
+        'folder': folder
+    })
+
+
+@login_required
+def download_document(request, document_id):
+    """
+    View to download a document file.
+    """
+    document = get_object_or_404(Document, id=document_id)
+    
+    # Check if user has access to this document
+    effective_confidentiality = document.get_effective_confidentiality()
+    if effective_confidentiality == 'confidential' and not (request.user.is_staff or is_user_in_group(request.user, ['Admin', 'Super Admin'])):
+        messages.error(request, 'Vous n\'avez pas accès à ce document confidentiel.')
+        return redirect('center_panel:document_folder_detail', folder_id=document.folder.id)
+    
+    # Check if file exists
+    if not document.file or not os.path.exists(document.file.path):
+        messages.error(request, 'Le fichier demandé n\'existe pas.')
+        return redirect('center_panel:document_detail', document_id=document.id)
+    
+    # Get file content type
+    content_type, encoding = mimetypes.guess_type(document.file.path)
+    content_type = content_type or 'application/octet-stream'
+    
+    # Create response with file
+    response = FileResponse(document.file.open('rb'), content_type=content_type)
+    response['Content-Disposition'] = f'attachment; filename="{os.path.basename(document.file.name)}"'
+    
+    return response
