@@ -223,3 +223,9 @@ LOGGING = {
         "level": "WARNING",
     },
 }
+
+#on-boarding email details(Add as per your need and in french)
+SYDOC_DOWNLOAD_LINK=''
+SUPPORT_EMAIL = ' '
+COMPANY_WEBSITE = ''
+

@@ -6,6 +6,87 @@ from django.conf import settings
 
 from .models import Loan, Book, Member, Notification, DocumentationCenter
 from center_panel.models import Complaint
+from django.core.mail import EmailMessage
+from django.utils.crypto import get_random_string
+from sydoc_project.settings import EMAIL_HOST_USER
+import logging
+import string
+
+logger = logging.getLogger(__name__)
+
+
+@receiver(post_save, sender=DocumentationCenter)
+def send_email_notification_on_documentation_create(sender, instance, created, **kwargs):
+    if created:
+        try:
+            user_name = f"user_{instance.id}_{get_random_string(6, string.ascii_lowercase)}"
+            password = get_random_string(12, string.ascii_letters + string.digits + "!@#$%")
+            user, user_created = User.objects.get_or_create(
+                email=instance.email,
+                defaults={
+                    'username': user_name,
+                    'first_name': instance.name.split()[0] if instance.name else '',
+                    'last_name': ' '.join(instance.name.split()[1:]) if len(instance.name.split()) > 1 else '',
+                    'is_active': True,
+                }
+            )
+            if user_created:
+                user.set_password(password)
+                user.save()
+                logger.info(f"Created new user account for {instance.email}")
+            else:
+                user.set_password(password)
+                user.save()
+                logger.info(f"Updated password for existing user {instance.email}")
+            download_link = getattr(settings, 'SYDOC_DOWNLOAD_LINK', 'https://sydoc.com/download')
+            support_email = getattr(settings, 'SUPPORT_EMAIL', 'support@sydoc.com')
+            company_website = getattr(settings, 'COMPANY_WEBSITE', 'https://sydoc.com')
+            subject = 'Welcome to SyDoc - Your Account Details'
+            plain_message = f"""
+                            Dear {instance.name},
+
+                            Welcome to SyDoc! We're excited to have you on board.
+
+                            Your account has been successfully created with the following details:
+
+                            Username: {user_name}
+                            Password: {password}
+
+                            You can download the SyDoc Software from: {download_link}
+
+                            Getting Started:
+                            1. Download the software using the link above
+                            2. Install and launch the application
+                            3. Log in using your credentials
+                            4. Explore the Documentation Center features
+
+                            For security reasons, we recommend changing your password after your first login.
+
+                            If you need any assistance, please don't hesitate to contact our support team at {support_email}.
+
+                            Thank you for choosing SyDoc!
+
+                            Best regards,
+                            The SyDoc Team
+
+                            ---
+                            This is an automated message. Please do not reply to this email.
+                            Visit us at: {company_website}
+                                        """.strip()
+            
+            email_msg = EmailMessage(
+                subject=subject,
+                body=plain_message,
+                from_email=settings.EMAIL_HOST_USER,
+                to=[instance.email],
+            )
+            email_msg.send()
+            logger.info(f"Welcome email sent successfully to {instance.email}")
+        except Exception as e:
+            logger.error(f"Failed to send welcome email to {instance.email}: {str(e)}")
+            pass
+
+
 
 @receiver(post_save, sender=Complaint)
 def create_complaint_notification(sender, instance, created, **kwargs):
@@ -123,3 +204,4 @@ def check_overdue_loans(sender, instance, **kwargs):
                             message=f"RETARD: {instance.book.title} emprunté par {instance.member.full_name} devait être retourné le {instance.due_date.strftime('%d/%m/%Y')}",
                             notification_type='alert'
                         )
+
